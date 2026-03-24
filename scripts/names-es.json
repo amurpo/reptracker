@@ -1,0 +1,3494 @@
+[
+  {
+    "name": "Abdominal 3/4",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Estiramiento de Isquiotibiales 90/90",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Máquina de Crunch Abdominal",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Rueda Abdominal",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Aductor",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Aductor/Ingle",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Molino de Viento con Kettlebell Avanzado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Bicicleta en el Aire",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Estiramiento de Cuádriceps en Cuatro Apoyos",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curl de Martillo Alternado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Toques de Talón Alternados",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl de Mancuerna en Banco Inclinado Alternado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Salto Diagonal con Piernas Alternas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press de Hombro en Polea Alternado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación de Deltoides Alternada",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press en Suelo Alternado",
+    "muscle": "chest"
+  },
+  {
+    "name": "Clean desde Colgado Alternado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Press con Kettlebell Alternado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo con Kettlebell Alternado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Remo Renegado Alternado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Círculos de Tobillo",
+    "muscle": "calves"
+  },
+  {
+    "name": "Tobillo sobre la Rodilla",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Tibial Anterior-SMR",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press Antigravitacional",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Círculos de Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press Arnold con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Alrededor del Mundo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Entrenador de Piedra Atlas",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Piedras Atlas",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Peso Muerto con Barra de Eje",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Aperturas de Espalda con Bandas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Arrastre hacia Atrás",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Lanzamiento de Balón Medicinal hacia Atrás",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Tabla de Equilibrio",
+    "muscle": "calves"
+  },
+  {
+    "name": "Curl de Pierna con Balón",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Dominada Asistida con Banda",
+    "muscle": "lats"
+  },
+  {
+    "name": "Buenos Días con Banda",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Buenos Días con Banda (Tirón)",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Aducción de Cadera con Banda",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Separación de Banda",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Skull Crusher con Banda",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Rodamiento Abdominal con Barra",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Rodamiento Abdominal con Barra - De Rodillas",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press de Banca con Barra - Agarre Medio",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl con Barra",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl con Barra Recostado en Banco Inclinado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Peso Muerto con Barra",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Sentadilla Completa con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Puente de Glúteos con Barra",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Press de Banca Guillotina con Barra",
+    "muscle": "chest"
+  },
+  {
+    "name": "Sentadilla Hack con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Empuje de Cadera con Barra",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Press de Banca Inclinado con Barra - Agarre Medio",
+    "muscle": "chest"
+  },
+  {
+    "name": "Elevación de Hombros en Banco Inclinado con Barra",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Zancada con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Remo para Deltoides Posterior con Barra",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Rodamiento desde Banco con Barra",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación de Pantorrilla Sentado con Barra",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press de Hombro con Barra",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento con Barra",
+    "muscle": "traps"
+  },
+  {
+    "name": "Encogimiento con Barra por Detrás",
+    "muscle": "traps"
+  },
+  {
+    "name": "Flexión Lateral con Barra",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadilla Lateral con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Barra hasta el Banco",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Subida al Cajón con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Zancada Caminando con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Cuerdas de Batalla",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Arrastre de Trineo a Cuatro Patas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Estiramiento de Pecho con Manos detrás de la Cabeza",
+    "muscle": "chest"
+  },
+  {
+    "name": "Fondos en Banco",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Salto al Banco",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press de Banca - Powerlifting",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press de Banca con Bandas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press de Banca con Cadenas",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Sprint en Banco",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Pullover con Barra y Brazos Flexionados",
+    "muscle": "lats"
+  },
+  {
+    "name": "Pullover con Mancuerna y Brazos Flexionados",
+    "muscle": "chest"
+  },
+  {
+    "name": "Elevación de Cadera con Rodillas Flexionadas",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Remo con Barra Inclinado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Elevación de Deltoides Posterior Inclinado con Mancuerna y Frente en Banco",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Lateral en Polea Baja Inclinado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo con Barra Larga a Un Brazo Inclinado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Remo con Barra Larga a Dos Brazos Inclinado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Remo con Dos Mancuernas Inclinado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Remo con Dos Mancuernas Inclinado con Palmas Hacia Dentro",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Press Inclinado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Ciclismo",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Ciclismo en Bicicleta Estática",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press en Tabla",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Elevación de Cuerpo",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press de Tríceps con el Cuerpo",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Aperturas con Peso Corporal",
+    "muscle": "chest"
+  },
+  {
+    "name": "Remo Medio con Peso Corporal",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Sentadilla con Peso Corporal",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Zancada Caminando con Peso Corporal",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Crunch en Bosu Ball con Giros Laterales",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Clean Invertido desde Posición de Colgado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Elevación de Piernas Acostado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Salto al Cajón (Respuesta Múltiple)",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Salto al Cajón",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sentadilla en Cajón",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla en Cajón con Bandas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla en Cajón con Cadenas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Braquial-SMR",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press Bradford/Rocky",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación de Glúteos",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Puente de Glúteos",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Mariposa",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press de Pecho en Polea",
+    "muscle": "chest"
+  },
+  {
+    "name": "Cruce de Polea",
+    "muscle": "chest"
+  },
+  {
+    "name": "Crunch en Polea",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Peso Muerto en Polea",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curl de Martillo en Polea - Accesorio de Cuerda",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Aducción de Cadera en Polea",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Jalón Inclinado en Polea",
+    "muscle": "lats"
+  },
+  {
+    "name": "Extensión de Tríceps Inclinado en Polea",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Rotación Interna en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Cruz de Hierro en Polea",
+    "muscle": "chest"
+  },
+  {
+    "name": "Giro de Judo en Polea",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Extensión de Tríceps Acostado en Polea",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Extensión de Tríceps a Un Brazo en Polea",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Curl en Banco Scott en Polea",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Apertura para Deltoides Posterior en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Crunch Inverso en Polea",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Extensión de Tríceps sobre la Cabeza con Cuerda en Polea",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Remo para Deltoides Posterior con Cuerda en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Giro Ruso en Polea",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Crunch Sentado en Polea",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación Lateral Sentado en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press de Hombro en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento en Polea",
+    "muscle": "traps"
+  },
+  {
+    "name": "Curl de Muñeca en Polea",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Encogimiento de Hombros en Máquina de Pantorrilla",
+    "muscle": "traps"
+  },
+  {
+    "name": "Press de Pantorrilla",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press de Pantorrilla en Máquina de Prensa de Pierna",
+    "muscle": "calves"
+  },
+  {
+    "name": "Elevación de Pantorrilla con Mancuerna",
+    "muscle": "calves"
+  },
+  {
+    "name": "Elevación de Pantorrilla con Bandas",
+    "muscle": "calves"
+  },
+  {
+    "name": "Estiramiento de Pantorrilla con Codos en la Pared",
+    "muscle": "calves"
+  },
+  {
+    "name": "Estiramiento de Pantorrilla con Manos en la Pared",
+    "muscle": "calves"
+  },
+  {
+    "name": "Pantorrillas-SMR",
+    "muscle": "calves"
+  },
+  {
+    "name": "Peso Muerto de Automóvil",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Volantes de Coche",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Paso Rápido Carioca",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Estiramiento de Gato",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Atrapar y Lanzar por Encima de la Cabeza",
+    "muscle": "lats"
+  },
+  {
+    "name": "Extensión con Asa de Cadena",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press con Cadenas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Estiramiento de Pierna Extendida en Silla",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Estiramiento de Espalda Baja en Silla",
+    "muscle": "lats"
+  },
+  {
+    "name": "Sentadilla en Silla",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Estiramiento de Tren Superior en Silla",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Estiramiento de Pecho y Hombro Frontal",
+    "muscle": "chest"
+  },
+  {
+    "name": "Empuje de Pecho desde Posición de Tres Apoyos",
+    "muscle": "chest"
+  },
+  {
+    "name": "Empuje de Pecho (Respuesta Múltiple)",
+    "muscle": "chest"
+  },
+  {
+    "name": "Empuje de Pecho (Respuesta Simple)",
+    "muscle": "chest"
+  },
+  {
+    "name": "Empuje de Pecho con Suelta y Carrera",
+    "muscle": "chest"
+  },
+  {
+    "name": "Estiramiento de Pecho en Balón de Estabilidad",
+    "muscle": "chest"
+  },
+  {
+    "name": "Postura del Niño",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Dominada Supina",
+    "muscle": "lats"
+  },
+  {
+    "name": "Estiramiento de Mentón al Pecho",
+    "muscle": "neck"
+  },
+  {
+    "name": "Campana de Circo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Clean",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Peso Muerto en Clean",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Jalón de Clean",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Encogimiento de Clean",
+    "muscle": "traps"
+  },
+  {
+    "name": "Clean y Jerk",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Clean y Press",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Clean desde Bloques",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Flexión en Reloj",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press de Banca con Barra Agarre Cerrado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press de Mancuerna Agarre Cerrado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Curl con Barra EZ Agarre Cerrado con Banda",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press con Barra EZ Agarre Cerrado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Curl con Barra EZ Agarre Cerrado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Jalón Frontal Agarre Cerrado",
+    "muscle": "lats"
+  },
+  {
+    "name": "Flexión Agarre Cerrado sobre Mancuerna",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Curl de Pie con Barra Agarre Cerrado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Cocoons",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Rueda de Conan",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curl Concentrado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Crunch Cruzado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl de Martillo Cruzado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Cruce con Bandas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Zancada Inversa Cruzada",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Crucifijo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Crunch con Manos por Encima de la Cabeza",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Crunch con Piernas sobre Balón de Ejercicio",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Crunches",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press Cubano",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Estiramiento del Bailarín",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Insecto Muerto",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Peso Muerto con Bandas",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Peso Muerto con Cadenas",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Press de Banca Declinado con Barra",
+    "muscle": "chest"
+  },
+  {
+    "name": "Skull Crusher en Banco Declinado Agarre Cerrado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Crunch Declinado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press de Banca Declinado con Mancuernas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Aperturas Declinadas con Mancuernas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Extensión de Tríceps Declinada con Mancuernas",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Extensión de Tríceps Declinada con Barra EZ",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Crunch Oblicuo Declinado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Flexión Declinada",
+    "muscle": "chest"
+  },
+  {
+    "name": "Crunch Inverso Declinado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press en Máquina Smith Declinado",
+    "muscle": "chest"
+  },
+  {
+    "name": "Peso Muerto con Déficit",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Salto desde Profundidad",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Máquina de Fondos",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Fondos - Versión Pecho",
+    "muscle": "chest"
+  },
+  {
+    "name": "Fondos - Versión Tríceps",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Elevación de Pantorrilla tipo Burro",
+    "muscle": "calves"
+  },
+  {
+    "name": "Clean Colgado Alternado con Dos Kettlebells",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Jerk con Dos Kettlebells",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Push Press con Dos Kettlebells",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Snatch con Dos Kettlebells",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Molino de Viento con Dos Kettlebells",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Patada de Glúteos con Dos Piernas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Equilibrio Mirando hacia Abajo",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Curl de Arrastre",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Empuje hacia Abajo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl de Bíceps Alternado con Mancuernas",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press de Banca con Mancuernas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press de Banca con Mancuernas Agarre Neutro",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl de Bíceps con Mancuerna",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Clean con Mancuerna",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Press en Suelo con Mancuerna",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Aperturas con Mancuernas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Remo Inclinado con Mancuerna",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Elevación de Hombros en Banco Inclinado con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Zancadas con Mancuernas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Lateral Posterior Acostado a Un Brazo con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Pronación Acostado con Mancuerna",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Elevación Lateral Posterior Acostado con Mancuernas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Supinación Acostado con Mancuerna",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Press de Hombro a Un Brazo con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps a Un Brazo con Mancuerna",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Remo Vertical a Un Brazo con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Curl Inclinado Prono con Mancuerna",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Elevación con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Zancada Trasera con Mancuerna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Scaption con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Salto al Cajón Sentado con Mancuernas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Pantorrilla a Una Pierna Sentado con Mancuerna",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press de Hombro con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento con Mancuerna",
+    "muscle": "traps"
+  },
+  {
+    "name": "Flexión Lateral con Mancuerna",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadilla con Mancuerna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Mancuerna hasta el Banco",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Subida al Cajón con Mancuernas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Extensión de Tríceps con Mancuerna Agarre Pronado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Estiramiento Dinámico de Espalda",
+    "muscle": "lats"
+  },
+  {
+    "name": "Estiramiento Dinámico de Pecho",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl con Barra EZ",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Skull Crusher con Barra EZ",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Círculos de Codo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Codo a Rodilla",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Codos Atrás",
+    "muscle": "chest"
+  },
+  {
+    "name": "Zancada Trasera Elevada",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Remo en Polea Elevado",
+    "muscle": "lats"
+  },
+  {
+    "name": "Elíptica",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Crunch en Balón de Ejercicio",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Encogimiento de Piernas en Balón de Ejercicio",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press en Suelo con Kettlebell a Un Brazo Rango Extendido",
+    "muscle": "chest"
+  },
+  {
+    "name": "Rotación Externa",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Rotación Externa con Banda",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Rotación Externa en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Face Pull",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Caminata del Granjero",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Salto de Comba Rápido",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curls de Dedos",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Aperturas en Polea en Banco Plano",
+    "muscle": "chest"
+  },
+  {
+    "name": "Encogimiento de Piernas en Banco Plano",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación de Piernas Acostado en Banco Plano",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl Inclinado con Mancuernas para Flexor",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Elevación Glúteo-Isquiotibial en Suelo",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Press en Suelo",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press en Suelo con Cadenas",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Patadas de Natación",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Pie-SMR",
+    "muscle": "calves"
+  },
+  {
+    "name": "Arrastre Frontal con Press",
+    "muscle": "chest"
+  },
+  {
+    "name": "Sentadilla Frankenstein",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla Libre con Salto",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Saltos de Rana",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Abdominales de Rana",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadilla Frontal con Barra",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla Frontal con Barra hasta el Banco",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Salto Frontal al Cajón",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Elevación Frontal en Polea",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Saltos sobre Conos Frontales (o vallas)",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Frontal con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación Frontal Inclinada con Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación Frontal de Pierna",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Elevación Frontal con Disco",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación Frontal y Pullover",
+    "muscle": "chest"
+  },
+  {
+    "name": "Sentadilla Frontal (Agarre de Clean)",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla Frontal con Dos Kettlebells",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Frontal con Dos Mancuernas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Jalón de Dorsal Rango Completo",
+    "muscle": "lats"
+  },
+  {
+    "name": "Dominadas Esternales Gironda",
+    "muscle": "lats"
+  },
+  {
+    "name": "Elevación Glúteo-Isquiotibial",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Patada de Glúteos",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Sentadilla Goblet",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Buenos Días",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Buenos Días desde Pines",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Dominada Gorila/Crunch",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Estiramiento de Ingle y Espalda",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Groiners",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Sentadilla Hack",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curls de Martillo",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press de Banca Inclinado con Mancuernas Agarre de Martillo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Isquiotibiales-SMR",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Estiramiento de Isquiotibiales",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Flexiones en Pino",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Clean Colgado",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Clean Colgado - Por Debajo de las Rodillas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Snatch Colgado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Snatch Colgado - Por Debajo de las Rodillas",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Buenos Días Colgado en Barra",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Elevación de Piernas Colgado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Pike Colgado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Balance de Snatch con Impulso",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Empuje al Saco Pesado",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curls en Polea Alta",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Círculos de Cadera (Prono)",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Extensión de Cadera con Bandas",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Flexión de Cadera con Banda",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Cadera con Banda",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Abrazar una Pelota",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Rodillas al Pecho",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Saltos sobre Valla",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Hiperextensiones (Extensiones de Espalda)",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Hiperextensiones sin Banco de Hiperextensión",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Estiramiento de Banda Iliotibial y Glúteos",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Tracto Iliotibial-SMR",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Oruga",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Extensión de Tríceps Inclinado con Barra",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Remo en Banco Inclinado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Press de Pecho Inclinado en Polea",
+    "muscle": "chest"
+  },
+  {
+    "name": "Apertura Inclinada en Polea",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press de Banca Inclinado con Mancuernas Palmas Hacia Dentro",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl Inclinado con Mancuerna",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Aperturas Inclinadas con Mancuernas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Aperturas Inclinadas con Mancuernas - Con Giro",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press Inclinado con Mancuernas",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl de Martillo Inclinado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl Interno de Bíceps Inclinado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Flexión Inclinada",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexión Inclinada Agarre Cerrado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Salto de Profundidad en Flexión Inclinada",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexión Inclinada Media",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexión Inclinada Agarre Invertido",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexión Inclinada Agarre Ancho",
+    "muscle": "chest"
+  },
+  {
+    "name": "Estiramiento Intermedio de Ingle",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Estiramiento Intermedio de Flexor de Cadera y Cuádriceps",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Rotación Interna con Banda",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo Invertido",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Remo Invertido con Straps",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Cruz de Hierro",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Cruces de Hierro (estiramiento)",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Apriete Isométrico de Pecho",
+    "muscle": "chest"
+  },
+  {
+    "name": "Ejercicio de Cuello Isométrico - Frontal y Posterior",
+    "muscle": "neck"
+  },
+  {
+    "name": "Ejercicio de Cuello Isométrico - Laterales",
+    "muscle": "neck"
+  },
+  {
+    "name": "Limpiaparabrisas Isométrico",
+    "muscle": "chest"
+  },
+  {
+    "name": "JM Press",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Abdominal Navaja",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Abdominal Janda",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadillas Jefferson",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Balance de Jerk",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Sentadilla Dip de Jerk",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Trote en Cinta",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Carga de Barril",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Press Arnold con Kettlebell",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Clean Muerto con Kettlebell",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Figura 8 con Kettlebell",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Clean Colgado con Kettlebell",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Peso Muerto a Una Pierna con Kettlebell",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Pase de Kettlebell entre las Piernas",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Barcos Piratas con Kettlebell",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Sentadilla Pistola con Kettlebell",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press Sentado con Kettlebell",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press Alterno (Seesaw) con Kettlebell",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Jalón Sumo Alto con Kettlebell",
+    "muscle": "traps"
+  },
+  {
+    "name": "Thruster con Kettlebell",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Get-Up Turco con Kettlebell (estilo Zancada)",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Get-Up Turco con Kettlebell (estilo Sentadilla)",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Molino de Viento con Kettlebell",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Muscle Up con Impulso (Kipping)",
+    "muscle": "lats"
+  },
+  {
+    "name": "Rodilla al Otro Lado del Cuerpo",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Círculos de Rodilla",
+    "muscle": "calves"
+  },
+  {
+    "name": "Elevación de Rodilla/Cadera en Barras Paralelas",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Salto con Rodillas al Pecho",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Ejercicio de Brazo de Rodillas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Crunch en Polea de Rodillas con Giros Oblicuos Alternos",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Extensión de Tríceps en Polea de Rodillas",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Estiramiento de Antebrazo de Rodillas",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Remo en Polea Alta de Rodillas",
+    "muscle": "lats"
+  },
+  {
+    "name": "Flexor de Cadera de Rodillas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Salto de Rodillas",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Remo a Un Brazo en Polea Alta de Rodillas",
+    "muscle": "lats"
+  },
+  {
+    "name": "Sentadilla de Rodillas",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Rotación con Landmine 180°",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Jammer Lineal con Landmine",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Salto Lateral",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Salto Lateral al Cajón",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Saltos Laterales sobre Conos",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Elevación Lateral con Bandas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Dorsal Ancho-SMR",
+    "muscle": "lats"
+  },
+  {
+    "name": "Press en Suelo con Pierna Cruzada",
+    "muscle": "chest"
+  },
+  {
+    "name": "Estiramiento de Isquiotibiales con Pierna Elevada",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Extensiones de Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Pierna",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Prensa de Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Encogimiento de Piernas",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press de Pecho en Máquina (Leverage)",
+    "muscle": "chest"
+  },
+  {
+    "name": "Peso Muerto en Máquina (Leverage)",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press de Pecho Declinado en Máquina (Leverage)",
+    "muscle": "chest"
+  },
+  {
+    "name": "Remo Alto en Máquina (Leverage)",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Press de Pecho Inclinado en Máquina (Leverage)",
+    "muscle": "chest"
+  },
+  {
+    "name": "Remo Iso en Máquina (Leverage)",
+    "muscle": "lats"
+  },
+  {
+    "name": "Press de Hombro en Máquina (Leverage)",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento en Máquina (Leverage)",
+    "muscle": "traps"
+  },
+  {
+    "name": "Técnica de Inicio Lineal en 3 Partes",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Ejercicio de Aceleración Lineal en Pared",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Salto de Profundidad Lineal",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Levantamiento de Tronco",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Puentes de Londres",
+    "muscle": "lats"
+  },
+  {
+    "name": "Mirando al Techo",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Cruce de Polea Baja",
+    "muscle": "chest"
+  },
+  {
+    "name": "Extensión de Tríceps en Polea Baja",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Remo en Polea Baja al Cuello",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Espalda Baja-SMR",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Curl de Espalda Baja",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Zancada con Pase",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sprint en Zancada",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Ingle Acostado con Pierna Flexionada",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Curl en Polea Acostado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Remo con Barra Curva Acostado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Curl con Barra en Polea Alta Agarre Cerrado Acostado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Extensión de Tríceps con Barra Agarre Cerrado detrás de la Cabeza Acostado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press con Barra Agarre Cerrado al Mentón Acostado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Cruce Acostado",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Extensión de Tríceps con Mancuerna Acostado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Resistencia de Cuello Boca Abajo con Disco",
+    "muscle": "neck"
+  },
+  {
+    "name": "Resistencia de Cuello Boca Arriba con Disco",
+    "muscle": "neck"
+  },
+  {
+    "name": "Glúteo Acostado",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Isquiotibiales Acostado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Curl con Barra en Banco Alto Acostado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl de Pierna Acostado en Máquina",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sentadilla en Máquina Acostado",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Lateral a Un Brazo Acostado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Cuádriceps Prono Acostado",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Deltoides Posterior Acostado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Curl con Mancuerna Supino Acostado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Remo con Barra T Acostado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Press de Tríceps Acostado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press de Banca en Máquina",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl de Bíceps en Máquina",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl en Banco Scott en Máquina",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press Militar en Máquina",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps en Máquina",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Pase de Pecho con Balón Medicinal",
+    "muscle": "chest"
+  },
+  {
+    "name": "Giro Completo con Balón Medicinal",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Lanzamiento en Cucharada con Balón Medicinal",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento de Espalda Media",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Estiramiento de Espalda Media",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Dominada Agarre Mixto",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Caminata del Monstruo",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Escaladores de Montaña",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Serie de Garra en Movimiento",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Snatch Muscular",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Muscle Up",
+    "muscle": "lats"
+  },
+  {
+    "name": "Sentadillas Hack Posición Estrecha",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Prensa de Pierna Posición Estrecha",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadillas Posición Estrecha",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Natural Glúteo-Isquiotibial",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Cuello-SMR",
+    "muscle": "neck"
+  },
+  {
+    "name": "Press de Cuello",
+    "muscle": "chest"
+  },
+  {
+    "name": "Crunches Oblicuos",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Crunches Oblicuos en el Suelo",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadilla Olímpica",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Estiramiento de Cuádriceps Boca Arriba",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Estiramiento de Cuádriceps de Lado",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Remo con Mancuerna a Un Brazo",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Apertura en Banco Plano a Un Brazo con Mancuerna",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexión Lateral en Polea Alta a Un Brazo",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación Lateral Inclinada a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Clean con Kettlebell a Un Brazo",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Clean y Jerk con Kettlebell a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press en Suelo con Kettlebell a Un Brazo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Jerk con Kettlebell a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press Militar con Kettlebell a Un Brazo hacia el Lado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press Para a Un Brazo con Kettlebell",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Push Press con Kettlebell a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo con Kettlebell a Un Brazo",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Snatch con Kettlebell a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Jerk en Split con Kettlebell a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Snatch en Split con Kettlebell a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Swings con Kettlebell a Un Brazo",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Remo con Barra Larga a Un Brazo",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Golpe con Balón Medicinal a Un Brazo",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Clean con Kettlebell Palma Abierta a Un Brazo",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sentadilla con Kettlebell Sobre la Cabeza a Un Brazo",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto Lateral a Un Brazo",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Lateral a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Patada en Polea a Una Pierna",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Un Brazo contra la Pared",
+    "muscle": "lats"
+  },
+  {
+    "name": "Dominada a Un Brazo",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Press de Banca con Mancuerna a Un Brazo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Curl en Banco Scott con Mancuerna a Un Brazo",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press en Suelo a Un Brazo",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Jalón de Dorsal a Un Brazo",
+    "muscle": "lats"
+  },
+  {
+    "name": "Extensión de Tríceps Pronada con Mancuerna a Un Brazo",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Extensión de Tríceps Supinada con Mancuerna a Un Brazo",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Media Langosta",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Colgado a Una Mano",
+    "muscle": "lats"
+  },
+  {
+    "name": "Una Rodilla al Pecho",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Sentadilla con Barra a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Clean con Kettlebell Palma Abierta",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Otis-Up",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl en Polea sobre la Cabeza",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Dorsal sobre la Cabeza",
+    "muscle": "lats"
+  },
+  {
+    "name": "Golpe sobre la Cabeza",
+    "muscle": "lats"
+  },
+  {
+    "name": "Sentadilla sobre la Cabeza",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Estiramiento sobre la Cabeza",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Tríceps sobre la Cabeza",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Pallof Press",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Pallof Press con Rotación",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl de Muñeca con Mancuerna Palmas Abajo sobre el Banco",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl de Muñeca Palmas Abajo sobre el Banco",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl de Muñeca con Barra Palmas Arriba sobre el Banco",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl de Muñeca con Mancuerna Palmas Arriba sobre el Banco",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Fondos en Barras Paralelas",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Inclinación Pélvica en Puente",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Peroneos-SMR",
+    "muscle": "calves"
+  },
+  {
+    "name": "Estiramiento de Peroneos",
+    "muscle": "calves"
+  },
+  {
+    "name": "Puente de Cadera en Balón de Fisioterapia",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Press en Pines",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Piriforme-SMR",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Plancha",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Pellizco de Disco",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Giro con Disco",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Deslizamiento de Isquiotibiales en Plataforma",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sentadilla Plié con Mancuerna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Flexiones Pliométricas con Kettlebell",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexión Pliométrica",
+    "muscle": "chest"
+  },
+  {
+    "name": "Estiramiento del Tibial Posterior",
+    "muscle": "calves"
+  },
+  {
+    "name": "Power Clean",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Power Clean desde Bloques",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Power Jerk",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Parciales de Potencia",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Power Snatch",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Power Snatch desde Bloques",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Escaleras de Potencia",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Curl en Banco Scott",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl de Martillo en Banco Scott con Mancuerna",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Abdominal con Press",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Isquiotibiales Manual Prono",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sprint con Trineo Prowler",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Tirón a través",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Dominadas",
+    "muscle": "lats"
+  },
+  {
+    "name": "Flexión Ancha",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexiones - Posición Cerrada de Tríceps",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Flexiones con Pies Elevados",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexiones con Pies en Balón de Ejercicio",
+    "muscle": "chest"
+  },
+  {
+    "name": "Push Press",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Push Press - Detrás del Cuello",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Flexión hacia Plancha Lateral",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexiones",
+    "muscle": "chest"
+  },
+  {
+    "name": "Flexiones (Posiciones de Manos Cerrada y Ancha)",
+    "muscle": "chest"
+  },
+  {
+    "name": "Pirámide",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Estiramiento de Cuádriceps",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Cuádriceps-SMR",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Salto Rápido",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Entrega en Rack",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Rack Pull con Bandas",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Rack Pulls",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Elevaciones de Pierna Trasera",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Bicicleta Reclinada",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Empuje de Vuelta desde Postura",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press de Banca con Banda Inversa",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Sentadilla en Cajón con Banda Inversa",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto con Banda Inversa",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Sentadilla de Potencia con Banda Inversa",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto Sumo con Banda Inversa",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Curl con Barra Agarre Invertido",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl en Banco Scott Agarre Invertido con Barra",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl en Polea Agarre Invertido",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Crunch Inverso",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Aperturas Inversas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Aperturas Inversas con Rotación Externa",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo Inclinado Agarre Supino",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Jalón en Polea Agarre Invertido",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Hiperextensión Inversa",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Aperturas Inversas en Máquina",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Curl con Discos Invertido",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press de Banca de Tríceps Invertido",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Romboides-SMR",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Caminata Rickshaw",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Peso Muerto Rickshaw",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Fondos en Anillas",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Salto Cohete",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Pantorrilla Oscilante de Pie",
+    "muscle": "calves"
+  },
+  {
+    "name": "Jalones Rocky",
+    "muscle": "lats"
+  },
+  {
+    "name": "Peso Muerto Rumano",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Peso Muerto Rumano desde Déficit",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Escalada de Cuerda",
+    "muscle": "lats"
+  },
+  {
+    "name": "Crunch con Cuerda",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Saltar la Cuerda",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Jalón Recto con Cuerda",
+    "muscle": "lats"
+  },
+  {
+    "name": "Estiramiento de Hombro Circular",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo en Máquina Estática",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Estiramiento del Corredor",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Carrera en Cinta",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Giro Ruso",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Carga de Saco de Arena",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Dominada Escapular",
+    "muscle": "traps"
+  },
+  {
+    "name": "Patada de Tijera",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Salto de Tijera",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curl de Isquiotibiales con Banda Sentado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Press Militar con Barra Sentado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Giro con Barra Sentado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Extensión de Tríceps con Mancuerna a Un Brazo Inclinado Sentado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Elevación de Deltoides Posterior Inclinado Sentado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps con Dos Mancuernas Inclinado Sentado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Bíceps Sentado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Remo en Polea Sentado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Press de Hombro en Polea Sentado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación de Pantorrilla Sentado",
+    "muscle": "calves"
+  },
+  {
+    "name": "Estiramiento de Pantorrilla Sentado",
+    "muscle": "calves"
+  },
+  {
+    "name": "Curl con Barra de Concentración Agarre Cerrado Sentado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl con Mancuerna Sentado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl Interno de Bíceps con Mancuerna Sentado",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl de Muñeca con Mancuerna Palmas Abajo Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl de Muñeca con Mancuerna Palmas Arriba Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Press con Mancuerna Sentado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento de Piernas en Banco Plano Sentado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Estiramiento de Isquiotibiales en el Suelo Sentado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Deltoides Frontal Sentado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Glúteo Sentado",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Buenos Días Sentado",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Isquiotibiales Sentado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Estiramiento de Isquiotibiales y Pantorrilla Sentado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Resistencia de Cuello con Arnés de Cabeza Sentado",
+    "muscle": "neck"
+  },
+  {
+    "name": "Curl de Pierna Sentado",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Encogimiento de Piernas Sentado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl de Muñeca con Mancuerna Palmas Abajo a Un Brazo Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl de Muñeca con Mancuerna Palmas Arriba a Un Brazo Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Remo en Polea a Un Brazo Sentado",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Estiramiento sobre la Cabeza Sentado",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl de Muñeca con Barra Palmas Arriba Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl de Muñeca con Barra Palmas Abajo Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Elevación Lateral Sentado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press de Tríceps Sentado",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Curl de Muñeca en Polea Baja a Dos Brazos Palmas Arriba Sentado",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Press Alterno (See-Saw)",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo Escopeta",
+    "muscle": "lats"
+  },
+  {
+    "name": "Círculos de Hombro",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press de Hombro con Bandas",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación de Hombro",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Estiramiento de Hombro",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Estiramiento en el Suelo de Lado",
+    "muscle": "lats"
+  },
+  {
+    "name": "Plancha Lateral",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sprint-Salto Lateral",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Navaja Lateral",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación Lateral",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación Lateral a Elevación Frontal",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación Lateral de Pierna",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Estiramiento de Ingle de Lado Acostado",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Estiramiento Lateral de Cuello",
+    "muscle": "neck"
+  },
+  {
+    "name": "Salto Largo Lateral",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Dominadas Lado a Lado",
+    "muscle": "lats"
+  },
+  {
+    "name": "Tirón de Muñeca Lateral",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Shuffle Lateral en Cajón",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Cruce en Polea a Un Brazo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Jammer Lineal a Un Brazo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Flexión a Un Brazo",
+    "muscle": "chest"
+  },
+  {
+    "name": "Ejercicio de Sprint con Un Cono",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla Alta en Cajón a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Progresión de Saltos a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Salto Lateral a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Extensión de Pierna a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Salto en Zancada a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación con Una Mancuerna",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Patada de Glúteo a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Puente de Glúteos a Una Pierna",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Impulso a Una Pierna",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Abdominal",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadillas Sentado",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Patinaje",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Arrastre de Trineo con Arnés",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Caminata Hacia Atrás con Trineo sobre la Cabeza",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps con Trineo sobre la Cabeza",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Empuje de Trineo",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Apertura Inversa con Trineo",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo con Trineo",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Golpes de Mazo",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación de Hombros en Banco Inclinado Smith",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Encogimiento Detrás de la Espalda en Máquina Smith",
+    "muscle": "traps"
+  },
+  {
+    "name": "Press de Banca en Máquina Smith",
+    "muscle": "chest"
+  },
+  {
+    "name": "Remo Inclinado en Máquina Smith",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Elevación de Pantorrilla en Máquina Smith",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press de Banca Agarre Cerrado en Máquina Smith",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press Declinado en Máquina Smith",
+    "muscle": "chest"
+  },
+  {
+    "name": "Hang Power Clean en Máquina Smith",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Elevación de Cadera en Máquina Smith",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Press de Banca Inclinado en Máquina Smith",
+    "muscle": "chest"
+  },
+  {
+    "name": "Prensa de Pierna en Máquina Smith",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Remo Vertical a Un Brazo en Máquina Smith",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press de Hombro sobre la Cabeza en Máquina Smith",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Sentadilla Pistola en Máquina Smith",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Pantorrilla Inversa en Máquina Smith",
+    "muscle": "calves"
+  },
+  {
+    "name": "Sentadilla en Máquina Smith",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto con Piernas Rígidas en Máquina Smith",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Remo Vertical en Máquina Smith",
+    "muscle": "traps"
+  },
+  {
+    "name": "Sentadilla Split a Una Pierna en Máquina Smith",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Snatch",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Balance de Snatch",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto de Snatch",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Jalón de Snatch",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Encogimiento de Snatch",
+    "muscle": "traps"
+  },
+  {
+    "name": "Snatch desde Bloques",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Tríceps sobre la Cabeza con Banda de Velocidad",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Sentadilla en Cajón de Velocidad",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadillas de Velocidad",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Lanzador de Hechizos",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Caminata de Araña",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl Araña",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Estiramiento Espinal",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Clean en Split",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Jerk en Split",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Salto en Split",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Snatch en Split",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sentadilla Split con Mancuernas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadillas Split",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sentadilla Jerk",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Bandas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Cadenas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadilla con Discos Móviles",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadillas con Bandas",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Stairmaster",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press con Mancuernas Alternado de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Elevación de Pantorrilla con Barra de Pie",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press de Barra detrás del Cuello de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps Inclinado a Un Brazo con Mancuerna de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Extensión de Tríceps Inclinado a Dos Brazos con Mancuerna de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Curl de Bíceps en Polea de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Estiramiento de Bíceps de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Press Bradford de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press de Pecho en Polea de Pie",
+    "muscle": "chest"
+  },
+  {
+    "name": "Elevación en Polea de Pie",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Golpe de Hacha en Polea de Pie",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Elevación de Pantorrilla de Pie",
+    "muscle": "calves"
+  },
+  {
+    "name": "Curl Concentrado de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Elevación de Pantorrilla con Mancuerna de Pie",
+    "muscle": "calves"
+  },
+  {
+    "name": "Press con Mancuerna de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Curl Invertido con Mancuerna de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Elevación Frontal de Deltoides con Mancuerna sobre la Cabeza de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps con Mancuerna de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Remo Vertical con Mancuerna de Pie",
+    "muscle": "traps"
+  },
+  {
+    "name": "Estiramiento de Cuádriceps Elevado de Pie",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación Frontal con Barra sobre la Cabeza de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Estiramiento de Gastrocnemio de Pie",
+    "muscle": "calves"
+  },
+  {
+    "name": "Estiramiento de Isquiotibiales y Pantorrilla de Pie",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Círculos de Cadera de Pie",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Flexores de Cadera de Pie",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curl Interno de Bíceps de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Estiramiento Lateral de Pie",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl de Pierna de Pie",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Salto Largo de Pie",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Elevación de Deltoides en Polea Baja de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Extensión de Tríceps en Polea Baja a Un Brazo de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press Militar de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Apriete de Disco Olímpico de Pie",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Curl en Polea a Un Brazo de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl con Mancuerna a Un Brazo en Banco Inclinado de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Extensión de Tríceps con Mancuerna a Un Brazo de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Extensión de Tríceps con Barra sobre la Cabeza de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Press con Mancuerna Palma Hacia Dentro a Un Brazo de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press con Mancuernas Palmas Hacia Dentro de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Curl de Muñeca con Barra Palmas Arriba detrás de la Espalda de Pie",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Inclinación Pélvica de Pie",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Crunch con Cuerda de Pie",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Estiramiento de Sóleo y Tendón de Aquiles de Pie",
+    "muscle": "calves"
+  },
+  {
+    "name": "Toques de Pies de Pie",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Extensión de Tríceps con Toalla de Pie",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Lanzamiento sobre la Cabeza a Dos Brazos de Pie",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Salto Estrella",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Subida al Cajón con Elevación de Rodilla",
+    "muscle": "glutes"
+  },
+  {
+    "name": "Step Mill",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto con Piernas Rígidas con Barra",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Peso Muerto con Piernas Rígidas con Mancuerna",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Buenos Días con Piernas Rígidas con Barra",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Vacío Abdominal",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Pullover con Mancuerna Brazos Extendidos",
+    "muscle": "chest"
+  },
+  {
+    "name": "Jalón Recto",
+    "muscle": "lats"
+  },
+  {
+    "name": "Remo Medio con Barra Recta en Banco",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Elevaciones Rectas en Banco Inclinado",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Salto Cruzado en Zancada",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto Sumo",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Peso Muerto Sumo con Bandas",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Peso Muerto Sumo con Cadenas",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Superman",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Lanzamiento de Pecho Supino",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Lanzamiento sobre la Cabeza a Un Brazo Supino",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Lanzamiento sobre la Cabeza a Dos Brazos Supino",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Extensión Suspendida",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Flexión Suspendida",
+    "muscle": "chest"
+  },
+  {
+    "name": "Crunch Inverso Suspendido",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Remo Suspendido",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Sentadilla Split Suspendida",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Svend Press",
+    "muscle": "chest"
+  },
+  {
+    "name": "Remo con Barra T con Asa",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Tate Press",
+    "muscle": "triceps"
+  },
+  {
+    "name": "El Stradddle",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Abductor de Muslo",
+    "muscle": "abductors"
+  },
+  {
+    "name": "Aductor de Muslo",
+    "muscle": "adductors"
+  },
+  {
+    "name": "Volteo de Neumático",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Toques de Pies",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Rotación de Torso",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Trote en Sendero/Caminata",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Peso Muerto con Barra Trampa",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Patada de Tríceps con Mancuerna",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Estiramiento Lateral de Tríceps",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Extensión de Tríceps sobre la Cabeza con Cuerda",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Jalón de Tríceps",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Jalón de Tríceps - Accesorio de Cuerda",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Jalón de Tríceps - Accesorio en V",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Estiramiento de Tríceps",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Crunch con Rodillas al Pecho",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Curl en Banco Scott con Dos Mancuernas",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Clean con Dos Kettlebells",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Jerk con Dos Kettlebells",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Press Militar con Dos Kettlebells",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo con Dos Kettlebells",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Jalones en Polea Agarre Supino",
+    "muscle": "lats"
+  },
+  {
+    "name": "Agarre de Espalda-Pierna Superior",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Estiramiento de Espalda Superior",
+    "muscle": "middle back"
+  },
+  {
+    "name": "Remo Vertical con Barra",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Remo Vertical en Polea",
+    "muscle": "traps"
+  },
+  {
+    "name": "Remo Vertical con Bandas",
+    "muscle": "traps"
+  },
+  {
+    "name": "Estiramiento hacia Arriba",
+    "muscle": "shoulders"
+  },
+  {
+    "name": "Jalón en V",
+    "muscle": "lats"
+  },
+  {
+    "name": "Dominada en V",
+    "muscle": "lats"
+  },
+  {
+    "name": "Swing Vertical",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Caminata en Cinta",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Hiperextensión con Balón con Peso",
+    "muscle": "lower back"
+  },
+  {
+    "name": "Flexión Lateral con Balón con Peso",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Fondos en Banco con Peso",
+    "muscle": "triceps"
+  },
+  {
+    "name": "Crunches con Peso",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadilla con Salto con Peso",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Dominadas con Peso",
+    "muscle": "lats"
+  },
+  {
+    "name": "Sentadilla Sissy con Peso",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Abdominales con Peso y Bandas",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Sentadilla con Peso",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Press de Banca Ancho con Barra",
+    "muscle": "chest"
+  },
+  {
+    "name": "Press de Banca Declinado Ancho con Barra",
+    "muscle": "chest"
+  },
+  {
+    "name": "Pullover Declinado Ancho con Barra",
+    "muscle": "chest"
+  },
+  {
+    "name": "Jalón de Dorsal Ancho",
+    "muscle": "lats"
+  },
+  {
+    "name": "Jalón detrás del Cuello Agarre Ancho",
+    "muscle": "lats"
+  },
+  {
+    "name": "Dominada Trasera Agarre Ancho",
+    "muscle": "lats"
+  },
+  {
+    "name": "Curl con Barra Agarre Ancho de Pie",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Sentadilla con Barra Posición Ancha",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Piernas Rígidas Posición Ancha",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Sprints de Viento",
+    "muscle": "abdominals"
+  },
+  {
+    "name": "Molinos",
+    "muscle": "abductors"
+  },
+  {
+    "name": "El Gran Estiramiento",
+    "muscle": "hamstrings"
+  },
+  {
+    "name": "Círculos de Muñeca",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Rodillo de Muñeca",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Rotaciones de Muñeca con Barra Recta",
+    "muscle": "forearms"
+  },
+  {
+    "name": "Caminata con Yugo",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Sentadillas Zercher",
+    "muscle": "quadriceps"
+  },
+  {
+    "name": "Curl Zottman",
+    "muscle": "biceps"
+  },
+  {
+    "name": "Curl Zottman en Banco Scott",
+    "muscle": "biceps"
+  }
+]
