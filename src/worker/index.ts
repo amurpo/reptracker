@@ -3,13 +3,14 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import authRoutes from './routes/auth'
 import exercisesRoutes from './routes/exercises'
-import catalogRoutes from './routes/catalog'
 import planRoutes from './routes/plan'
 import sessionsRoutes from './routes/sessions'
+import profileRoutes from './routes/profile'
 
 export type Env = {
   DB: D1Database
   JWT_SECRET: string
+  RESEND_API_KEY: string
 }
 
 const app = new Hono<{ Bindings: Env }>()
@@ -26,8 +27,8 @@ app.use(
 
 app.route('/api/auth', authRoutes)
 app.route('/api/exercises', exercisesRoutes)
-app.route('/api/catalog', catalogRoutes)
 app.route('/api/plan', planRoutes)
 app.route('/api/sessions', sessionsRoutes)
+app.route('/api/profile', profileRoutes)
 
 export default app

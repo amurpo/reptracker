@@ -8,11 +8,9 @@
     "build": "vite build",
     "build:worker": "esbuild src/worker/index.ts --bundle --outfile=dist/worker.js --format=esm --target=es2022 --minify",
     "deploy": "npm run build && npm run build:worker && wrangler deploy",
-    "db:migrate:local": "wrangler d1 execute reptracker-db --local --file=migrations/0000_initial.sql",
-    "db:migrate:remote": "wrangler d1 execute reptracker-db --file=migrations/0000_initial.sql",
+    "db:migrate:local": "wrangler d1 execute reptracker-db --local --file=migrations/0000_schema.sql",
+    "db:migrate:remote": "wrangler d1 execute reptracker-db --file=migrations/0000_schema.sql",
     "db:seed:dump": "node scripts/dump-names.mjs",
-    "db:supersu:local": "node scripts/create-supersu.mjs | wrangler d1 execute reptracker-db --local --stdin",
-    "db:supersu:remote": "node scripts/create-supersu.mjs | wrangler d1 execute reptracker-db --stdin",
     "db:seed:generate": "node scripts/generate-catalog-seed.mjs > migrations/0001_seed_catalog.sql",
     "db:seed:local": "npm run db:seed:generate && wrangler d1 execute reptracker-db --local --file=migrations/0001_seed_catalog.sql",
     "db:seed:remote": "npm run db:seed:generate && wrangler d1 execute reptracker-db --file=migrations/0001_seed_catalog.sql"

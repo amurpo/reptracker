@@ -16,7 +16,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     throw new Error('No autorizado')
   }
 
-  const data = await res.json()
+  const text = await res.text()
+  let data: unknown = {}
+  try {
+    data = text ? JSON.parse(text) : {}
+  } catch {
+    if (!res.ok) throw new Error(`Error del servidor (${res.status})`)
+    return {} as T
+  }
   if (!res.ok) throw new Error((data as { error?: string }).error || 'Error en la solicitud')
   return data as T
 }
@@ -24,7 +31,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   auth: {
     register: (email: string, password: string) =>
-      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/register', { email, password }),
+      request<{ message: string }>('POST', '/auth/register', { email, password }),
+    forgotPassword: (email: string) =>
+      request<{ message: string }>('POST', '/auth/forgot-password', { email }),
+    resetPassword: (token: string, password: string) =>
+      request<{ ok: boolean }>('POST', '/auth/reset-password', { token, password }),
     login: (email: string, password: string) =>
       request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password }),
   },
@@ -42,6 +53,13 @@ export const api = {
       request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps }),
     remove: (id: number) => request<{ ok: boolean }>('DELETE', `/plan/${id}`),
   },
+  profile: {
+    get: () => request<UserProfile>('GET', '/profile'),
+    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat'>>) =>
+      request<UserProfile>('PUT', '/profile', data),
+    changePassword: (currentPassword: string, newPassword: string) =>
+      request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
+  },
   sessions: {
     get: (date: string) => request<SessionData>('GET', `/sessions/${date}`),
     complete: (date: string, weeklyPlanId: number, setNumber: number) =>
@@ -49,6 +67,16 @@ export const api = {
     uncomplete: (date: string, weeklyPlanId: number, setNumber: number) =>
       request<{ ok: boolean }>('DELETE', `/sessions/${date}/complete`, { weeklyPlanId, setNumber }),
   },
+}
+
+export interface UserProfile {
+  id: number
+  email: string
+  name: string | null
+  age: number | null
+  weightKg: number | null
+  dateFormat: string
+  timeFormat: string
 }
 
 export interface Exercise {

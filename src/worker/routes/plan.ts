@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, or, isNull } from 'drizzle-orm'
 import { getDb, weeklyPlan, exercises } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import type { Env } from '../index'
@@ -50,7 +50,7 @@ app.post('/', async (c) => {
 
   // Verify exercise belongs to user
   const ex = await db.select().from(exercises)
-    .where(and(eq(exercises.id, exerciseId), eq(exercises.userId, userId)))
+    .where(and(eq(exercises.id, exerciseId), or(eq(exercises.userId, userId), isNull(exercises.userId))))
   if (!ex[0]) return c.json({ error: 'Ejercicio no encontrado' }, 404)
 
   const inserted = await db.insert(weeklyPlan).values({

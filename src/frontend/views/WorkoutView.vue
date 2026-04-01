@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api, type SessionData } from '../lib/api'
-import { useAuthStore } from '../stores/auth'
+import { usePreferencesStore } from '../stores/preferences'
 
-const auth = useAuthStore()
-const router = useRouter()
+const preferences = usePreferencesStore()
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -14,6 +12,11 @@ const todayLabel = (() => {
   const d = new Date().getDay()
   return DAYS_FULL[d === 0 ? 6 : d - 1]
 })()
+
+const now = ref(new Date())
+let clockInterval: ReturnType<typeof setInterval> | undefined
+
+onUnmounted(() => clearInterval(clockInterval))
 
 const sessionData = ref<SessionData>({ session: null, plan: [], completedSets: [] })
 const loading = ref(true)
@@ -66,12 +69,8 @@ async function toggleSet(weeklyPlanId: number, setNumber: number) {
   }
 }
 
-function logout() {
-  auth.logout()
-  router.push('/login')
-}
-
 onMounted(async () => {
+  clockInterval = setInterval(() => { now.value = new Date() }, 1000)
   try {
     sessionData.value = await api.sessions.get(today)
   } finally {
@@ -81,24 +80,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="max-w-lg mx-auto">
+  <div class="max-w-lg lg:max-w-2xl mx-auto">
     <!-- Header -->
     <div class="px-4 pt-6 pb-2">
       <div class="flex items-center justify-between mb-1">
         <div class="flex items-center gap-2">
           <img src="/dumbbell.svg" class="w-5 h-5" alt="" />
           <span class="text-indigo-400 text-sm font-semibold">{{ todayLabel }}</span>
-          <span class="text-gray-600 text-sm">{{ today }}</span>
+          <span class="text-gray-600 text-sm">{{ preferences.formatDate(today) }}</span>
         </div>
-        <button
-          @click="logout"
-          class="text-gray-600 hover:text-gray-400 transition-colors p-1"
-          title="Cerrar sesión"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-          </svg>
-        </button>
+        <span class="text-gray-400 text-sm font-mono">{{ preferences.formatTime(now) }}</span>
       </div>
       <h1 class="text-2xl font-bold">Entrenamiento de hoy</h1>
     </div>

@@ -2,19 +2,22 @@ name = "reptracker"
 main = "dist/worker.js"
 compatibility_date = "2025-06-30"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
+
+[[routes]]
+pattern = "reptracker.amurpo.icu"
+zone_name = "amurpo.icu"
+custom_domain = true
 
 [assets]
 directory = "dist"
 not_found_handling = "single-page-application"
 
-# Dev-only vars — for production, use: wrangler secret put JWT_SECRET
-[vars]
-JWT_SECRET = "GjqAiC9o3pLkj0Ctt3wSyjkff+VdVW4v79jFGNJZF00="
-
 [[d1_databases]]
 binding = "DB"
 database_name = "reptracker-db"
-database_id = "4ec9051a-6484-4cc8-8f75-73557d632571"
+database_id = "fbab730b-aaff-4bd2-99f6-5ec7eb36a418"
 
 [build]
 command = "npm install && npm run build && npm run build:worker"

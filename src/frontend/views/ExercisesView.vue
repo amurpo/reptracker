@@ -91,7 +91,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="p-4 max-w-lg mx-auto">
+  <div class="p-4 max-w-lg lg:max-w-2xl mx-auto">
     <!-- Header -->
     <div class="flex items-center justify-between mb-5 pt-2">
       <h1 class="text-xl font-bold">Ejercicios</h1>

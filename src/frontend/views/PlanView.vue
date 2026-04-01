@@ -86,7 +86,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="max-w-lg mx-auto">
+  <div class="max-w-lg lg:max-w-2xl mx-auto">
     <!-- Sticky day selector -->
     <div class="sticky top-0 bg-gray-950 pt-4 pb-3 px-4 z-10 border-b border-gray-800/50">
       <h1 class="text-xl font-bold mb-3">Plan semanal</h1>
@@ -228,7 +228,7 @@ onMounted(load)
           >
             <div v-if="showAddModal" class="bg-gray-900 rounded-t-3xl w-full p-6 max-h-[80vh] flex flex-col border-t border-gray-800">
               <div class="flex items-center justify-between mb-5">
-                <h3 class="font-bold text-lg">Agregar a {{ DAYS_FULL[selectedDay] }}</h3>
+                <h3 class="font-bold text-lg text-white">Agregar a {{ DAYS_FULL[selectedDay] }}</h3>
                 <button @click="showAddModal = false" class="text-gray-500 hover:text-gray-300 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>

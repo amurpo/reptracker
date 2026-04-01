@@ -1,11 +1,32 @@
 import { sql } from 'drizzle-orm'
-import { integer, text, sqliteTable, index, unique } from 'drizzle-orm/sqlite-core'
+import { integer, real, text, sqliteTable, index, unique } from 'drizzle-orm/sqlite-core'
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
-  role: text('role').notNull().default('user'), // 'user' | 'supersu'
+  name: text('name'),
+  age: integer('age'),
+  weightKg: real('weight_kg'),
+  emailVerified: integer('email_verified').notNull().default(0),
+  dateFormat: text('date_format').notNull().default('dd-mm-yyyy'),
+  timeFormat: text('time_format').notNull().default('24h'),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
+})
+
+export const passwordResetTokens = sqliteTable('password_reset_tokens', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
+})
+
+export const emailVerificationTokens = sqliteTable('email_verification_tokens', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
 })
 

@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
+import { usePreferencesStore } from './stores/preferences'
+import { useAuthStore } from './stores/auth'
 
 const route = useRoute()
+const auth = useAuthStore()
+const preferences = usePreferencesStore()
 const showNav = computed(() => !route.meta.public)
+
+onMounted(() => {
+  if (auth.token) preferences.load()
+})
 </script>
 
 <template>
