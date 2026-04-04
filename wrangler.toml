@@ -19,5 +19,9 @@ binding = "DB"
 database_name = "reptracker-db"
 database_id = "fbab730b-aaff-4bd2-99f6-5ec7eb36a418"
 
+[[kv_namespaces]]
+binding = "AVATARS"
+id = "12c4e27cab4a49f0956d6a1158832233"
+
 [build]
 command = "npm install && npm run build && npm run build:worker"

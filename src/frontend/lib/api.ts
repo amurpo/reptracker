@@ -1,4 +1,4 @@
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, skipAuthRedirect = false): Promise<T> {
   const token = localStorage.getItem('token')
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
@@ -9,7 +9,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
-  if (res.status === 401) {
+  if (res.status === 401 && !skipAuthRedirect) {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     window.location.href = '/login'
@@ -31,13 +31,13 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   auth: {
     register: (email: string, password: string) =>
-      request<{ message: string }>('POST', '/auth/register', { email, password }),
+      request<{ message: string }>('POST', '/auth/register', { email, password }, true),
     forgotPassword: (email: string) =>
-      request<{ message: string }>('POST', '/auth/forgot-password', { email }),
+      request<{ message: string }>('POST', '/auth/forgot-password', { email }, true),
     resetPassword: (token: string, password: string) =>
-      request<{ ok: boolean }>('POST', '/auth/reset-password', { token, password }),
+      request<{ ok: boolean }>('POST', '/auth/reset-password', { token, password }, true),
     login: (email: string, password: string) =>
-      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password }),
+      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password }, true),
   },
   exercises: {
     list: () => request<Exercise[]>('GET', '/exercises'),
@@ -47,21 +47,25 @@ export const api = {
   },
   plan: {
     get: () => request<PlanEntry[]>('GET', '/plan'),
-    add: (dayOfWeek: number, exerciseId: number, sets: number, reps: number) =>
-      request<PlanEntry>('POST', '/plan', { dayOfWeek, exerciseId, sets, reps }),
-    update: (id: number, sets: number, reps: number) =>
-      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps }),
+    add: (dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null) =>
+      request<PlanEntry>('POST', '/plan', { dayOfWeek, exerciseId, sets, reps, weightKg }),
+    update: (id: number, sets: number, reps: number, weightKg?: number | null) =>
+      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, weightKg }),
     remove: (id: number) => request<{ ok: boolean }>('DELETE', `/plan/${id}`),
   },
   profile: {
     get: () => request<UserProfile>('GET', '/profile'),
-    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat'>>) =>
+    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat' | 'weekStart'>>) =>
       request<UserProfile>('PUT', '/profile', data),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
+    getAvatar: () => request<{ avatar: string | null }>('GET', '/profile/avatar'),
+    uploadAvatar: (avatar: string) => request<{ ok: boolean }>('PUT', '/profile/avatar', { avatar }),
   },
   sessions: {
     get: (date: string) => request<SessionData>('GET', `/sessions/${date}`),
+    getMonth: (yearMonth: string) =>
+      request<{ date: string; completedSets: number }[]>('GET', `/sessions/month/${yearMonth}`),
     complete: (date: string, weeklyPlanId: number, setNumber: number) =>
       request<{ ok: boolean }>('POST', `/sessions/${date}/complete`, { weeklyPlanId, setNumber }),
     uncomplete: (date: string, weeklyPlanId: number, setNumber: number) =>
@@ -77,6 +81,7 @@ export interface UserProfile {
   weightKg: number | null
   dateFormat: string
   timeFormat: string
+  weekStart: number
 }
 
 export interface Exercise {
@@ -97,6 +102,7 @@ export interface PlanEntry {
   exerciseId: number
   sets: number
   reps: number
+  weightKg: number | null
   orderIndex: number
   exerciseName: string
   muscleGroup: string
@@ -115,6 +121,7 @@ export interface PlanSessionEntry {
   exerciseId: number
   sets: number
   reps: number
+  weightKg: number | null
   orderIndex: number
   exerciseName: string
   muscleGroup: string

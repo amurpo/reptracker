@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, like, sql } from 'drizzle-orm'
 import { getDb, workoutSessions, completedSets, weeklyPlan, exercises } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import type { Env } from '../index'
@@ -9,6 +9,25 @@ type Variables = { userId: string }
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 app.use('*', authMiddleware)
+
+// Get all sessions for a month (YYYY-MM)
+app.get('/month/:yearMonth', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const yearMonth = c.req.param('yearMonth')
+  const db = getDb(c.env.DB)
+
+  const rows = await db
+    .select({
+      date: workoutSessions.date,
+      completedSets: sql<number>`count(${completedSets.id})`,
+    })
+    .from(workoutSessions)
+    .leftJoin(completedSets, eq(completedSets.sessionId, workoutSessions.id))
+    .where(and(eq(workoutSessions.userId, userId), like(workoutSessions.date, `${yearMonth}-%`)))
+    .groupBy(workoutSessions.date)
+
+  return c.json(rows)
+})
 
 // Get session for a date (creates it if exercises exist for that day)
 app.get('/:date', async (c) => {
@@ -26,6 +45,7 @@ app.get('/:date', async (c) => {
       exerciseId: weeklyPlan.exerciseId,
       sets: weeklyPlan.sets,
       reps: weeklyPlan.reps,
+      weightKg: weeklyPlan.weightKg,
       orderIndex: weeklyPlan.orderIndex,
       exerciseName: exercises.name,
       muscleGroup: exercises.muscleGroup,

@@ -12,11 +12,69 @@ const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
 
+// Avatar
+const avatarSrc = ref<string | null>(null)
+const avatarUploading = ref(false)
+const avatarError = ref('')
+
+async function onAvatarClick() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/jpeg,image/png,image/webp'
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+    avatarError.value = ''
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      avatarError.value = 'Solo se aceptan imágenes JPG, PNG o WebP'
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      avatarError.value = 'La imagen no puede superar 5 MB'
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(file)
+    const img = new Image()
+    img.src = objectUrl
+    await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej() })
+    URL.revokeObjectURL(objectUrl)
+
+    if (img.width > 4000 || img.height > 4000) {
+      avatarError.value = 'Las dimensiones no pueden superar 4000 × 4000 px'
+      return
+    }
+
+    // Recortar al cuadrado central y redimensionar a 200×200
+    const size = Math.min(img.width, img.height)
+    const sx = (img.width - size) / 2
+    const sy = (img.height - size) / 2
+    const canvas = document.createElement('canvas')
+    canvas.width = 200
+    canvas.height = 200
+    canvas.getContext('2d')!.drawImage(img, sx, sy, size, size, 0, 0, 200, 200)
+    const base64 = canvas.toDataURL('image/jpeg', 0.85)
+
+    avatarUploading.value = true
+    try {
+      await api.profile.uploadAvatar(base64)
+      avatarSrc.value = base64
+    } catch (e) {
+      avatarError.value = e instanceof Error ? e.message : 'Error al subir la imagen'
+    } finally {
+      avatarUploading.value = false
+    }
+  }
+  input.click()
+}
+
 const name = ref('')
 const age = ref<number | null>(null)
 const weightKg = ref<number | null>(null)
 const dateFormat = ref('dd-mm-yyyy')
 const timeFormat = ref('24h')
+const weekStart = ref(0)
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -55,6 +113,9 @@ onMounted(async () => {
     weightKg.value = profile.weightKg
     dateFormat.value = profile.dateFormat
     timeFormat.value = profile.timeFormat
+    weekStart.value = profile.weekStart
+    const { avatar } = await api.profile.getAvatar()
+    avatarSrc.value = avatar
   } finally {
     loading.value = false
   }
@@ -71,11 +132,14 @@ async function save() {
       weightKg: weightKg.value ?? undefined,
       dateFormat: dateFormat.value,
       timeFormat: timeFormat.value,
+      weekStart: weekStart.value,
     })
     preferences.dateFormat = dateFormat.value
     preferences.timeFormat = timeFormat.value
+    preferences.weekStart = weekStart.value
     localStorage.setItem('dateFormat', dateFormat.value)
     localStorage.setItem('timeFormat', timeFormat.value)
+    localStorage.setItem('weekStart', String(weekStart.value))
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
@@ -97,12 +161,28 @@ async function save() {
     <template v-else>
       <!-- Avatar -->
       <div class="flex items-center gap-4 mb-8">
-        <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white select-none">
-          {{ auth.user?.email?.[0].toUpperCase() }}
-        </div>
+        <button
+          @click="onAvatarClick"
+          class="relative w-16 h-16 rounded-full overflow-hidden shrink-0 group focus:outline-none"
+          :disabled="avatarUploading"
+        >
+          <img v-if="avatarSrc" :src="avatarSrc" class="w-full h-full object-cover" alt="Avatar" />
+          <div v-else class="w-full h-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white select-none">
+            {{ auth.user?.email?.[0].toUpperCase() }}
+          </div>
+          <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg v-if="!avatarUploading" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+        </button>
         <div>
           <p class="font-semibold text-white">{{ name || 'Sin nombre' }}</p>
           <p class="text-sm text-gray-500">{{ auth.user?.email }}</p>
+          <p v-if="avatarError" class="text-xs text-red-400 mt-1">{{ avatarError }}</p>
+          <p v-else class="text-xs text-gray-600 mt-1">Toca para cambiar la foto</p>
         </div>
       </div>
 
@@ -167,6 +247,17 @@ async function save() {
               <option value="12h">12 horas (AM/PM)</option>
             </select>
           </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-400 mb-1.5">Inicio de semana</label>
+          <select
+            v-model.number="weekStart"
+            class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+          >
+            <option :value="0">Lunes</option>
+            <option :value="1">Domingo</option>
+          </select>
         </div>
 
         <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">

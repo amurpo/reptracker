@@ -15,27 +15,31 @@ const MUSCLE_GROUPS = [
   { id: 'pantorrillas', label: 'Pantorrillas' },
   { id: 'trapecios', label: 'Trapecios' },
   { id: 'antebrazos', label: 'Antebrazos' },
+  { id: 'lumbar', label: 'Lumbar' },
+  { id: 'espalda media', label: 'Espalda media' },
+  { id: 'abductores', label: 'Abductores' },
+  { id: 'aductores', label: 'Aductores' },
+  { id: 'cuello', label: 'Cuello' },
 ]
 
 const MUSCLE_COLORS: Record<string, string> = {
-  // Push — rojo/naranja
   'pecho': 'text-rose-400',
   'hombros': 'text-orange-400',
   'tríceps': 'text-orange-300',
-  // Pull — azul
   'dorsales': 'text-blue-400',
   'bíceps': 'text-sky-400',
   'espalda media': 'text-blue-300',
   'lumbar': 'text-blue-300',
   'trapecios': 'text-sky-300',
   'antebrazos': 'text-sky-300',
-  // Piernas — violeta
   'cuádriceps': 'text-violet-400',
   'isquiotibiales': 'text-violet-300',
   'pantorrillas': 'text-violet-300',
   'glúteos': 'text-purple-400',
-  // Core — ámbar
+  'abductores': 'text-violet-300',
+  'aductores': 'text-violet-300',
   'abdominales': 'text-amber-400',
+  'cuello': 'text-gray-400',
 }
 
 const exercises = ref<Exercise[]>([])
@@ -148,7 +152,7 @@ onMounted(load)
     </Transition>
 
     <!-- Filter chips -->
-    <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+    <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide lg:flex-wrap lg:overflow-x-visible">
       <button
         @click="filter = 'all'"
         class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"

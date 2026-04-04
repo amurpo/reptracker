@@ -11,6 +11,7 @@ export const users = sqliteTable('users', {
   emailVerified: integer('email_verified').notNull().default(0),
   dateFormat: text('date_format').notNull().default('dd-mm-yyyy'),
   timeFormat: text('time_format').notNull().default('24h'),
+  weekStart: integer('week_start').notNull().default(0),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
 })
 
@@ -62,6 +63,7 @@ export const weeklyPlan = sqliteTable('weekly_plan', {
   exerciseId: integer('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   sets: integer('sets').notNull().default(3),
   reps: integer('reps').notNull().default(10),
+  weightKg: real('weight_kg'),
   orderIndex: integer('order_index').notNull().default(0),
 })
 

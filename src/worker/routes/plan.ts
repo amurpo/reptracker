@@ -21,6 +21,7 @@ app.get('/', async (c) => {
       exerciseId: weeklyPlan.exerciseId,
       sets: weeklyPlan.sets,
       reps: weeklyPlan.reps,
+      weightKg: weeklyPlan.weightKg,
       orderIndex: weeklyPlan.orderIndex,
       exerciseName: exercises.name,
       muscleGroup: exercises.muscleGroup,
@@ -34,11 +35,12 @@ app.get('/', async (c) => {
 
 app.post('/', async (c) => {
   const userId = parseInt(c.get('userId'))
-  const { dayOfWeek, exerciseId, sets, reps, orderIndex } = await c.req.json<{
+  const { dayOfWeek, exerciseId, sets, reps, weightKg, orderIndex } = await c.req.json<{
     dayOfWeek: number
     exerciseId: number
     sets?: number
     reps?: number
+    weightKg?: number | null
     orderIndex?: number
   }>()
 
@@ -59,6 +61,7 @@ app.post('/', async (c) => {
     exerciseId,
     sets: sets ?? 3,
     reps: reps ?? 10,
+    weightKg: weightKg ?? null,
     orderIndex: orderIndex ?? 0,
   }).returning()
 
@@ -69,11 +72,11 @@ app.post('/', async (c) => {
 app.put('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))
   const id = parseInt(c.req.param('id'))
-  const { sets, reps } = await c.req.json<{ sets: number; reps: number }>()
+  const { sets, reps, weightKg } = await c.req.json<{ sets: number; reps: number; weightKg?: number | null }>()
   const db = getDb(c.env.DB)
 
   const updated = await db.update(weeklyPlan)
-    .set({ sets, reps })
+    .set({ sets, reps, weightKg: weightKg ?? null })
     .where(and(eq(weeklyPlan.id, id), eq(weeklyPlan.userId, userId)))
     .returning()
 

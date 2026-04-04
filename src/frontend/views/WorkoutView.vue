@@ -5,7 +5,8 @@ import { usePreferencesStore } from '../stores/preferences'
 
 const preferences = usePreferencesStore()
 
-const today = new Date().toISOString().split('T')[0]
+const _now = new Date()
+const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
 
 const DAYS_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const todayLabel = (() => {
@@ -13,7 +14,7 @@ const todayLabel = (() => {
   return DAYS_FULL[d === 0 ? 6 : d - 1]
 })()
 
-const now = ref(new Date())
+const now = ref(_now)
 let clockInterval: ReturnType<typeof setInterval> | undefined
 
 onUnmounted(() => clearInterval(clockInterval))
@@ -154,7 +155,7 @@ onMounted(async () => {
           <div class="flex items-center justify-between px-4 py-3.5 border-b border-gray-800/60">
             <div>
               <p class="font-bold text-white">{{ entry.exerciseName }}</p>
-              <p class="text-xs text-gray-500 mt-0.5">{{ entry.sets }} series × {{ entry.reps }} reps</p>
+              <p class="text-xs text-gray-500 mt-0.5">{{ entry.sets }} series × {{ entry.reps }} reps<span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span></p>
             </div>
             <div class="flex items-center gap-2">
               <span

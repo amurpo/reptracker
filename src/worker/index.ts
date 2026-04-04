@@ -11,9 +11,22 @@ export type Env = {
   DB: D1Database
   JWT_SECRET: string
   RESEND_API_KEY: string
+  AVATARS: KVNamespace
 }
 
 const app = new Hono<{ Bindings: Env }>()
+
+// Security headers
+app.use('*', async (c, next) => {
+  await next()
+  c.res.headers.set('X-Content-Type-Options', 'nosniff')
+  c.res.headers.set('Referrer-Policy', 'no-referrer')
+  c.res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  c.res.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; object-src 'none'"
+  )
+})
 
 // CORS for local dev (Vite runs on 5173, worker on 8787)
 app.use(

@@ -5,14 +5,17 @@ import { api } from '../lib/api'
 export const usePreferencesStore = defineStore('preferences', () => {
   const dateFormat = ref(localStorage.getItem('dateFormat') || 'dd-mm-yyyy')
   const timeFormat = ref(localStorage.getItem('timeFormat') || '24h')
+  const weekStart = ref(parseInt(localStorage.getItem('weekStart') || '0'))
 
   async function load() {
     try {
       const profile = await api.profile.get()
       dateFormat.value = profile.dateFormat
       timeFormat.value = profile.timeFormat
+      weekStart.value = profile.weekStart
       localStorage.setItem('dateFormat', profile.dateFormat)
       localStorage.setItem('timeFormat', profile.timeFormat)
+      localStorage.setItem('weekStart', String(profile.weekStart))
     } catch { /* usa el valor en caché */ }
   }
 
@@ -30,5 +33,5 @@ export const usePreferencesStore = defineStore('preferences', () => {
     return date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
   }
 
-  return { dateFormat, timeFormat, load, formatDate, formatTime }
+  return { dateFormat, timeFormat, weekStart, load, formatDate, formatTime }
 })

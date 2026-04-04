@@ -31,6 +31,7 @@ const userFields = {
   weightKg: users.weightKg,
   dateFormat: users.dateFormat,
   timeFormat: users.timeFormat,
+  weekStart: users.weekStart,
 }
 
 profile.get('/', async (c) => {
@@ -49,6 +50,7 @@ profile.put('/', async (c) => {
     weightKg?: number
     dateFormat?: string
     timeFormat?: string
+    weekStart?: number
   }>()
   const db = getDb(c.env.DB)
 
@@ -60,11 +62,31 @@ profile.put('/', async (c) => {
       ...(body.weightKg !== undefined && { weightKg: body.weightKg }),
       ...(body.dateFormat !== undefined && { dateFormat: body.dateFormat }),
       ...(body.timeFormat !== undefined && { timeFormat: body.timeFormat }),
+      ...(body.weekStart !== undefined && { weekStart: body.weekStart }),
     })
     .where(eq(users.id, userId))
     .returning(userFields)
 
   return c.json(updated[0])
+})
+
+profile.get('/avatar', async (c) => {
+  const userId = c.get('userId')
+  const avatar = await c.env.AVATARS.get(`avatar:${userId}`)
+  return c.json({ avatar: avatar ?? null })
+})
+
+profile.put('/avatar', async (c) => {
+  const userId = c.get('userId')
+  const { avatar } = await c.req.json<{ avatar: string }>()
+  if (!avatar || !avatar.startsWith('data:image/')) {
+    return c.json({ error: 'Imagen inválida' }, 400)
+  }
+  if (avatar.length > 150_000) {
+    return c.json({ error: 'Imagen demasiado grande' }, 400)
+  }
+  await c.env.AVATARS.put(`avatar:${userId}`, avatar)
+  return c.json({ ok: true })
 })
 
 profile.put('/password', async (c) => {
