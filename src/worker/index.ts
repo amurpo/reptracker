@@ -24,7 +24,7 @@ app.use('*', async (c, next) => {
   c.res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   c.res.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; object-src 'none'"
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'self'; object-src 'none'"
   )
 })
 

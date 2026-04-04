@@ -23,5 +23,10 @@ database_id = "fbab730b-aaff-4bd2-99f6-5ec7eb36a418"
 binding = "AVATARS"
 id = "12c4e27cab4a49f0956d6a1158832233"
 
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
 [build]
 command = "npm install && npm run build && npm run build:worker"
