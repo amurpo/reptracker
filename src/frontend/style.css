@@ -3,7 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    background-color: theme('colors.gray.950');
+    overscroll-behavior: none;
+    overflow-x: hidden;
+  }
   body {
+    background-color: theme('colors.gray.950');
+    overscroll-behavior: none;
+    overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
   }
 }

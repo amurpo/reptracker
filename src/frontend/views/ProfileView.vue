@@ -16,57 +16,67 @@ const error = ref('')
 const avatarSrc = ref<string | null>(null)
 const avatarUploading = ref(false)
 const avatarError = ref('')
+const avatarSaved = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
-async function onAvatarClick() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = 'image/jpeg,image/png,image/webp'
-  input.onchange = async () => {
-    const file = input.files?.[0]
-    if (!file) return
-    avatarError.value = ''
+function onAvatarClick() {
+  avatarError.value = ''
+  fileInput.value?.click()
+}
 
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      avatarError.value = 'Solo se aceptan imágenes JPG, PNG o WebP'
-      return
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      avatarError.value = 'La imagen no puede superar 5 MB'
-      return
-    }
+async function onFileChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  avatarError.value = ''
 
-    const objectUrl = URL.createObjectURL(file)
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    avatarError.value = 'Solo se aceptan JPG, PNG o WebP'
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    avatarError.value = 'La imagen no puede superar 5 MB'
+    return
+  }
+
+  avatarUploading.value = true
+  try {
+    // Usar FileReader (data:) en lugar de createObjectURL (blob:) para respetar CSP
+    const dataUrl = await new Promise<string>((res, rej) => {
+      const reader = new FileReader()
+      reader.onload = (ev) => res(ev.target!.result as string)
+      reader.onerror = () => rej(new Error('No se pudo leer la imagen'))
+      reader.readAsDataURL(file)
+    })
+
     const img = new Image()
-    img.src = objectUrl
-    await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej() })
-    URL.revokeObjectURL(objectUrl)
+    await new Promise<void>((res, rej) => {
+      img.onload = () => res()
+      img.onerror = () => rej(new Error('No se pudo cargar la imagen'))
+      img.src = dataUrl
+    })
 
     if (img.width > 4000 || img.height > 4000) {
       avatarError.value = 'Las dimensiones no pueden superar 4000 × 4000 px'
       return
     }
 
-    // Recortar al cuadrado central y redimensionar a 200×200
     const size = Math.min(img.width, img.height)
-    const sx = (img.width - size) / 2
-    const sy = (img.height - size) / 2
     const canvas = document.createElement('canvas')
     canvas.width = 200
     canvas.height = 200
-    canvas.getContext('2d')!.drawImage(img, sx, sy, size, size, 0, 0, 200, 200)
+    canvas.getContext('2d')!.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 200, 200)
     const base64 = canvas.toDataURL('image/jpeg', 0.85)
 
-    avatarUploading.value = true
-    try {
-      await api.profile.uploadAvatar(base64)
-      avatarSrc.value = base64
-    } catch (e) {
-      avatarError.value = e instanceof Error ? e.message : 'Error al subir la imagen'
-    } finally {
-      avatarUploading.value = false
-    }
+    await api.profile.uploadAvatar(base64)
+    avatarSrc.value = base64
+    avatarSaved.value = true
+    setTimeout(() => { avatarSaved.value = false }, 2500)
+  } catch (err) {
+    avatarError.value = err instanceof Error ? err.message : 'Error al subir la imagen'
+  } finally {
+    avatarUploading.value = false
+    if (fileInput.value) fileInput.value.value = ''
   }
-  input.click()
 }
 
 const name = ref('')
@@ -160,6 +170,8 @@ async function save() {
 
     <template v-else>
       <!-- Avatar -->
+      <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp" @change="onFileChange"
+        style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
       <div class="flex items-center gap-4 mb-8">
         <button
           @click="onAvatarClick"
@@ -338,13 +350,13 @@ async function save() {
       leave-to-class="opacity-0 translate-y-2"
     >
       <div
-        v-if="saved || passwordSaved"
+        v-if="saved || passwordSaved || avatarSaved"
         class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 border border-gray-700 text-white text-sm font-medium px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
-        {{ passwordSaved ? 'Contraseña actualizada' : 'Cambios guardados' }}
+        {{ passwordSaved ? 'Contraseña actualizada' : avatarSaved ? 'Foto actualizada' : 'Cambios guardados' }}
       </div>
     </Transition>
   </div>

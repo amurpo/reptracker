@@ -16,7 +16,7 @@ function confirmLogout() {
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 safe-area-inset-bottom">
+  <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800" style="padding-bottom: env(safe-area-inset-bottom, 0px)">
     <div class="max-w-lg mx-auto flex">
       <RouterLink
         to="/"
