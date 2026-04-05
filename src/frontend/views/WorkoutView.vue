@@ -179,7 +179,7 @@ onMounted(async () => {
               </p>
             </div>
             <div class="flex items-center gap-2">
-              <span
+              <span v-if="!entry.isCardio"
                 class="text-sm font-bold"
                 :class="completedCount(entry.id, entry.sets) === entry.sets ? 'text-green-400' : 'text-gray-400'"
               >

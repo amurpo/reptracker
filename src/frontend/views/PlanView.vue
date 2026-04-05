@@ -624,14 +624,21 @@ onMounted(() => { load(); loadRoutines() })
                   <div>
                     <p class="text-sm font-medium text-white">{{ entry.exerciseName }}</p>
                     <p class="text-xs text-gray-500 mt-0.5">
-                      {{ entry.sets }} series × {{ entry.reps }} reps
-                      <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
+                      <template v-if="entry.isCardio">{{ entry.durationMinutes }} min</template>
+                      <template v-else>
+                        {{ entry.sets }} series × {{ entry.reps }} reps
+                        <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
+                      </template>
                     </p>
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
-                    <span class="text-sm font-bold"
+                    <span v-if="!entry.isCardio" class="text-sm font-bold"
                       :class="historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length === entry.sets ? 'text-green-400' : 'text-gray-500'">
                       {{ historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length }}/{{ entry.sets }}
+                    </span>
+                    <span v-else class="text-sm font-bold"
+                      :class="historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length > 0 ? 'text-green-400' : 'text-gray-500'">
+                      {{ historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length > 0 ? '✓' : '—' }}
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
