@@ -47,6 +47,8 @@ app.get('/:date', async (c) => {
       reps: weeklyPlan.reps,
       weightKg: weeklyPlan.weightKg,
       orderIndex: weeklyPlan.orderIndex,
+      isCardio: weeklyPlan.isCardio,
+      durationMinutes: weeklyPlan.durationMinutes,
       exerciseName: exercises.name,
       muscleGroup: exercises.muscleGroup,
     })

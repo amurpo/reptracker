@@ -2,13 +2,17 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
-import { usePreferencesStore } from './stores/preferences'
+import { usePreferencesStore, applyTheme } from './stores/preferences'
 import { useAuthStore } from './stores/auth'
 
 const route = useRoute()
 const auth = useAuthStore()
 const preferences = usePreferencesStore()
 const showNav = computed(() => !route.meta.public)
+
+// Aplica el tema guardado en localStorage antes de que llegue la respuesta del servidor,
+// para evitar el flash al color por defecto
+applyTheme(localStorage.getItem('theme') || 'indigo')
 
 onMounted(() => {
   if (auth.token) preferences.load()

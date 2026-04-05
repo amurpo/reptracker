@@ -9,9 +9,16 @@ const _now = new Date()
 const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
 
 const DAYS_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
 const todayLabel = (() => {
   const d = new Date().getDay()
   return DAYS_FULL[d === 0 ? 6 : d - 1]
+})()
+
+const todayLong = (() => {
+  const d = new Date()
+  return `${d.getDate()} de ${MONTHS[d.getMonth()]} · ${d.getFullYear()}`
 })()
 
 const now = ref(_now)
@@ -36,6 +43,14 @@ function completedCount(weeklyPlanId: number, totalSets: number): number {
   }
   return count
 }
+
+// "13:28:53" → "13:28" / "01:28:53 PM" → "01:28 PM"
+const timeMain = computed(() => {
+  const full = preferences.formatTime(now.value)
+  const parts = full.split(':')
+  const ampm = full.includes('AM') ? ' AM' : full.includes('PM') ? ' PM' : ''
+  return `${parts[0]}:${parts[1]}${ampm}`
+})
 
 const totalSets = computed(() => sessionData.value.plan.reduce((sum, e) => sum + e.sets, 0))
 const completedTotal = computed(() => sessionData.value.completedSets.length)
@@ -84,20 +99,23 @@ onMounted(async () => {
   <div class="max-w-lg lg:max-w-2xl mx-auto">
     <!-- Header -->
     <div class="px-4 pt-6 pb-2">
-      <div class="flex items-center justify-between mb-1">
-        <div class="flex items-center gap-2">
-          <img src="/dumbbell.svg" class="w-5 h-5" alt="" />
-          <span class="text-indigo-400 text-sm font-semibold">{{ todayLabel }}</span>
-          <span class="text-gray-600 text-sm">{{ preferences.formatDate(today) }}</span>
+      <div class="flex items-start justify-between gap-4 mb-3">
+        <!-- Fecha -->
+        <div>
+          <p class="text-accent-400 text-lg font-bold leading-tight">{{ todayLabel }}</p>
+          <p class="text-gray-500 text-sm mt-0.5">{{ todayLong }}</p>
         </div>
-        <span class="text-gray-400 text-sm font-mono">{{ preferences.formatTime(now) }}</span>
+        <!-- Hora -->
+        <div class="text-right shrink-0">
+          <p class="font-mono font-semibold text-white text-lg leading-tight">{{ timeMain }}</p>
+        </div>
       </div>
       <h1 class="text-2xl font-bold">Entrenamiento de hoy</h1>
     </div>
 
     <!-- Loading spinner -->
     <div v-if="loading" class="flex justify-center py-24">
-      <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div class="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
     </div>
 
     <!-- Rest day -->
@@ -109,7 +127,7 @@ onMounted(async () => {
       </p>
       <RouterLink
         to="/plan"
-        class="mt-6 text-indigo-400 text-sm font-semibold border border-indigo-500/30 px-4 py-2 rounded-xl hover:bg-indigo-500/10 transition-colors"
+        class="mt-6 text-accent-400 text-sm font-semibold border border-accent-500/30 px-4 py-2 rounded-xl hover:bg-accent-500/10 transition-colors"
       >
         Ir al planificador →
       </RouterLink>
@@ -125,7 +143,7 @@ onMounted(async () => {
         <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
           <div
             class="h-full rounded-full transition-all duration-500"
-            :class="allDone ? 'bg-green-500' : 'bg-indigo-500'"
+            :class="allDone ? 'bg-green-500' : 'bg-accent-500'"
             :style="{ width: progress + '%' }"
           />
         </div>
@@ -155,7 +173,10 @@ onMounted(async () => {
           <div class="flex items-center justify-between px-4 py-3.5 border-b border-gray-800/60">
             <div>
               <p class="font-bold text-white">{{ entry.exerciseName }}</p>
-              <p class="text-xs text-gray-500 mt-0.5">{{ entry.sets }} series × {{ entry.reps }} reps<span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span></p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                <template v-if="entry.isCardio">{{ entry.durationMinutes }} min</template>
+                <template v-else>{{ entry.sets }} series × {{ entry.reps }} reps<span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span></template>
+              </p>
             </div>
             <div class="flex items-center gap-2">
               <span
@@ -174,21 +195,43 @@ onMounted(async () => {
 
           <!-- Set buttons -->
           <div class="flex flex-wrap gap-2.5 p-3.5">
-            <button
-              v-for="set in entry.sets"
-              :key="set"
-              @click="toggleSet(entry.id, set)"
-              :disabled="togglingSet === `${entry.id}-${set}`"
-              class="w-14 h-14 rounded-xl font-bold text-base transition-all active:scale-95 border-2 select-none"
-              :class="
-                isCompleted(entry.id, set)
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                  : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-indigo-500/50 hover:text-gray-200'
-              "
-            >
-              <span v-if="togglingSet !== `${entry.id}-${set}`">{{ set }}</span>
-              <span v-else class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            </button>
+            <!-- Cardio: botón ancho de completado -->
+            <template v-if="entry.isCardio">
+              <button
+                @click="toggleSet(entry.id, 1)"
+                :disabled="togglingSet === `${entry.id}-1`"
+                class="flex-1 h-12 rounded-xl font-semibold text-sm transition-all active:scale-95 border-2 select-none flex items-center justify-center gap-2"
+                :class="
+                  isCompleted(entry.id, 1)
+                    ? 'bg-accent-600 border-accent-500 text-white shadow-lg shadow-accent-500/20'
+                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-accent-500/50 hover:text-gray-200'
+                "
+              >
+                <span v-if="togglingSet !== `${entry.id}-1`">
+                  <span v-if="isCompleted(entry.id, 1)">✓ Completado</span>
+                  <span v-else>Marcar como completado</span>
+                </span>
+                <span v-else class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              </button>
+            </template>
+            <!-- Fuerza: botones por serie -->
+            <template v-else>
+              <button
+                v-for="set in entry.sets"
+                :key="set"
+                @click="toggleSet(entry.id, set)"
+                :disabled="togglingSet === `${entry.id}-${set}`"
+                class="w-14 h-14 rounded-xl font-bold text-base transition-all active:scale-95 border-2 select-none"
+                :class="
+                  isCompleted(entry.id, set)
+                    ? 'bg-accent-600 border-accent-500 text-white shadow-lg shadow-accent-500/20'
+                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-accent-500/50 hover:text-gray-200'
+                "
+              >
+                <span v-if="togglingSet !== `${entry.id}-${set}`">{{ set }}</span>
+                <span v-else class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              </button>
+            </template>
           </div>
         </div>
       </div>

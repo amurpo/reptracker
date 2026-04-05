@@ -50,7 +50,7 @@ async function submit() {
         <p class="text-gray-500 text-sm mb-6">Ya puedes iniciar sesión con tu nueva contraseña.</p>
         <button
           @click="router.push('/login')"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-2xl transition-colors"
+          class="w-full bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 rounded-2xl transition-colors"
         >
           Iniciar sesión
         </button>
@@ -69,7 +69,7 @@ async function submit() {
               required
               autocomplete="new-password"
               placeholder="••••••••"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
             />
           </div>
           <div>
@@ -80,7 +80,7 @@ async function submit() {
               required
               autocomplete="new-password"
               placeholder="••••••••"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
             />
           </div>
 
@@ -91,7 +91,7 @@ async function submit() {
           <button
             type="submit"
             :disabled="loading || !token"
-            class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors"
+            class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors"
           >
             {{ loading ? 'Guardando...' : 'Guardar contraseña' }}
           </button>

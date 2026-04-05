@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Temas de color ─────────────────────────────────────────────────────────
+   Valores en canales RGB sin parentesis para soportar opacidad: bg-accent-600/20
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="indigo"] {
+  --accent-300: 165 180 252;
+  --accent-400: 129 140 248;
+  --accent-500: 99 102 241;
+  --accent-600: 79 70 229;
+  --accent-700: 67 56 202;
+}
+
+[data-theme="violet"] {
+  --accent-300: 196 181 253;
+  --accent-400: 167 139 250;
+  --accent-500: 139 92 246;
+  --accent-600: 124 58 237;
+  --accent-700: 109 40 217;
+}
+
+[data-theme="emerald"] {
+  --accent-300: 110 231 183;
+  --accent-400: 52 211 153;
+  --accent-500: 16 185 129;
+  --accent-600: 5 150 105;
+  --accent-700: 4 120 87;
+}
+
+[data-theme="sky"] {
+  --accent-300: 125 211 252;
+  --accent-400: 56 189 248;
+  --accent-500: 14 165 233;
+  --accent-600: 2 132 199;
+  --accent-700: 3 105 161;
+}
+
+[data-theme="rose"] {
+  --accent-300: 253 164 175;
+  --accent-400: 251 113 133;
+  --accent-500: 244 63 94;
+  --accent-600: 225 29 72;
+  --accent-700: 190 18 60;
+}
+
+[data-theme="amber"] {
+  --accent-300: 252 211 77;
+  --accent-400: 251 191 36;
+  --accent-500: 245 158 11;
+  --accent-600: 217 119 6;
+  --accent-700: 180 83 9;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
 @layer base {
   html {
     background-color: theme('colors.gray.950');

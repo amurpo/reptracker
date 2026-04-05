@@ -12,6 +12,7 @@ export const users = sqliteTable('users', {
   dateFormat: text('date_format').notNull().default('dd-mm-yyyy'),
   timeFormat: text('time_format').notNull().default('24h'),
   weekStart: integer('week_start').notNull().default(0),
+  theme: text('theme').notNull().default('indigo'),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
 })
 
@@ -65,6 +66,8 @@ export const weeklyPlan = sqliteTable('weekly_plan', {
   reps: integer('reps').notNull().default(10),
   weightKg: real('weight_kg'),
   orderIndex: integer('order_index').notNull().default(0),
+  isCardio: integer('is_cardio').notNull().default(0),
+  durationMinutes: real('duration_minutes'),
 })
 
 export const workoutSessions = sqliteTable('workout_sessions', {
