@@ -655,9 +655,9 @@ onMounted(() => { load(); loadRoutines() })
     <!-- ── MODAL GUARDAR RUTINA ─────────────────────────────────────────── -->
     <Teleport to="body">
       <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
-        <div v-if="showSaveRoutine" class="fixed inset-0 bg-black/70 z-50 flex items-end" @click.self="showSaveRoutine = false">
+        <div v-if="showSaveRoutine" class="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" @click.self="showSaveRoutine = false">
           <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
-            <div v-if="showSaveRoutine" class="bg-gray-900 rounded-t-3xl w-full p-6 border-t border-gray-800">
+            <div v-if="showSaveRoutine" class="bg-gray-900 rounded-t-3xl w-full max-w-lg p-6 border-t border-gray-800">
               <div class="flex items-center justify-between mb-5">
                 <h3 class="font-bold text-lg text-white">Guardar rutina</h3>
                 <button @click="showSaveRoutine = false" class="text-gray-500 hover:text-gray-300 transition-colors">
@@ -690,9 +690,9 @@ onMounted(() => { load(); loadRoutines() })
     <!-- ── MODAL CARGAR RUTINA ───────────────────────────────────────────── -->
     <Teleport to="body">
       <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
-        <div v-if="showLoadRoutine" class="fixed inset-0 bg-black/70 z-50 flex items-end" @click.self="showLoadRoutine = false">
+        <div v-if="showLoadRoutine" class="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" @click.self="showLoadRoutine = false">
           <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
-            <div v-if="showLoadRoutine" class="bg-gray-900 rounded-t-3xl w-full p-6 border-t border-gray-800 max-h-[70vh] flex flex-col">
+            <div v-if="showLoadRoutine" class="bg-gray-900 rounded-t-3xl w-full max-w-lg p-6 border-t border-gray-800 max-h-[70vh] flex flex-col">
               <div class="flex items-center justify-between mb-5">
                 <h3 class="font-bold text-lg text-white">Cargar rutina</h3>
                 <button @click="showLoadRoutine = false" class="text-gray-500 hover:text-gray-300 transition-colors">
