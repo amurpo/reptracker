@@ -58,18 +58,27 @@ const view = ref<'week' | 'history'>('week')
 const selectedDay = ref(todayDow)
 const plan = ref<PlanEntry[]>([])
 const exercises = ref<Exercise[]>([])
+// ── Modal agregar ─────────────────────────────────────────────────────────────
 const showAddModal = ref(false)
+const addStep = ref<'search' | 'config'>('search')
 const addExerciseId = ref<number | null>(null)
+const addExerciseName = ref('')
 const addSets = ref(3)
 const addReps = ref(10)
 const addWeightKg = ref<number | null>(null)
+const addIsCardio = ref(false)
+const addDurationMinutes = ref<number | null>(30)
+const saving = ref(false)
+const searchQuery = ref('')
+const modalFilterGroup = ref('all')
+
+// ── Modal editar ──────────────────────────────────────────────────────────────
 const editingId = ref<number | null>(null)
 const editSets = ref(3)
 const editReps = ref(10)
 const editWeightKg = ref<number | null>(null)
-const saving = ref(false)
-const searchQuery = ref('')
-const modalFilterGroup = ref('all')
+const editIsCardio = ref(false)
+const editDurationMinutes = ref<number | null>(null)
 
 const dayPlan = computed(() =>
   plan.value
@@ -95,19 +104,41 @@ async function load() {
   exercises.value = exData
 }
 
+function selectExercise(ex: Exercise) {
+  addExerciseId.value = ex.id
+  addExerciseName.value = ex.name
+  addStep.value = 'config'
+}
+
+function resetAddModal() {
+  addStep.value = 'search'
+  addExerciseId.value = null
+  addExerciseName.value = ''
+  addSets.value = 3
+  addReps.value = 10
+  addWeightKg.value = null
+  addIsCardio.value = false
+  addDurationMinutes.value = 30
+  searchQuery.value = ''
+  modalFilterGroup.value = 'all'
+}
+
 async function addToPlan() {
   if (!addExerciseId.value) return
   saving.value = true
   try {
-    const entry = await api.plan.add(selectedDay.value, addExerciseId.value, addSets.value, addReps.value, addWeightKg.value)
+    const entry = await api.plan.add(
+      selectedDay.value,
+      addExerciseId.value,
+      addSets.value,
+      addIsCardio.value ? 1 : addReps.value,
+      addIsCardio.value ? null : addWeightKg.value,
+      addIsCardio.value ? 1 : 0,
+      addIsCardio.value ? addDurationMinutes.value : null,
+    )
     plan.value.push(entry)
     showAddModal.value = false
-    addExerciseId.value = null
-    addSets.value = 3
-    addReps.value = 10
-    addWeightKg.value = null
-    searchQuery.value = ''
-    modalFilterGroup.value = 'all'
+    resetAddModal()
   } finally {
     saving.value = false
   }
@@ -123,12 +154,21 @@ function startEdit(entry: PlanEntry) {
   editSets.value = entry.sets
   editReps.value = entry.reps
   editWeightKg.value = entry.weightKg
+  editIsCardio.value = entry.isCardio === 1
+  editDurationMinutes.value = entry.durationMinutes
 }
 
 async function saveEdit(id: number) {
-  const updated = await api.plan.update(id, editSets.value, editReps.value, editWeightKg.value)
+  const updated = await api.plan.update(
+    id,
+    editSets.value,
+    editIsCardio.value ? 1 : editReps.value,
+    editIsCardio.value ? null : editWeightKg.value,
+    editIsCardio.value ? 1 : 0,
+    editIsCardio.value ? editDurationMinutes.value : null,
+  )
   const idx = plan.value.findIndex((e) => e.id === id)
-  if (idx >= 0) plan.value[idx] = { ...plan.value[idx], sets: updated.sets, reps: updated.reps, weightKg: updated.weightKg }
+  if (idx >= 0) plan.value[idx] = { ...plan.value[idx], ...updated }
   editingId.value = null
 }
 
@@ -288,14 +328,14 @@ onMounted(() => { load(); loadRoutines() })
         <button
           @click="view = 'week'"
           class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-          :class="view === 'week' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-300'"
+          :class="view === 'week' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
         >
           Plan semanal
         </button>
         <button
           @click="view = 'history'"
           class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-          :class="view === 'history' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-gray-300'"
+          :class="view === 'history' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
         >
           Historial
         </button>
@@ -310,9 +350,9 @@ onMounted(() => { load(); loadRoutines() })
           class="flex flex-col items-center py-2 rounded-xl text-xs font-semibold transition-all"
           :class="
             selectedDay === d.dow
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-accent-600 text-white'
               : d.dow === todayDow
-              ? 'bg-gray-900 text-indigo-400 ring-1 ring-indigo-500/40'
+              ? 'bg-gray-900 text-accent-400 ring-1 ring-accent-500/40'
               : 'text-gray-600 hover:text-gray-300'
           "
         >
@@ -320,7 +360,7 @@ onMounted(() => { load(); loadRoutines() })
           <span
             v-if="dayHasPlan(d.dow)"
             class="w-1 h-1 rounded-full mt-1"
-            :class="selectedDay === d.dow ? 'bg-white/50' : 'bg-indigo-500'"
+            :class="selectedDay === d.dow ? 'bg-white/50' : 'bg-accent-500'"
           />
           <span v-else class="w-1 h-1 mt-1" />
         </button>
@@ -349,35 +389,40 @@ onMounted(() => { load(); loadRoutines() })
           <h2 class="font-semibold text-white">{{ orderedDays.find(d => d.dow === selectedDay)?.full }}</h2>
           <p class="text-xs text-gray-500 mt-0.5">{{ dayPlan.length }} ejercicio{{ dayPlan.length !== 1 ? 's' : '' }}</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1">
           <!-- Cargar rutina -->
           <button
             @click="showLoadRoutine = true"
-            class="flex items-center gap-1.5 text-gray-400 hover:text-indigo-400 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
+            title="Cargar rutina"
+            class="flex items-center gap-1.5 text-gray-400 hover:text-accent-400 p-2 sm:px-3 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
             </svg>
-            Cargar rutina
+            <span class="hidden sm:inline">Cargar rutina</span>
           </button>
           <!-- Guardar rutina -->
           <button
             @click="routineName = orderedDays.find(d => d.dow === selectedDay)?.full ?? ''; showSaveRoutine = true"
             :disabled="dayPlan.length === 0"
-            class="flex items-center gap-1.5 text-gray-400 hover:text-indigo-400 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium disabled:opacity-30 disabled:pointer-events-none"
+            title="Guardar rutina"
+            class="flex items-center gap-1.5 text-gray-400 hover:text-accent-400 p-2 sm:px-3 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium disabled:opacity-30 disabled:pointer-events-none"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"/>
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 3v4a1 1 0 001 1h4M9 12h6M9 16h4"/>
             </svg>
-            Guardar rutina
+            <span class="hidden sm:inline">Guardar rutina</span>
           </button>
           <button
             @click="showAddModal = true"
-            class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+            class="flex items-center gap-1 bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
             :disabled="exercises.length === 0"
           >
-            + Ejercicio
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span class="hidden sm:inline">Ejercicio</span>
           </button>
         </div>
       </div>
@@ -392,9 +437,14 @@ onMounted(() => { load(); loadRoutines() })
           <div class="flex items-center gap-3 px-4 py-3.5">
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-white text-sm truncate">{{ entry.exerciseName }}</p>
-              <p class="text-xs text-indigo-400 mt-0.5">
-                {{ entry.sets }} series × {{ entry.reps }} reps
-                <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
+              <p class="text-xs text-accent-400 mt-0.5">
+                <template v-if="entry.isCardio">
+                  {{ entry.durationMinutes }} min
+                </template>
+                <template v-else>
+                  {{ entry.sets }} series × {{ entry.reps }} reps
+                  <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
+                </template>
               </p>
             </div>
             <div class="flex items-center gap-1 shrink-0">
@@ -424,28 +474,46 @@ onMounted(() => { load(); loadRoutines() })
             leave-active-class="transition-all duration-100"
             leave-to-class="opacity-0 -translate-y-1"
           >
-            <div v-if="editingId === entry.id" class="px-4 pb-3.5 border-t border-gray-800 pt-3">
-              <div class="flex gap-3 items-end">
-                <div class="flex-1">
+            <div v-if="editingId === entry.id" class="px-4 pb-3.5 border-t border-gray-800 pt-3 space-y-3">
+              <!-- Toggle cardio + campo duración, ambos alineados a la derecha -->
+              <div class="flex justify-end">
+                <button type="button" @click="editIsCardio = !editIsCardio"
+                  class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
+                  :class="editIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                  🏃 Usa tiempo (cardio)
+                </button>
+              </div>
+              <!-- Campos fuerza: series / reps / peso -->
+              <div v-if="!editIsCardio" class="grid grid-cols-3 gap-2">
+                <div>
                   <label class="text-xs text-gray-500 block mb-1">Series</label>
                   <input v-model.number="editSets" type="number" min="1" max="20"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 </div>
-                <div class="flex-1">
+                <div>
                   <label class="text-xs text-gray-500 block mb-1">Reps</label>
                   <input v-model.number="editReps" type="number" min="1" max="200"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 </div>
-                <div class="flex-1">
+                <div>
                   <label class="text-xs text-gray-500 block mb-1">Peso (kg)</label>
                   <input v-model.number="editWeightKg" type="number" min="0" step="0.5" placeholder="—"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 </div>
+              </div>
+              <!-- Campo cardio: duración, alineado a la derecha -->
+              <div v-else class="flex justify-end">
+                <div class="w-[160px]">
+                  <label class="text-xs text-gray-500 block mb-1">Duración (min)</label>
+                  <input v-model.number="editDurationMinutes" type="number" min="1" max="300"
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                </div>
+              </div>
+              <!-- Fila inferior: acciones -->
+              <div class="flex items-center justify-end gap-2">
+                <button @click="editingId = null" class="text-gray-500 hover:text-gray-300 px-2 py-1.5 text-sm transition-colors">Cancelar</button>
                 <button @click="saveEdit(entry.id)"
-                  class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-                  OK
-                </button>
-                <button @click="editingId = null" class="text-gray-500 hover:text-gray-300 px-2 py-2 text-sm transition-colors">✕</button>
+                  class="bg-accent-600 hover:bg-accent-500 text-white px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors">Guardar</button>
               </div>
             </div>
           </Transition>
@@ -464,7 +532,7 @@ onMounted(() => { load(); loadRoutines() })
     <!-- ── VISTA: HISTORIAL MENSUAL ───────────────────────────────────── -->
     <div v-else class="p-4">
       <div v-if="historyLoading" class="flex justify-center py-16">
-        <div class="w-7 h-7 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div class="w-7 h-7 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
       </div>
 
       <template v-else>
@@ -491,20 +559,20 @@ onMounted(() => { load(); loadRoutines() })
               !cell
                 ? ''
                 : selectedHistoryDate === cell.date
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-accent-600 text-white'
                 : cell.isToday && cell.hasSess
-                ? 'ring-1 ring-indigo-500 bg-indigo-600/20 text-indigo-300 cursor-pointer hover:bg-indigo-600/30'
+                ? 'ring-1 ring-accent-500 bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
                 : cell.isToday
-                ? 'ring-1 ring-indigo-500 text-white'
+                ? 'ring-1 ring-accent-500 text-white'
                 : cell.hasSess
-                ? 'bg-indigo-600/20 text-indigo-300 cursor-pointer hover:bg-indigo-600/30'
+                ? 'bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
                 : 'text-gray-600'
             "
           >
             <template v-if="cell">
               <span>{{ cell.day }}</span>
               <span v-if="cell.hasSess" class="w-1.5 h-1.5 rounded-full mt-0.5"
-                :class="selectedHistoryDate === cell.date ? 'bg-white/60' : 'bg-indigo-400'" />
+                :class="selectedHistoryDate === cell.date ? 'bg-white/60' : 'bg-accent-400'" />
             </template>
           </component>
         </div>
@@ -539,7 +607,7 @@ onMounted(() => { load(); loadRoutines() })
             </div>
 
             <div v-if="dayLoading" class="flex justify-center py-6">
-              <div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <div class="w-5 h-5 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
             </div>
 
             <template v-else-if="historyDayData">
@@ -595,14 +663,14 @@ onMounted(() => { load(); loadRoutines() })
                 type="text"
                 placeholder="Nombre de la rutina"
                 maxlength="50"
-                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors mb-4"
+                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors mb-4"
                 @keyup.enter="saveRoutine"
                 autofocus
               />
               <button
                 @click="saveRoutine"
                 :disabled="!routineName.trim() || routineSaving"
-                class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white py-3 rounded-2xl font-semibold transition-colors"
+                class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-3 rounded-2xl font-semibold transition-colors"
               >
                 {{ routineSaving ? 'Guardando...' : 'Guardar' }}
               </button>
@@ -626,7 +694,7 @@ onMounted(() => { load(); loadRoutines() })
               </div>
 
               <div v-if="routines.length === 0" class="text-center py-8 text-gray-500 text-sm">
-                No tenés rutinas guardadas aún
+                No tienes rutinas guardadas aún
               </div>
 
               <div v-else class="overflow-y-auto space-y-2 flex-1 min-h-0">
@@ -659,107 +727,132 @@ onMounted(() => { load(); loadRoutines() })
       </Transition>
     </Teleport>
 
-    <!-- ── MODAL AGREGAR ──────────────────────────────────────────────── -->
+    <!-- ── MODAL AGREGAR (dos pasos) ────────────────────────────────────── -->
     <Teleport to="body">
-      <Transition
-        enter-active-class="transition-all duration-200"
-        enter-from-class="opacity-0"
-        leave-active-class="transition-all duration-150"
-        leave-to-class="opacity-0"
-      >
-        <div v-if="showAddModal" class="fixed inset-0 bg-black/70 z-50 flex items-end" @click.self="showAddModal = false">
-          <Transition
-            enter-active-class="transition-all duration-200"
-            enter-from-class="translate-y-full"
-            leave-active-class="transition-all duration-150"
-            leave-to-class="translate-y-full"
-          >
-            <div v-if="showAddModal" class="bg-gray-900 rounded-t-3xl w-full p-6 max-h-[85vh] flex flex-col border-t border-gray-800">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-lg text-white">Agregar a {{ orderedDays.find(d => d.dow === selectedDay)?.full }}</h3>
-                <button @click="showAddModal = false" class="text-gray-500 hover:text-gray-300 transition-colors">
+      <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
+        <div v-if="showAddModal" class="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" @click.self="showAddModal = false; resetAddModal()">
+          <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
+            <div v-if="showAddModal" class="bg-gray-900 rounded-t-3xl w-full max-w-lg max-h-[88vh] flex flex-col border-t border-gray-800">
+
+              <!-- Header -->
+              <div class="flex items-center justify-between px-6 pt-5 pb-4 shrink-0">
+                <div class="flex items-center gap-3">
+                  <button v-if="addStep === 'config'" @click="addStep = 'search'" class="text-gray-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                  </button>
+                  <div>
+                    <h3 class="font-bold text-white leading-tight">
+                      {{ addStep === 'search' ? 'Elegir ejercicio' : addExerciseName }}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === selectedDay)?.full }}</p>
+                  </div>
+                </div>
+                <button @click="showAddModal = false; resetAddModal()" class="text-gray-500 hover:text-gray-300 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
                 </button>
               </div>
 
-              <div class="flex-1 overflow-y-auto space-y-4 min-h-0">
-                <!-- Filtro por categoría -->
-                <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                  <button
-                    @click="modalFilterGroup = 'all'"
-                    class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-                    :class="modalFilterGroup === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'"
-                  >
-                    Todos
-                  </button>
-                  <button
-                    v-for="g in MUSCLE_GROUPS"
-                    :key="g.id"
-                    @click="modalFilterGroup = g.id"
-                    class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-                    :class="modalFilterGroup === g.id ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'"
-                  >
-                    {{ g.label }}
-                  </button>
+              <!-- PASO 1: Buscar y elegir ejercicio -->
+              <template v-if="addStep === 'search'">
+                <div class="px-6 pb-3 shrink-0 space-y-3">
+                  <!-- Búsqueda -->
+                  <input
+                    v-model="searchQuery"
+                    type="search"
+                    placeholder="Buscar ejercicio..."
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors"
+                    autofocus
+                  />
+                  <!-- Filtros de grupo muscular -->
+                  <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                    <button @click="modalFilterGroup = 'all'"
+                      class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+                      :class="modalFilterGroup === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'">
+                      Todos
+                    </button>
+                    <button v-for="g in MUSCLE_GROUPS" :key="g.id" @click="modalFilterGroup = g.id"
+                      class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+                      :class="modalFilterGroup === g.id ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'">
+                      {{ g.label }}
+                    </button>
+                  </div>
                 </div>
-
-                <!-- Búsqueda -->
-                <input
-                  v-model="searchQuery"
-                  type="search"
-                  placeholder="Buscar ejercicio..."
-                  class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                  autofocus
-                />
-
-                <!-- Lista de ejercicios -->
-                <div class="space-y-2 max-h-48 overflow-y-auto">
+                <!-- Lista -->
+                <div class="overflow-y-auto flex-1 min-h-0 px-6 pb-6 space-y-1">
                   <button
                     v-for="ex in availableExercises"
                     :key="ex.id"
-                    @click="addExerciseId = ex.id"
-                    class="w-full text-left px-4 py-3 rounded-xl text-sm transition-all border"
-                    :class="addExerciseId === ex.id
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                      : 'bg-gray-800 border-transparent text-gray-300 hover:border-gray-600'"
+                    @click="selectExercise(ex)"
+                    class="w-full text-left px-4 py-3 rounded-xl text-sm bg-gray-800 hover:bg-gray-750 border border-transparent hover:border-gray-600 transition-all flex items-center justify-between"
                   >
-                    <span class="font-semibold">{{ ex.name }}</span>
-                    <span class="text-xs ml-2 text-gray-500">{{ ex.muscleGroup }}</span>
+                    <span>
+                      <span class="font-semibold text-white">{{ ex.name }}</span>
+                      <span class="text-xs ml-2 text-gray-500">{{ ex.muscleGroup }}</span>
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
                   </button>
-                  <p v-if="availableExercises.length === 0" class="text-gray-600 text-sm px-2 py-3 text-center">
+                  <p v-if="availableExercises.length === 0" class="text-gray-600 text-sm text-center py-8">
                     Sin ejercicios disponibles
                   </p>
                 </div>
+              </template>
 
-                <!-- Sets, Reps y Peso -->
-                <div class="flex gap-3">
-                  <div class="flex-1">
-                    <label class="text-sm text-gray-400 block mb-1.5">Series</label>
-                    <input v-model.number="addSets" type="number" min="1" max="20"
-                      class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+              <!-- PASO 2: Configurar -->
+              <template v-else>
+                <div class="px-6 pb-6 space-y-4 overflow-y-auto flex-1">
+                  <!-- Toggle cardio arriba a la derecha -->
+                  <div class="flex justify-end">
+                    <button type="button" @click="addIsCardio = !addIsCardio"
+                      class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
+                      :class="addIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                      🏃 Usa tiempo (cardio)
+                    </button>
                   </div>
-                  <div class="flex-1">
-                    <label class="text-sm text-gray-400 block mb-1.5">Reps</label>
-                    <input v-model.number="addReps" type="number" min="1" max="200"
-                      class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+
+                  <!-- Inputs Fuerza -->
+                  <div v-if="!addIsCardio" class="flex gap-3">
+                    <div class="flex-1">
+                      <label class="text-sm text-gray-400 block mb-1.5">Series</label>
+                      <input v-model.number="addSets" type="number" min="1" max="20"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                    </div>
+                    <div class="flex-1">
+                      <label class="text-sm text-gray-400 block mb-1.5">Reps</label>
+                      <input v-model.number="addReps" type="number" min="1" max="200"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                    </div>
+                    <div class="flex-1">
+                      <label class="text-sm text-gray-400 block mb-1.5">Peso (kg)</label>
+                      <input v-model.number="addWeightKg" type="number" min="0" step="0.5" placeholder="—"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                    </div>
                   </div>
-                  <div class="flex-1">
-                    <label class="text-sm text-gray-400 block mb-1.5">Peso (kg)</label>
-                    <input v-model.number="addWeightKg" type="number" min="0" step="0.5" placeholder="—"
-                      class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+
+                  <!-- Inputs Cardio: duración alineada a la derecha -->
+                  <div v-else class="flex justify-end">
+                    <div class="w-[180px]">
+                      <label class="text-sm text-gray-400 block mb-1.5">Duración (min)</label>
+                      <input v-model.number="addDurationMinutes" type="number" min="1" max="300"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                    </div>
                   </div>
+
+                  <button
+                    @click="addToPlan"
+                    :disabled="saving"
+                    class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-3.5 rounded-2xl font-semibold transition-colors"
+                  >
+                    {{ saving ? 'Guardando...' : 'Agregar al plan' }}
+                  </button>
                 </div>
-              </div>
+              </template>
 
-              <button
-                @click="addToPlan"
-                :disabled="!addExerciseId || saving"
-                class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white py-3.5 rounded-2xl font-semibold transition-colors mt-4"
-              >
-                {{ saving ? 'Guardando...' : 'Agregar al plan' }}
-              </button>
             </div>
           </Transition>
         </div>

@@ -47,15 +47,15 @@ export const api = {
   },
   plan: {
     get: () => request<PlanEntry[]>('GET', '/plan'),
-    add: (dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null) =>
-      request<PlanEntry>('POST', '/plan', { dayOfWeek, exerciseId, sets, reps, weightKg }),
-    update: (id: number, sets: number, reps: number, weightKg?: number | null) =>
-      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, weightKg }),
+    add: (dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('POST', '/plan', { dayOfWeek, exerciseId, sets, reps, weightKg, isCardio, durationMinutes }),
+    update: (id: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, weightKg, isCardio, durationMinutes }),
     remove: (id: number) => request<{ ok: boolean }>('DELETE', `/plan/${id}`),
   },
   profile: {
     get: () => request<UserProfile>('GET', '/profile'),
-    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat' | 'weekStart'>>) =>
+    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme'>>) =>
       request<UserProfile>('PUT', '/profile', data),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
@@ -90,6 +90,7 @@ export interface UserProfile {
   dateFormat: string
   timeFormat: string
   weekStart: number
+  theme: string
 }
 
 export interface Exercise {
@@ -112,6 +113,8 @@ export interface PlanEntry {
   reps: number
   weightKg: number | null
   orderIndex: number
+  isCardio: number
+  durationMinutes: number | null
   exerciseName: string
   muscleGroup: string
 }
@@ -131,6 +134,8 @@ export interface PlanSessionEntry {
   reps: number
   weightKg: number | null
   orderIndex: number
+  isCardio: number
+  durationMinutes: number | null
   exerciseName: string
   muscleGroup: string
 }

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { api } from '../lib/api'
 import { useAuthStore } from '../stores/auth'
-import { usePreferencesStore } from '../stores/preferences'
+import { usePreferencesStore, THEMES, applyTheme } from '../stores/preferences'
 
 const auth = useAuthStore()
 const preferences = usePreferencesStore()
@@ -85,6 +85,7 @@ const weightKg = ref<number | null>(null)
 const dateFormat = ref('dd-mm-yyyy')
 const timeFormat = ref('24h')
 const weekStart = ref(0)
+const theme = ref('indigo')
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -124,6 +125,7 @@ onMounted(async () => {
     dateFormat.value = profile.dateFormat
     timeFormat.value = profile.timeFormat
     weekStart.value = profile.weekStart
+    theme.value = profile.theme || 'indigo'
     const { avatar } = await api.profile.getAvatar()
     avatarSrc.value = avatar
   } finally {
@@ -143,13 +145,16 @@ async function save() {
       dateFormat: dateFormat.value,
       timeFormat: timeFormat.value,
       weekStart: weekStart.value,
+      theme: theme.value,
     })
     preferences.dateFormat = dateFormat.value
     preferences.timeFormat = timeFormat.value
     preferences.weekStart = weekStart.value
+    preferences.theme = theme.value
     localStorage.setItem('dateFormat', dateFormat.value)
     localStorage.setItem('timeFormat', timeFormat.value)
     localStorage.setItem('weekStart', String(weekStart.value))
+    applyTheme(theme.value)
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
@@ -165,7 +170,7 @@ async function save() {
     <h1 class="text-xl font-bold mb-6">Perfil</h1>
 
     <div v-if="loading" class="flex justify-center py-24">
-      <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div class="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
     </div>
 
     <template v-else>
@@ -179,7 +184,7 @@ async function save() {
           :disabled="avatarUploading"
         >
           <img v-if="avatarSrc" :src="avatarSrc" class="w-full h-full object-cover" alt="Avatar" />
-          <div v-else class="w-full h-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white select-none">
+          <div v-else class="w-full h-full bg-accent-600 flex items-center justify-center text-2xl font-bold text-white select-none">
             {{ auth.user?.email?.[0].toUpperCase() }}
           </div>
           <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -206,7 +211,7 @@ async function save() {
             v-model="name"
             type="text"
             placeholder="Tu nombre"
-            class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+            class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
           />
         </div>
 
@@ -219,7 +224,7 @@ async function save() {
               min="1"
               max="120"
               placeholder="—"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
             />
           </div>
           <div>
@@ -231,7 +236,7 @@ async function save() {
               max="500"
               step="0.1"
               placeholder="—"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
             />
           </div>
         </div>
@@ -242,7 +247,7 @@ async function save() {
             <label class="block text-sm text-gray-400 mb-1.5">Formato de fecha</label>
             <select
               v-model="dateFormat"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
             >
               <option value="dd-mm-yyyy">DD-MM-YYYY</option>
               <option value="mm-dd-yyyy">MM-DD-YYYY</option>
@@ -253,7 +258,7 @@ async function save() {
             <label class="block text-sm text-gray-400 mb-1.5">Formato de hora</label>
             <select
               v-model="timeFormat"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
             >
               <option value="24h">24 horas</option>
               <option value="12h">12 horas (AM/PM)</option>
@@ -265,11 +270,43 @@ async function save() {
           <label class="block text-sm text-gray-400 mb-1.5">Inicio de semana</label>
           <select
             v-model.number="weekStart"
-            class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+            class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
           >
             <option :value="0">Lunes</option>
             <option :value="1">Domingo</option>
           </select>
+        </div>
+
+        <!-- Tema de color -->
+        <div>
+          <label class="block text-sm text-gray-400 mb-3">Tema de color</label>
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <button
+              v-for="t in THEMES"
+              :key="t.id"
+              type="button"
+              @click="theme = t.id; applyTheme(t.id)"
+              class="relative text-left p-3 rounded-2xl border transition-all"
+              :class="theme === t.id
+                ? 'bg-gray-800 border-white/30 ring-1 ring-white/20'
+                : 'bg-gray-900 border-gray-800 hover:border-gray-600'"
+            >
+              <!-- Checkmark -->
+              <svg v-if="theme === t.id" xmlns="http://www.w3.org/2000/svg" class="absolute top-2.5 right-2.5 w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              <p class="text-sm font-semibold text-white mb-2">{{ t.label }}</p>
+              <!-- Swatches -->
+              <div class="flex gap-1">
+                <span
+                  v-for="(color, i) in t.swatches"
+                  :key="i"
+                  class="flex-1 h-3 rounded-sm"
+                  :style="{ backgroundColor: color }"
+                />
+              </div>
+            </button>
+          </div>
         </div>
 
         <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">
@@ -279,7 +316,7 @@ async function save() {
         <button
           type="submit"
           :disabled="saving"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors"
+          class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors"
         >
           {{ saving ? 'Guardando...' : 'Guardar cambios' }}
         </button>
@@ -297,7 +334,7 @@ async function save() {
               required
               autocomplete="current-password"
               placeholder="••••••••"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
             />
           </div>
           <div class="grid grid-cols-2 gap-4">
@@ -309,7 +346,7 @@ async function save() {
                 required
                 autocomplete="new-password"
                 placeholder="••••••••"
-                class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
               />
             </div>
             <div>
@@ -320,7 +357,7 @@ async function save() {
                 required
                 autocomplete="new-password"
                 placeholder="••••••••"
-                class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
               />
             </div>
           </div>

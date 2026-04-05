@@ -32,6 +32,7 @@ const userFields = {
   dateFormat: users.dateFormat,
   timeFormat: users.timeFormat,
   weekStart: users.weekStart,
+  theme: users.theme,
 }
 
 profile.get('/', async (c) => {
@@ -51,6 +52,7 @@ profile.put('/', async (c) => {
     dateFormat?: string
     timeFormat?: string
     weekStart?: number
+    theme?: string
   }>()
   const db = getDb(c.env.DB)
 
@@ -63,6 +65,7 @@ profile.put('/', async (c) => {
       ...(body.dateFormat !== undefined && { dateFormat: body.dateFormat }),
       ...(body.timeFormat !== undefined && { timeFormat: body.timeFormat }),
       ...(body.weekStart !== undefined && { weekStart: body.weekStart }),
+      ...(body.theme !== undefined && { theme: body.theme }),
     })
     .where(eq(users.id, userId))
     .returning(userFields)

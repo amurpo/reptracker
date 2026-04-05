@@ -2,10 +2,27 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../lib/api'
 
+export const THEMES = [
+  { id: 'indigo',  label: 'Índigo',    swatches: ['#a5b4fc','#818cf8','#6366f1','#4f46e5','#4338ca'] },
+  { id: 'violet',  label: 'Violeta',   swatches: ['#c4b5fd','#a78bfa','#8b5cf6','#7c3aed','#6d28d9'] },
+  { id: 'emerald', label: 'Esmeralda', swatches: ['#6ee7b7','#34d399','#10b981','#059669','#047857'] },
+  { id: 'sky',     label: 'Cielo',     swatches: ['#7dd3fc','#38bdf8','#0ea5e9','#0284c7','#0369a1'] },
+  { id: 'rose',    label: 'Rosa',      swatches: ['#fda4af','#fb7185','#f43f5e','#e11d48','#be123c'] },
+  { id: 'amber',   label: 'Ámbar',     swatches: ['#fcd34d','#fbbf24','#f59e0b','#d97706','#b45309'] },
+] as const
+
+export type ThemeId = typeof THEMES[number]['id']
+
+export function applyTheme(theme: string) {
+  document.documentElement.setAttribute('data-theme', theme)
+  localStorage.setItem('theme', theme)
+}
+
 export const usePreferencesStore = defineStore('preferences', () => {
   const dateFormat = ref(localStorage.getItem('dateFormat') || 'dd-mm-yyyy')
   const timeFormat = ref(localStorage.getItem('timeFormat') || '24h')
   const weekStart = ref(parseInt(localStorage.getItem('weekStart') || '0'))
+  const theme = ref(localStorage.getItem('theme') || 'indigo')
 
   async function load() {
     try {
@@ -13,9 +30,11 @@ export const usePreferencesStore = defineStore('preferences', () => {
       dateFormat.value = profile.dateFormat
       timeFormat.value = profile.timeFormat
       weekStart.value = profile.weekStart
+      theme.value = profile.theme || 'indigo'
       localStorage.setItem('dateFormat', profile.dateFormat)
       localStorage.setItem('timeFormat', profile.timeFormat)
       localStorage.setItem('weekStart', String(profile.weekStart))
+      applyTheme(theme.value)
     } catch { /* usa el valor en caché */ }
   }
 
@@ -33,5 +52,5 @@ export const usePreferencesStore = defineStore('preferences', () => {
     return date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
   }
 
-  return { dateFormat, timeFormat, weekStart, load, formatDate, formatTime }
+  return { dateFormat, timeFormat, weekStart, theme, load, formatDate, formatTime }
 })

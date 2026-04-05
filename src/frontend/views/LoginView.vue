@@ -69,7 +69,7 @@ async function submit() {
     <div class="flex-1 flex flex-col items-center justify-center px-6 py-6 bg-gray-950">
       <!-- Mobile logo -->
       <div class="flex lg:hidden flex-col items-center mb-6">
-        <div class="flex items-center justify-center w-12 h-12 bg-indigo-500/20 rounded-2xl mb-2">
+        <div class="flex items-center justify-center w-12 h-12 bg-accent-500/20 rounded-2xl mb-2">
           <img src="/logo-transparency.png" class="w-10 h-10" alt="RepTracker" />
         </div>
         <h1 class="text-xl font-bold text-white">RepTracker</h1>
@@ -79,8 +79,8 @@ async function submit() {
 
         <!-- Email sent state -->
         <div v-if="registered" class="text-center py-4">
-          <div class="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-accent-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
             </svg>
           </div>
@@ -91,7 +91,7 @@ async function submit() {
           </p>
           <button
             @click="registered = false; mode = 'login'"
-            class="mt-6 text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors"
+            class="mt-6 text-accent-400 hover:text-accent-300 text-sm font-medium transition-colors"
           >
             Volver al inicio de sesión
           </button>
@@ -113,14 +113,14 @@ async function submit() {
           <button
             @click="mode = 'login'; error = ''"
             class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            :class="mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'"
+            :class="mode === 'login' ? 'bg-accent-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'"
           >
             Iniciar sesión
           </button>
           <button
             @click="mode = 'register'; error = ''"
             class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            :class="mode === 'register' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'"
+            :class="mode === 'register' ? 'bg-accent-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'"
           >
             Registrarse
           </button>
@@ -135,7 +135,7 @@ async function submit() {
               type="email"
               required
               autocomplete="email"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
               placeholder="tu@email.com"
             />
           </div>
@@ -146,7 +146,7 @@ async function submit() {
               type="password"
               required
               :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
               placeholder="••••••••"
             />
             <p v-if="mode === 'register'" class="text-xs text-gray-600 mt-1.5 pl-1">Mínimo 8 caracteres</p>
@@ -163,7 +163,7 @@ async function submit() {
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors mt-1"
+            class="w-full bg-accent-600 hover:bg-accent-500 active:bg-accent-700 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors mt-1"
           >
             {{ loading ? 'Cargando...' : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta' }}
           </button>

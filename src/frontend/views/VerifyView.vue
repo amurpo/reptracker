@@ -38,7 +38,7 @@ onMounted(async () => {
 
       <!-- Loading -->
       <div v-if="status === 'loading'" class="flex flex-col items-center gap-4">
-        <div class="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div class="w-10 h-10 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
         <p class="text-gray-500 text-sm">Verificando tu cuenta...</p>
       </div>
 
@@ -53,7 +53,7 @@ onMounted(async () => {
         <p class="text-gray-500 text-sm mb-6">Tu cuenta está lista. Ya puedes iniciar sesión.</p>
         <button
           @click="router.push('/login')"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-2xl transition-colors"
+          class="w-full bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 rounded-2xl transition-colors"
         >
           Iniciar sesión
         </button>

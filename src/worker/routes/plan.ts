@@ -23,6 +23,8 @@ app.get('/', async (c) => {
       reps: weeklyPlan.reps,
       weightKg: weeklyPlan.weightKg,
       orderIndex: weeklyPlan.orderIndex,
+      isCardio: weeklyPlan.isCardio,
+      durationMinutes: weeklyPlan.durationMinutes,
       exerciseName: exercises.name,
       muscleGroup: exercises.muscleGroup,
     })
@@ -35,13 +37,15 @@ app.get('/', async (c) => {
 
 app.post('/', async (c) => {
   const userId = parseInt(c.get('userId'))
-  const { dayOfWeek, exerciseId, sets, reps, weightKg, orderIndex } = await c.req.json<{
+  const { dayOfWeek, exerciseId, sets, reps, weightKg, orderIndex, isCardio, durationMinutes } = await c.req.json<{
     dayOfWeek: number
     exerciseId: number
     sets?: number
     reps?: number
     weightKg?: number | null
     orderIndex?: number
+    isCardio?: number
+    durationMinutes?: number | null
   }>()
 
   if (dayOfWeek === undefined || dayOfWeek === null || !exerciseId) {
@@ -63,6 +67,8 @@ app.post('/', async (c) => {
     reps: reps ?? 10,
     weightKg: weightKg ?? null,
     orderIndex: orderIndex ?? 0,
+    isCardio: isCardio ?? 0,
+    durationMinutes: durationMinutes ?? null,
   }).returning()
 
   const entry = inserted[0]
@@ -72,11 +78,11 @@ app.post('/', async (c) => {
 app.put('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))
   const id = parseInt(c.req.param('id'))
-  const { sets, reps, weightKg } = await c.req.json<{ sets: number; reps: number; weightKg?: number | null }>()
+  const { sets, reps, weightKg, isCardio, durationMinutes } = await c.req.json<{ sets: number; reps: number; weightKg?: number | null; isCardio?: number; durationMinutes?: number | null }>()
   const db = getDb(c.env.DB)
 
   const updated = await db.update(weeklyPlan)
-    .set({ sets, reps, weightKg: weightKg ?? null })
+    .set({ sets, reps, weightKg: weightKg ?? null, isCardio: isCardio ?? 0, durationMinutes: durationMinutes ?? null })
     .where(and(eq(weeklyPlan.id, id), eq(weeklyPlan.userId, userId)))
     .returning()
 

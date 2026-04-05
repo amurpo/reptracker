@@ -101,7 +101,7 @@ onMounted(load)
       <h1 class="text-xl font-bold">Ejercicios</h1>
       <button
         @click="showAdd = !showAdd"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+        class="bg-accent-600 hover:bg-accent-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
       >
         + Nuevo
       </button>
@@ -121,12 +121,12 @@ onMounted(load)
             v-model="newName"
             type="text"
             placeholder="Nombre del ejercicio"
-            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors"
             @keyup.enter="addExercise"
           />
           <select
             v-model="newGroup"
-            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent-500 transition-colors"
           >
             <option value="" disabled>Grupo muscular</option>
             <option v-for="g in MUSCLE_GROUPS" :key="g.id" :value="g.id">{{ g.label }}</option>
@@ -136,7 +136,7 @@ onMounted(load)
             <button
               @click="addExercise"
               :disabled="loading || !newName.trim() || !newGroup"
-              class="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors"
+              class="flex-1 bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors"
             >
               {{ loading ? 'Guardando...' : 'Agregar' }}
             </button>
@@ -156,7 +156,7 @@ onMounted(load)
       <button
         @click="filter = 'all'"
         class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"
-        :class="filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'"
+        :class="filter === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
       >
         Todos
       </button>
@@ -165,7 +165,7 @@ onMounted(load)
         :key="g.id"
         @click="filter = g.id"
         class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"
-        :class="filter === g.id ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400'"
+        :class="filter === g.id ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
       >
         {{ g.label }}
       </button>
