@@ -6,6 +6,7 @@ import exercisesRoutes from './routes/exercises'
 import planRoutes from './routes/plan'
 import sessionsRoutes from './routes/sessions'
 import profileRoutes from './routes/profile'
+import routinesRoutes from './routes/routines'
 
 export type Env = {
   DB: D1Database
@@ -43,5 +44,6 @@ app.route('/api/exercises', exercisesRoutes)
 app.route('/api/plan', planRoutes)
 app.route('/api/sessions', sessionsRoutes)
 app.route('/api/profile', profileRoutes)
+app.route('/api/routines', routinesRoutes)
 
 export default app

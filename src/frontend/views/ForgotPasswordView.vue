@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { api } from '../lib/api'
 
 const router = useRouter()
+
 const email = ref('')
 const loading = ref(false)
 const sent = ref(false)
