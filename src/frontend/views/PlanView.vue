@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { api, type PlanEntry, type Exercise, type SessionData } from '../lib/api'
+import { api, type PlanEntry, type Exercise, type SessionData, type Routine } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
 
 const preferences = usePreferencesStore()
@@ -132,6 +132,55 @@ async function saveEdit(id: number) {
   editingId.value = null
 }
 
+// ── Rutinas ──────────────────────────────────────────────────────────────────
+const routines = ref<Routine[]>([])
+const showSaveRoutine = ref(false)
+const showLoadRoutine = ref(false)
+const routineName = ref('')
+const routineSaving = ref(false)
+const routineLoading = ref(false)
+
+async function loadRoutines() {
+  routines.value = await api.routines.list()
+}
+
+async function saveRoutine() {
+  if (!routineName.value.trim() || !dayPlan.value.length) return
+  routineSaving.value = true
+  try {
+    const ex = dayPlan.value.map((e) => ({
+      exerciseId: e.exerciseId,
+      sets: e.sets,
+      reps: e.reps,
+      weightKg: e.weightKg,
+      orderIndex: e.orderIndex,
+    }))
+    const saved = await api.routines.save(routineName.value, ex)
+    routines.value.push(saved)
+    showSaveRoutine.value = false
+    routineName.value = ''
+  } finally {
+    routineSaving.value = false
+  }
+}
+
+async function applyRoutine(routineId: number) {
+  routineLoading.value = true
+  try {
+    const entries = await api.routines.apply(routineId, selectedDay.value)
+    plan.value = plan.value.filter((e) => e.dayOfWeek !== selectedDay.value)
+    plan.value.push(...entries)
+    showLoadRoutine.value = false
+  } finally {
+    routineLoading.value = false
+  }
+}
+
+async function deleteRoutine(id: number) {
+  await api.routines.delete(id)
+  routines.value = routines.value.filter((r) => r.id !== id)
+}
+
 // ── Historial mensual ────────────────────────────────────────────────────────
 const now = new Date()
 const historyYearMonth = ref(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
@@ -227,7 +276,7 @@ watch(view, (v) => {
   historyDayData.value = null
 })
 
-onMounted(load)
+onMounted(() => { load(); loadRoutines() })
 </script>
 
 <template>
@@ -300,13 +349,37 @@ onMounted(load)
           <h2 class="font-semibold text-white">{{ orderedDays.find(d => d.dow === selectedDay)?.full }}</h2>
           <p class="text-xs text-gray-500 mt-0.5">{{ dayPlan.length }} ejercicio{{ dayPlan.length !== 1 ? 's' : '' }}</p>
         </div>
-        <button
-          @click="showAddModal = true"
-          class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
-          :disabled="exercises.length === 0"
-        >
-          + Agregar
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- Cargar rutina -->
+          <button
+            @click="showLoadRoutine = true"
+            class="flex items-center gap-1.5 text-gray-400 hover:text-indigo-400 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Cargar rutina
+          </button>
+          <!-- Guardar rutina -->
+          <button
+            @click="routineName = orderedDays.find(d => d.dow === selectedDay)?.full ?? ''; showSaveRoutine = true"
+            :disabled="dayPlan.length === 0"
+            class="flex items-center gap-1.5 text-gray-400 hover:text-indigo-400 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium disabled:opacity-30 disabled:pointer-events-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 3v4a1 1 0 001 1h4M9 12h6M9 16h4"/>
+            </svg>
+            Guardar rutina
+          </button>
+          <button
+            @click="showAddModal = true"
+            class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+            :disabled="exercises.length === 0"
+          >
+            + Ejercicio
+          </button>
+        </div>
       </div>
 
       <!-- Plan entries -->
@@ -503,6 +576,88 @@ onMounted(load)
         </Transition>
       </template>
     </div>
+
+    <!-- ── MODAL GUARDAR RUTINA ─────────────────────────────────────────── -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
+        <div v-if="showSaveRoutine" class="fixed inset-0 bg-black/70 z-50 flex items-end" @click.self="showSaveRoutine = false">
+          <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
+            <div v-if="showSaveRoutine" class="bg-gray-900 rounded-t-3xl w-full p-6 border-t border-gray-800">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-bold text-lg text-white">Guardar rutina</h3>
+                <button @click="showSaveRoutine = false" class="text-gray-500 hover:text-gray-300 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <p class="text-sm text-gray-500 mb-3">{{ dayPlan.length }} ejercicio{{ dayPlan.length !== 1 ? 's' : '' }} del {{ orderedDays.find(d => d.dow === selectedDay)?.full }}</p>
+              <input
+                v-model="routineName"
+                type="text"
+                placeholder="Nombre de la rutina"
+                maxlength="50"
+                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors mb-4"
+                @keyup.enter="saveRoutine"
+                autofocus
+              />
+              <button
+                @click="saveRoutine"
+                :disabled="!routineName.trim() || routineSaving"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white py-3 rounded-2xl font-semibold transition-colors"
+              >
+                {{ routineSaving ? 'Guardando...' : 'Guardar' }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ── MODAL CARGAR RUTINA ───────────────────────────────────────────── -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
+        <div v-if="showLoadRoutine" class="fixed inset-0 bg-black/70 z-50 flex items-end" @click.self="showLoadRoutine = false">
+          <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
+            <div v-if="showLoadRoutine" class="bg-gray-900 rounded-t-3xl w-full p-6 border-t border-gray-800 max-h-[70vh] flex flex-col">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-bold text-lg text-white">Cargar rutina</h3>
+                <button @click="showLoadRoutine = false" class="text-gray-500 hover:text-gray-300 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <div v-if="routines.length === 0" class="text-center py-8 text-gray-500 text-sm">
+                No tenés rutinas guardadas aún
+              </div>
+
+              <div v-else class="overflow-y-auto space-y-2 flex-1 min-h-0">
+                <div
+                  v-for="r in routines"
+                  :key="r.id"
+                  class="flex items-center gap-3 bg-gray-800 rounded-2xl px-4 py-3"
+                >
+                  <button
+                    @click="applyRoutine(r.id)"
+                    :disabled="routineLoading"
+                    class="flex-1 text-left"
+                  >
+                    <p class="text-sm font-semibold text-white">{{ r.name }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ r.exerciseCount }} ejercicio{{ r.exerciseCount !== 1 ? 's' : '' }}</p>
+                  </button>
+                  <button
+                    @click="deleteRoutine(r.id)"
+                    class="text-gray-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-gray-700 transition-colors shrink-0"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <p v-if="routines.length > 0" class="text-xs text-gray-600 text-center mt-4">Tocar una rutina reemplaza los ejercicios del día actual</p>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- ── MODAL AGREGAR ──────────────────────────────────────────────── -->
     <Teleport to="body">

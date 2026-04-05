@@ -62,6 +62,14 @@ export const api = {
     getAvatar: () => request<{ avatar: string | null }>('GET', '/profile/avatar'),
     uploadAvatar: (avatar: string) => request<{ ok: boolean }>('PUT', '/profile/avatar', { avatar }),
   },
+  routines: {
+    list: () => request<Routine[]>('GET', '/routines'),
+    save: (name: string, exercises: RoutineExercise[]) =>
+      request<Routine>('POST', '/routines', { name, exercises }),
+    delete: (id: number) => request<{ ok: boolean }>('DELETE', `/routines/${id}`),
+    apply: (id: number, dayOfWeek: number) =>
+      request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek }),
+  },
   sessions: {
     get: (date: string) => request<SessionData>('GET', `/sessions/${date}`),
     getMonth: (yearMonth: string) =>
@@ -125,6 +133,22 @@ export interface PlanSessionEntry {
   orderIndex: number
   exerciseName: string
   muscleGroup: string
+}
+
+export interface Routine {
+  id: number
+  userId: number
+  name: string
+  createdAt: string | null
+  exerciseCount: number
+}
+
+export interface RoutineExercise {
+  exerciseId: number
+  sets: number
+  reps: number
+  weightKg?: number | null
+  orderIndex: number
 }
 
 export interface SessionData {

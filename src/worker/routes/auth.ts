@@ -55,6 +55,7 @@ async function sendVerificationEmail(apiKey: string, to: string, verifyUrl: stri
   })
 }
 
+
 const auth = new Hono<{ Bindings: Env }>()
 
 auth.post('/register', async (c) => {
