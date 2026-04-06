@@ -317,7 +317,7 @@ onMounted(load)
         <!-- Imagen expandida -->
         <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
           <div v-if="expandedId === ex.id && exerciseImage(ex)" class="border-t border-gray-800">
-            <img :src="exerciseImage(ex)!" :alt="ex.name" class="w-full max-h-56 object-cover" loading="lazy" />
+            <img :src="exerciseImage(ex)!" :alt="ex.name" class="w-full max-h-72 object-contain bg-gray-950" loading="lazy" />
           </div>
         </Transition>
         <!-- Formulario edición inline -->
