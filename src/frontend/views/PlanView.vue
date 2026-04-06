@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { api, type PlanEntry, type Exercise, type SessionData, type Routine } from '../lib/api'
+import { api, matchesSearch, type PlanEntry, type Exercise, type SessionData, type Routine } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
 
 const preferences = usePreferencesStore()
@@ -58,6 +58,7 @@ const view = ref<'week' | 'history'>('week')
 const selectedDay = ref(todayDow)
 const plan = ref<PlanEntry[]>([])
 const exercises = ref<Exercise[]>([])
+const ready = ref(false)
 // ── Modal agregar ─────────────────────────────────────────────────────────────
 const showAddModal = ref(false)
 const addStep = ref<'search' | 'config'>('search')
@@ -92,7 +93,7 @@ const availableExercises = computed(() => {
     if (dayPlan.value.find((p) => p.exerciseId === e.id)) return false
     if (modalFilterGroup.value !== 'all' && e.muscleGroup !== modalFilterGroup.value) return false
     if (!q) return true
-    return e.name.toLowerCase().includes(q) || e.muscleGroup.toLowerCase().includes(q)
+    return matchesSearch(e.name, e.muscleGroup, q)
   })
 })
 
@@ -102,6 +103,7 @@ async function load() {
   const [planData, exData] = await Promise.all([api.plan.get(), api.exercises.list()])
   plan.value = planData
   exercises.value = exData
+  ready.value = true
 }
 
 function selectExercise(ex: Exercise) {
@@ -519,7 +521,7 @@ onMounted(() => { load(); loadRoutines() })
           </Transition>
         </div>
 
-        <div v-if="dayPlan.length === 0" class="text-center py-14">
+        <div v-if="ready && dayPlan.length === 0" class="text-center py-14">
           <div class="text-4xl mb-3">📅</div>
           <p class="text-gray-500 font-medium">Día libre</p>
           <p class="text-gray-600 text-sm mt-1">

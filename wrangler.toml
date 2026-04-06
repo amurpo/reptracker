@@ -23,6 +23,11 @@ database_id = "fbab730b-aaff-4bd2-99f6-5ec7eb36a418"
 binding = "AVATARS"
 id = "12c4e27cab4a49f0956d6a1158832233"
 
+[[kv_namespaces]]
+binding = "EXERCISE_IMAGES"
+id = "aae86d589c3a4d7db627834d5b0f10fd"
+preview_id = "9062031d0a124b339ce84e3740755189"
+
 [observability]
 [observability.logs]
 enabled = true

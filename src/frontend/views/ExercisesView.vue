@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { api, type Exercise } from '../lib/api'
+import { api, matchesSearch, type Exercise } from '../lib/api'
 
 const MUSCLE_GROUPS = [
   { id: 'pecho', label: 'Pecho' },
@@ -43,24 +43,36 @@ const MUSCLE_COLORS: Record<string, string> = {
 }
 
 const exercises = ref<Exercise[]>([])
+const ready = ref(false)
 const filter = ref('all')
+const searchQuery = ref('')
 const showAdd = ref(false)
 const newName = ref('')
 const newGroup = ref('')
 const error = ref('')
 const loading = ref(false)
 const deletingId = ref<number | null>(null)
+const expandedId = ref<number | null>(null)
 const editingId = ref<number | null>(null)
 const editName = ref('')
 const editGroup = ref('')
 const editLoading = ref(false)
 const editError = ref('')
+const imageFileInput = ref<HTMLInputElement | null>(null)
+const uploadingImageId = ref<number | null>(null)
+const customImages = ref<Record<number, string>>({})
 
 function startEdit(ex: Exercise) {
   editingId.value = ex.id
   editName.value = ex.name
   editGroup.value = ex.muscleGroup
   editError.value = ''
+  // Cargar imagen custom si existe
+  if (ex.imageUrl?.startsWith('kv:') && !customImages.value[ex.id]) {
+    api.exercises.getImage(ex.id).then(r => {
+      if (r.image) customImages.value[ex.id] = r.image
+    })
+  }
 }
 
 async function saveEdit(id: number) {
@@ -79,14 +91,52 @@ async function saveEdit(id: number) {
   }
 }
 
+async function onImageFile(id: number, event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) { alert('Solo se permiten imágenes'); return }
+  if (file.size > 150_000) { alert('La imagen no puede superar 150 KB'); return }
+  uploadingImageId.value = id
+  try {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string
+      await api.exercises.uploadImage(id, dataUrl)
+      customImages.value[id] = dataUrl
+      const idx = exercises.value.findIndex(ex => ex.id === id)
+      if (idx !== -1) exercises.value[idx] = { ...exercises.value[idx], imageUrl: `kv:${id}` }
+      uploadingImageId.value = null
+    }
+    reader.readAsDataURL(file)
+  } catch {
+    uploadingImageId.value = null
+  }
+}
+
+async function removeImage(id: number) {
+  await api.exercises.deleteImage(id)
+  delete customImages.value[id]
+  const idx = exercises.value.findIndex(ex => ex.id === id)
+  if (idx !== -1) exercises.value[idx] = { ...exercises.value[idx], imageUrl: null }
+}
+
+function exerciseImage(ex: Exercise): string | null {
+  if (ex.imageUrl?.startsWith('kv:')) return customImages.value[ex.id] ?? null
+  return ex.imageUrl ?? null
+}
+
 const filtered = computed(() => {
-  if (filter.value === 'all') return exercises.value
-  if (filter.value === 'mine') return exercises.value.filter((e) => e.isCustom === 1)
-  return exercises.value.filter((e) => e.muscleGroup === filter.value)
+  let list = exercises.value
+  if (filter.value === 'mine') list = list.filter(e => e.isCustom === 1)
+  else if (filter.value !== 'all') list = list.filter(e => e.muscleGroup === filter.value)
+  const q = searchQuery.value.trim()
+  if (q) list = list.filter(e => matchesSearch(e.name, e.muscleGroup, q))
+  return list
 })
 
 async function load() {
   exercises.value = await api.exercises.list()
+  ready.value = true
 }
 
 async function addExercise() {
@@ -180,6 +230,19 @@ onMounted(load)
       </div>
     </Transition>
 
+    <!-- Búsqueda -->
+    <div class="relative mb-3">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      <input
+        v-model="searchQuery"
+        type="search"
+        placeholder="Buscar ejercicio..."
+        class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent-500 transition-colors"
+      />
+    </div>
+
     <!-- Filter chips -->
     <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide lg:flex-wrap lg:overflow-x-visible">
       <button
@@ -215,13 +278,21 @@ onMounted(load)
         class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden"
       >
         <!-- Fila principal -->
-        <div class="px-4 py-3.5 flex items-center justify-between">
-          <div>
-            <p class="font-semibold text-white text-sm">{{ ex.name }}</p>
-            <p class="text-xs mt-0.5" :class="muscleColor(ex.muscleGroup)">
-              {{ muscleLabel(ex.muscleGroup) }}
-            </p>
+        <div class="px-4 py-3.5 flex items-center justify-between cursor-pointer"
+          @click="expandedId = expandedId === ex.id ? null : ex.id">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <!-- Miniatura -->
+            <img v-if="exerciseImage(ex)" :src="exerciseImage(ex)!" :alt="ex.name"
+              class="w-10 h-10 rounded-xl object-cover shrink-0 bg-gray-800" loading="lazy" />
+            <div v-else class="w-10 h-10 rounded-xl bg-gray-800 shrink-0 flex items-center justify-center text-gray-600 text-lg">💪</div>
+            <div class="min-w-0">
+              <p class="font-semibold text-white text-sm">{{ ex.name }}</p>
+              <p class="text-xs mt-0.5" :class="muscleColor(ex.muscleGroup)">
+                {{ muscleLabel(ex.muscleGroup) }}
+              </p>
+            </div>
           </div>
+          <div class="flex items-center gap-1 shrink-0 ml-2" @click.stop>
           <div v-if="ex.isCustom === 1" class="flex items-center gap-1">
             <button
               @click="editingId === ex.id ? editingId = null : startEdit(ex)"
@@ -241,7 +312,14 @@ onMounted(load)
               </svg>
             </button>
           </div>
+          </div>
         </div>
+        <!-- Imagen expandida -->
+        <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
+          <div v-if="expandedId === ex.id && exerciseImage(ex)" class="border-t border-gray-800">
+            <img :src="exerciseImage(ex)!" :alt="ex.name" class="w-full max-h-56 object-cover" loading="lazy" />
+          </div>
+        </Transition>
         <!-- Formulario edición inline -->
         <Transition
           enter-active-class="transition-all duration-150"
@@ -265,6 +343,32 @@ onMounted(load)
               <option value="" disabled>Grupo muscular</option>
               <option v-for="g in MUSCLE_GROUPS" :key="g.id" :value="g.id">{{ g.label }}</option>
             </select>
+            <!-- Foto personalizada -->
+            <div class="flex items-center gap-2">
+              <img v-if="customImages[ex.id]" :src="customImages[ex.id]" class="w-12 h-12 rounded-xl object-cover bg-gray-800" />
+              <div v-else class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-600 text-xl shrink-0">📷</div>
+              <div class="flex flex-col gap-1">
+                <label class="cursor-pointer text-xs text-accent-400 hover:text-accent-300 transition-colors font-semibold">
+                  {{ uploadingImageId === ex.id ? 'Subiendo...' : customImages[ex.id] ? 'Cambiar foto' : 'Subir foto' }}
+                  <input
+                    ref="imageFileInput"
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    :disabled="uploadingImageId === ex.id"
+                    @change="onImageFile(ex.id, $event)"
+                  />
+                </label>
+                <button
+                  v-if="customImages[ex.id]"
+                  @click="removeImage(ex.id)"
+                  class="text-xs text-red-500 hover:text-red-400 transition-colors text-left"
+                >
+                  Eliminar foto
+                </button>
+              </div>
+              <p class="text-xs text-gray-600 ml-auto">máx 150 KB</p>
+            </div>
             <div v-if="editError" class="text-red-400 text-xs">{{ editError }}</div>
             <div class="flex gap-2 justify-end">
               <button @click="editingId = null" class="text-gray-500 hover:text-gray-300 px-3 py-1.5 text-sm transition-colors">Cancelar</button>
@@ -280,7 +384,7 @@ onMounted(load)
         </Transition>
       </div>
 
-      <div v-if="filtered.length === 0" class="text-center py-16">
+      <div v-if="ready && filtered.length === 0" class="text-center py-16">
         <div class="text-4xl mb-3">💪</div>
         <p class="text-gray-500 font-medium">Sin ejercicios</p>
         <p class="text-gray-600 text-sm mt-1">Toca "+ Nuevo" para crear uno</p>

@@ -1,3 +1,15 @@
+function norm(s: string) {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
+/** Devuelve true si todas las palabras del query aparecen en nombre o grupo muscular */
+export function matchesSearch(name: string, muscleGroup: string, query: string): boolean {
+  const words = norm(query).split(/\s+/).filter(Boolean)
+  if (!words.length) return true
+  const hay = norm(name) + ' ' + norm(muscleGroup)
+  return words.every(w => hay.includes(w))
+}
+
 async function request<T>(method: string, path: string, body?: unknown, skipAuthRedirect = false): Promise<T> {
   const token = localStorage.getItem('token')
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -46,6 +58,9 @@ export const api = {
     update: (id: number, name: string, muscleGroup: string) =>
       request<Exercise>('PATCH', `/exercises/${id}`, { name, muscleGroup }),
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/exercises/${id}`),
+    getImage: (id: number) => request<{ image: string | null }>('GET', `/exercises/${id}/image`),
+    uploadImage: (id: number, image: string) => request<{ ok: boolean }>('PUT', `/exercises/${id}/image`, { image }),
+    deleteImage: (id: number) => request<{ ok: boolean }>('DELETE', `/exercises/${id}/image`),
   },
   plan: {
     get: () => request<PlanEntry[]>('GET', '/plan'),
