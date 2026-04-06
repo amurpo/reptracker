@@ -63,8 +63,10 @@ auth.post('/register', async (c) => {
     const body = await c.req.json<{ email: string; password: string }>()
     const { email, password } = body
 
-    if (!email || !password || password.length < 8) {
-      return c.json({ error: 'Email y contraseña (mín. 8 caracteres) requeridos' }, 400)
+    const emailTrimmed = String(email ?? '').trim().toLowerCase()
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed) && emailTrimmed.length <= 254
+    if (!emailValid || !password || password.length < 8 || password.length > 72) {
+      return c.json({ error: 'Email inválido o contraseña fuera de rango (8-72 caracteres)' }, 400)
     }
 
     const db = getDb(c.env.DB)
@@ -216,8 +218,8 @@ auth.post('/forgot-password', async (c) => {
 
 auth.post('/reset-password', async (c) => {
   const { token, password } = await c.req.json<{ token: string; password: string }>()
-  if (!token || !password || password.length < 8) {
-    return c.json({ error: 'Datos inválidos' }, 400)
+  if (!token || !password || password.length < 8 || password.length > 72) {
+    return c.json({ error: 'La contraseña debe tener entre 8 y 72 caracteres' }, 400)
   }
 
   const db = getDb(c.env.DB)

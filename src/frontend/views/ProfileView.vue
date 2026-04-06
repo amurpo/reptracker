@@ -211,6 +211,7 @@ async function save() {
             v-model="name"
             type="text"
             placeholder="Tu nombre"
+            maxlength="50"
             class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
           />
         </div>
