@@ -52,12 +52,24 @@ const timeMain = computed(() => {
   return `${parts[0]}:${parts[1]}${ampm}`
 })
 
-const totalSets = computed(() => sessionData.value.plan.reduce((sum, e) => sum + e.sets, 0))
+const totalSets = computed(() => sessionData.value.plan.filter(e => !e.isCardio).reduce((sum, e) => sum + e.sets, 0))
+const totalCardio = computed(() => sessionData.value.plan.filter(e => e.isCardio).length)
+const totalCardioMin = computed(() => sessionData.value.plan.filter(e => e.isCardio).reduce((sum, e) => sum + (e.durationMinutes ?? 0), 0))
+const completedSets = computed(() => sessionData.value.completedSets.filter(s =>
+  sessionData.value.plan.find(e => e.id === s.weeklyPlanId && !e.isCardio)
+).length)
+const completedCardio = computed(() => sessionData.value.completedSets.filter(s =>
+  sessionData.value.plan.find(e => e.id === s.weeklyPlanId && e.isCardio)
+).length)
 const completedTotal = computed(() => sessionData.value.completedSets.length)
-const progress = computed(() =>
-  totalSets.value === 0 ? 0 : Math.round((completedTotal.value / totalSets.value) * 100)
-)
-const allDone = computed(() => totalSets.value > 0 && completedTotal.value >= totalSets.value)
+const progress = computed(() => {
+  const total = totalSets.value + totalCardio.value
+  return total === 0 ? 0 : Math.round((completedSets.value + completedCardio.value) / total * 100)
+})
+const allDone = computed(() => {
+  const total = totalSets.value + totalCardio.value
+  return total > 0 && completedSets.value >= totalSets.value && completedCardio.value >= totalCardio.value
+})
 
 async function toggleSet(weeklyPlanId: number, setNumber: number) {
   const key = `${weeklyPlanId}-${setNumber}`
@@ -137,7 +149,11 @@ onMounted(async () => {
       <!-- Progress -->
       <div class="px-4 pt-4 pb-2">
         <div class="flex justify-between text-sm mb-2">
-          <span class="text-gray-400">{{ completedTotal }}/{{ totalSets }} series</span>
+          <span class="text-gray-400">
+            <template v-if="totalSets > 0">{{ completedSets }}/{{ totalSets }} series</template>
+            <template v-if="totalSets > 0 && totalCardio > 0"> · </template>
+            <template v-if="totalCardio > 0">{{ totalCardioMin }} min cardio</template>
+          </span>
           <span :class="allDone ? 'text-green-400 font-semibold' : 'text-gray-500'">{{ progress }}%</span>
         </div>
         <div class="h-2 bg-gray-800 rounded-full overflow-hidden">

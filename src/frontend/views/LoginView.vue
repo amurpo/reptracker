@@ -7,13 +7,14 @@ import { useAuthStore } from '../stores/auth'
 const router = useRouter()
 const auth = useAuthStore()
 
-const mode = ref<'login' | 'register'>('login')
+const mode = ref<'login' | 'register' | 'forgot'>('login')
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
 const registered = ref(false)
 const notVerified = ref(false)
+const forgotSent = ref(false)
 
 async function submit() {
   error.value = ''
@@ -39,18 +40,32 @@ async function submit() {
     loading.value = false
   }
 }
+
+async function submitForgot() {
+  error.value = ''
+  loading.value = true
+  try {
+    await api.auth.forgotPassword(email.value)
+    forgotSent.value = true
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Error desconocido'
+  } finally {
+    loading.value = false
+  }
+}
+
+function switchMode(m: 'login' | 'register' | 'forgot') {
+  mode.value = m
+  error.value = ''
+  forgotSent.value = false
+}
 </script>
 
 <template>
   <div class="min-h-screen flex">
     <!-- Left: image panel (hidden on mobile) -->
     <div class="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
-      <img
-        src="/back.jpg"
-        alt="RepTracker"
-        class="absolute inset-0 w-full h-full object-cover"
-      />
-      <!-- dark overlay + branding -->
+      <img src="/back.jpg" alt="RepTracker" class="absolute inset-0 w-full h-full object-cover" />
       <div class="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-transparent" />
       <div class="relative z-10 flex flex-col justify-end p-12 pb-16">
         <div class="flex items-center gap-3 mb-4">
@@ -77,7 +92,7 @@ async function submit() {
 
       <div class="w-full max-w-sm">
 
-        <!-- Email sent state -->
+        <!-- Email enviado tras registro -->
         <div v-if="registered" class="text-center py-4">
           <div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center mx-auto mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-accent-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -89,91 +104,112 @@ async function submit() {
             Te enviamos un enlace de confirmación a<br/>
             <span class="text-gray-300 font-medium">{{ email }}</span>
           </p>
-          <button
-            @click="registered = false; mode = 'login'"
-            class="mt-6 text-accent-400 hover:text-accent-300 text-sm font-medium transition-colors"
-          >
+          <button @click="registered = false; switchMode('login')" class="mt-6 text-accent-400 hover:text-accent-300 text-sm font-medium transition-colors">
             Volver al inicio de sesión
           </button>
         </div>
 
         <template v-else>
-        <!-- Desktop heading -->
-        <div class="hidden lg:block mb-6">
-          <h2 class="text-2xl font-bold text-white">
-            {{ mode === 'login' ? 'Bienvenido de vuelta' : 'Crear cuenta' }}
-          </h2>
-          <p class="text-gray-500 text-sm mt-1">
-            {{ mode === 'login' ? 'Ingresa tus credenciales para continuar' : 'Completa los datos para registrarte' }}
-          </p>
-        </div>
-
-        <!-- Tabs -->
-        <div class="flex bg-gray-900 rounded-2xl p-1 mb-5 border border-gray-800">
-          <button
-            @click="mode = 'login'; error = ''"
-            class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            :class="mode === 'login' ? 'bg-accent-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'"
-          >
-            Iniciar sesión
-          </button>
-          <button
-            @click="mode = 'register'; error = ''"
-            class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            :class="mode === 'register' ? 'bg-accent-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'"
-          >
-            Registrarse
-          </button>
-        </div>
-
-        <!-- Form -->
-        <form @submit.prevent="submit" class="space-y-4">
-          <div>
-            <label class="block text-sm text-gray-400 mb-1.5">Email</label>
-            <input
-              v-model="email"
-              type="email"
-              required
-              autocomplete="email"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
-              placeholder="tu@email.com"
-            />
-          </div>
-          <div>
-            <label class="block text-sm text-gray-400 mb-1.5">Contraseña</label>
-            <input
-              v-model="password"
-              type="password"
-              required
-              :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
-              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
-              placeholder="••••••••"
-            />
-            <p v-if="mode === 'register'" class="text-xs text-gray-600 mt-1.5 pl-1">Mínimo 8 caracteres</p>
+          <!-- Tabs login / registro -->
+          <div v-if="mode !== 'forgot'" class="hidden lg:block mb-6">
+            <h2 class="text-2xl font-bold text-white">
+              {{ mode === 'login' ? 'Bienvenido de vuelta' : 'Crear cuenta' }}
+            </h2>
+            <p class="text-gray-500 text-sm mt-1">
+              {{ mode === 'login' ? 'Ingresa tus credenciales para continuar' : 'Completa los datos para registrarte' }}
+            </p>
           </div>
 
-          <div v-if="notVerified" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-4 py-3 text-amber-400 text-sm">
-            Tu email aún no está verificado. Revisa tu bandeja de entrada.
+          <div v-if="mode !== 'forgot'" class="flex bg-gray-900 rounded-2xl p-1 mb-5 border border-gray-800">
+            <button @click="switchMode('login')"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              :class="mode === 'login' ? 'bg-accent-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'">
+              Iniciar sesión
+            </button>
+            <button @click="switchMode('register')"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              :class="mode === 'register' ? 'bg-accent-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-300'">
+              Registrarse
+            </button>
           </div>
 
-          <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">
-            {{ error }}
-          </div>
+          <!-- ── MODO OLVIDÉ CONTRASEÑA ── -->
+          <template v-if="mode === 'forgot'">
+            <button @click="switchMode('login')" class="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-sm mb-6 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Volver al inicio de sesión
+            </button>
 
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full bg-accent-600 hover:bg-accent-500 active:bg-accent-700 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors mt-1"
-          >
-            {{ loading ? 'Cargando...' : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta' }}
-          </button>
+            <div v-if="forgotSent" class="text-center py-4">
+              <div class="w-16 h-16 rounded-full bg-accent-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-accent-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
+                </svg>
+              </div>
+              <h2 class="text-xl font-bold text-white mb-2">Revisa tu email</h2>
+              <p class="text-gray-500 text-sm leading-relaxed">
+                Si <span class="text-gray-300 font-medium">{{ email }}</span> está registrado, recibirás un enlace para restablecer tu contraseña.
+              </p>
+              <button @click="switchMode('login')" class="mt-6 text-accent-400 hover:text-accent-300 text-sm font-medium transition-colors">
+                Volver al inicio de sesión
+              </button>
+            </div>
 
-          <div v-if="mode === 'login'" class="text-center">
-            <RouterLink to="/forgot-password" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
-              ¿Olvidaste tu contraseña?
-            </RouterLink>
-          </div>
-        </form>
+            <template v-else>
+              <h2 class="text-2xl font-bold text-white mb-2">¿Olvidaste tu contraseña?</h2>
+              <p class="text-gray-500 text-sm mb-6">Ingresa tu email y te enviaremos un enlace para restablecerla.</p>
+              <form @submit.prevent="submitForgot" class="space-y-4">
+                <div>
+                  <label class="block text-sm text-gray-400 mb-1.5">Email</label>
+                  <input v-model="email" type="email" required autocomplete="email" placeholder="tu@email.com"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors" />
+                </div>
+                <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">{{ error }}</div>
+                <button type="submit" :disabled="loading"
+                  class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors">
+                  {{ loading ? 'Enviando...' : 'Enviar enlace' }}
+                </button>
+              </form>
+            </template>
+          </template>
+
+          <!-- ── MODO LOGIN / REGISTRO ── -->
+          <template v-else>
+            <form @submit.prevent="submit" class="space-y-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1.5">Email</label>
+                <input v-model="email" type="email" required autocomplete="email"
+                  class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
+                  placeholder="tu@email.com" />
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1.5">Contraseña</label>
+                <input v-model="password" type="password" required
+                  :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
+                  class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
+                  placeholder="••••••••" />
+                <p v-if="mode === 'register'" class="text-xs text-gray-600 mt-1.5 pl-1">Mínimo 8 caracteres</p>
+              </div>
+
+              <div v-if="notVerified" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-4 py-3 text-amber-400 text-sm">
+                Tu email aún no está verificado. Revisa tu bandeja de entrada.
+              </div>
+              <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">{{ error }}</div>
+
+              <button type="submit" :disabled="loading"
+                class="w-full bg-accent-600 hover:bg-accent-500 active:bg-accent-700 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors mt-1">
+                {{ loading ? 'Cargando...' : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta' }}
+              </button>
+
+              <div v-if="mode === 'login'" class="text-center">
+                <button type="button" @click="switchMode('forgot')" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            </form>
+          </template>
         </template>
       </div>
     </div>
