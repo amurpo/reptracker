@@ -6,6 +6,20 @@ import type { Env } from '../index'
 
 type Variables = { userId: string }
 
+const VALID_MUSCLE_GROUPS = [
+  'abdominales', 'abductores', 'aductores', 'bíceps', 'pantorrillas',
+  'pecho', 'antebrazos', 'glúteos', 'isquiotibiales', 'dorsales',
+  'lumbar', 'espalda media', 'cuello', 'cuádriceps', 'hombros',
+  'trapecios', 'tríceps',
+]
+
+function validateExerciseFields(name: string, muscleGroup: string) {
+  const n = String(name ?? '').trim()
+  if (!n || n.length > 50) return 'El nombre debe tener entre 1 y 50 caracteres'
+  if (!VALID_MUSCLE_GROUPS.includes(muscleGroup)) return 'Grupo muscular inválido'
+  return null
+}
+
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 app.use('*', authMiddleware)
@@ -35,10 +49,8 @@ app.get('/', async (c) => {
 app.post('/', async (c) => {
   const userId = parseInt(c.get('userId'))
   const { name, muscleGroup } = await c.req.json<{ name: string; muscleGroup: string }>()
-
-  if (!name?.trim() || !muscleGroup) {
-    return c.json({ error: 'Nombre y grupo muscular requeridos' }, 400)
-  }
+  const err = validateExerciseFields(name, muscleGroup)
+  if (err) return c.json({ error: err }, 400)
 
   const db = getDb(c.env.DB)
 
@@ -70,10 +82,8 @@ app.patch('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))
   const id = parseInt(c.req.param('id'))
   const { name, muscleGroup } = await c.req.json<{ name: string; muscleGroup: string }>()
-
-  if (!name?.trim() || !muscleGroup) {
-    return c.json({ error: 'Nombre y grupo muscular requeridos' }, 400)
-  }
+  const err = validateExerciseFields(name, muscleGroup)
+  if (err) return c.json({ error: err }, 400)
 
   const db = getDb(c.env.DB)
 

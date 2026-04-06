@@ -67,6 +67,7 @@ async function submit() {
               v-model="password"
               type="password"
               required
+              maxlength="72"
               autocomplete="new-password"
               placeholder="••••••••"
               class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
@@ -78,6 +79,7 @@ async function submit() {
               v-model="confirm"
               type="password"
               required
+              maxlength="72"
               autocomplete="new-password"
               placeholder="••••••••"
               class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"

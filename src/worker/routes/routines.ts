@@ -33,12 +33,14 @@ app.post('/', async (c) => {
     exercises: { exerciseId: number; sets: number; reps: number; weightKg?: number | null; orderIndex: number }[]
   }>()
 
-  if (!name?.trim()) return c.json({ error: 'Nombre requerido' }, 400)
+  const nameTrimmed = String(name ?? '').trim()
+  if (!nameTrimmed || nameTrimmed.length > 50) return c.json({ error: 'El nombre debe tener entre 1 y 50 caracteres' }, 400)
   if (!exList?.length) return c.json({ error: 'La rutina debe tener al menos un ejercicio' }, 400)
+  if (exList.length > 30) return c.json({ error: 'La rutina no puede tener más de 30 ejercicios' }, 400)
 
   const db = getDb(c.env.DB)
 
-  const inserted = await db.insert(routines).values({ userId, name: name.trim() }).returning()
+  const inserted = await db.insert(routines).values({ userId, name: nameTrimmed }).returning()
   const routine = inserted[0]
 
   await db.insert(routineExercises).values(
@@ -71,7 +73,8 @@ app.post('/:id/apply', async (c) => {
   const id = parseInt(c.req.param('id'))
   const { dayOfWeek } = await c.req.json<{ dayOfWeek: number }>()
 
-  if (dayOfWeek === undefined || dayOfWeek === null) return c.json({ error: 'dayOfWeek requerido' }, 400)
+  const dow = Number(dayOfWeek)
+  if (!Number.isInteger(dow) || dow < 0 || dow > 6) return c.json({ error: 'dayOfWeek inválido (0-6)' }, 400)
 
   const db = getDb(c.env.DB)
 

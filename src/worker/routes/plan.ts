@@ -8,6 +8,33 @@ type Variables = { userId: string }
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
+function validatePlanFields(fields: {
+  dayOfWeek?: number
+  sets?: number
+  reps?: number
+  weightKg?: number | null
+  isCardio?: number
+  durationMinutes?: number | null
+}): string | null {
+  const { dayOfWeek, sets, reps, weightKg, isCardio, durationMinutes } = fields
+  if (dayOfWeek !== undefined && (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6))
+    return 'dayOfWeek inválido (0-6)'
+  if (isCardio) {
+    const d = Number(durationMinutes)
+    if (isNaN(d) || d < 1 || d > 600) return 'Duración inválida (1-600 min)'
+  } else {
+    const s = Number(sets)
+    const r = Number(reps)
+    if (!Number.isInteger(s) || s < 1 || s > 20) return 'Series inválidas (1-20)'
+    if (!Number.isInteger(r) || r < 1 || r > 200) return 'Repeticiones inválidas (1-200)'
+    if (weightKg !== undefined && weightKg !== null) {
+      const w = Number(weightKg)
+      if (isNaN(w) || w < 0 || w > 1000) return 'Peso inválido (0-1000 kg)'
+    }
+  }
+  return null
+}
+
 app.use('*', authMiddleware)
 
 app.get('/', async (c) => {
@@ -51,6 +78,8 @@ app.post('/', async (c) => {
   if (dayOfWeek === undefined || dayOfWeek === null || !exerciseId) {
     return c.json({ error: 'Día y ejercicio requeridos' }, 400)
   }
+  const errPost = validatePlanFields({ dayOfWeek, sets, reps, weightKg, isCardio, durationMinutes })
+  if (errPost) return c.json({ error: errPost }, 400)
 
   const db = getDb(c.env.DB)
 
@@ -79,6 +108,8 @@ app.put('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))
   const id = parseInt(c.req.param('id'))
   const { sets, reps, weightKg, isCardio, durationMinutes } = await c.req.json<{ sets: number; reps: number; weightKg?: number | null; isCardio?: number; durationMinutes?: number | null }>()
+  const errPut = validatePlanFields({ sets, reps, weightKg, isCardio, durationMinutes })
+  if (errPut) return c.json({ error: errPut }, 400)
   const db = getDb(c.env.DB)
 
   const updated = await db.update(weeklyPlan)

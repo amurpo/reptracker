@@ -149,6 +149,7 @@ onMounted(load)
             v-model="newName"
             type="text"
             placeholder="Nombre del ejercicio"
+            maxlength="50"
             class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors"
             @keyup.enter="addExercise"
           />
@@ -253,6 +254,7 @@ onMounted(load)
               v-model="editName"
               type="text"
               placeholder="Nombre"
+              maxlength="50"
               class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-accent-500 transition-colors"
               @keyup.enter="saveEdit(ex.id)"
             />

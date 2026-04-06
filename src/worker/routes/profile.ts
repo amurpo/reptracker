@@ -43,6 +43,11 @@ profile.get('/', async (c) => {
   return c.json(rows[0])
 })
 
+const VALID_DATE_FORMATS = ['dd-mm-yyyy', 'mm-dd-yyyy', 'yyyy-mm-dd']
+const VALID_TIME_FORMATS = ['24h', '12h']
+const VALID_WEEK_STARTS = [0, 1]
+const VALID_THEMES = ['indigo', 'violet', 'emerald', 'sky', 'rose', 'amber']
+
 profile.put('/', async (c) => {
   const userId = parseInt(c.get('userId'))
   const body = await c.req.json<{
@@ -54,8 +59,33 @@ profile.put('/', async (c) => {
     weekStart?: number
     theme?: string
   }>()
-  const db = getDb(c.env.DB)
 
+  // Validar campos
+  if (body.name !== undefined) {
+    const n = String(body.name).trim()
+    if (n.length > 50) return c.json({ error: 'El nombre no puede superar 50 caracteres' }, 400)
+    body.name = n
+  }
+  if (body.age !== undefined) {
+    const a = Number(body.age)
+    if (!Number.isInteger(a) || a < 1 || a > 120) return c.json({ error: 'Edad inválida (1-120)' }, 400)
+    body.age = a
+  }
+  if (body.weightKg !== undefined) {
+    const w = Number(body.weightKg)
+    if (isNaN(w) || w < 1 || w > 500) return c.json({ error: 'Peso inválido (1-500 kg)' }, 400)
+    body.weightKg = Math.round(w * 10) / 10
+  }
+  if (body.dateFormat !== undefined && !VALID_DATE_FORMATS.includes(body.dateFormat))
+    return c.json({ error: 'Formato de fecha inválido' }, 400)
+  if (body.timeFormat !== undefined && !VALID_TIME_FORMATS.includes(body.timeFormat))
+    return c.json({ error: 'Formato de hora inválido' }, 400)
+  if (body.weekStart !== undefined && !VALID_WEEK_STARTS.includes(body.weekStart))
+    return c.json({ error: 'Inicio de semana inválido' }, 400)
+  if (body.theme !== undefined && !VALID_THEMES.includes(body.theme))
+    return c.json({ error: 'Tema inválido' }, 400)
+
+  const db = getDb(c.env.DB)
   const updated = await db
     .update(users)
     .set({
