@@ -43,6 +43,8 @@ export const api = {
     list: () => request<Exercise[]>('GET', '/exercises'),
     create: (name: string, muscleGroup: string) =>
       request<Exercise>('POST', '/exercises', { name, muscleGroup }),
+    update: (id: number, name: string, muscleGroup: string) =>
+      request<Exercise>('PATCH', `/exercises/${id}`, { name, muscleGroup }),
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/exercises/${id}`),
   },
   plan: {

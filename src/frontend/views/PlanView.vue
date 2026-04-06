@@ -436,7 +436,7 @@ onMounted(() => { load(); loadRoutines() })
         >
           <div class="flex items-center gap-3 px-4 py-3.5">
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-white text-sm truncate">{{ entry.exerciseName }}</p>
+              <p class="font-semibold text-white text-sm">{{ entry.exerciseName }}</p>
               <p class="text-xs text-accent-400 mt-0.5">
                 <template v-if="entry.isCardio">
                   {{ entry.durationMinutes }} min

@@ -65,6 +65,36 @@ app.post('/', async (c) => {
   return c.json(inserted[0], 201)
 })
 
+// PATCH /:id — editar nombre y grupo muscular (solo ejercicios custom propios)
+app.patch('/:id', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const id = parseInt(c.req.param('id'))
+  const { name, muscleGroup } = await c.req.json<{ name: string; muscleGroup: string }>()
+
+  if (!name?.trim() || !muscleGroup) {
+    return c.json({ error: 'Nombre y grupo muscular requeridos' }, 400)
+  }
+
+  const db = getDb(c.env.DB)
+
+  const target = await db
+    .select({ id: exercises.id })
+    .from(exercises)
+    .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isCustom, 1)))
+
+  if (target.length === 0) {
+    return c.json({ error: 'Ejercicio no encontrado' }, 404)
+  }
+
+  const updated = await db
+    .update(exercises)
+    .set({ name: name.trim(), muscleGroup })
+    .where(eq(exercises.id, id))
+    .returning()
+
+  return c.json(updated[0])
+})
+
 // DELETE /:id — soft delete (solo ejercicios custom propios)
 app.delete('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))
