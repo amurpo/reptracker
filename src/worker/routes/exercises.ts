@@ -105,6 +105,61 @@ app.patch('/:id', async (c) => {
   return c.json(updated[0])
 })
 
+// GET /:id/image — obtener imagen custom
+app.get('/:id/image', async (c) => {
+  const userId = c.get('userId')
+  const id = c.req.param('id')
+  const image = await c.env.EXERCISE_IMAGES.get(`ex:${userId}:${id}`)
+  return c.json({ image: image ?? null })
+})
+
+// PUT /:id/image — subir imagen custom (solo ejercicios propios, máx 200KB)
+app.put('/:id/image', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const id = parseInt(c.req.param('id'))
+  const { image } = await c.req.json<{ image: string }>()
+
+  if (!image || !image.startsWith('data:image/')) {
+    return c.json({ error: 'Imagen inválida' }, 400)
+  }
+  if (image.length > 200_000) {
+    return c.json({ error: 'La imagen no puede superar 200 KB' }, 400)
+  }
+
+  const db = getDb(c.env.DB)
+  const target = await db.select({ id: exercises.id })
+    .from(exercises)
+    .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isCustom, 1)))
+
+  if (target.length === 0) return c.json({ error: 'Ejercicio no encontrado' }, 404)
+
+  await c.env.EXERCISE_IMAGES.put(`ex:${userId}:${id}`, image)
+  // Guardar referencia en la DB para que el GET /exercises la devuelva
+  const updated = await db.update(exercises)
+    .set({ imageUrl: `kv:${userId}:${id}` })
+    .where(eq(exercises.id, id))
+    .returning()
+
+  return c.json({ ok: true, imageUrl: updated[0].imageUrl })
+})
+
+// DELETE /:id/image — eliminar imagen custom
+app.delete('/:id/image', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const id = parseInt(c.req.param('id'))
+
+  const db = getDb(c.env.DB)
+  const target = await db.select({ id: exercises.id })
+    .from(exercises)
+    .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isCustom, 1)))
+
+  if (target.length === 0) return c.json({ error: 'Ejercicio no encontrado' }, 404)
+
+  await c.env.EXERCISE_IMAGES.delete(`ex:${userId}:${id}`)
+  await db.update(exercises).set({ imageUrl: null }).where(eq(exercises.id, id))
+  return c.json({ ok: true })
+})
+
 // DELETE /:id — soft delete (solo ejercicios custom propios)
 app.delete('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))

@@ -13,6 +13,7 @@ export type Env = {
   JWT_SECRET: string
   RESEND_API_KEY: string
   AVATARS: KVNamespace
+  EXERCISE_IMAGES: KVNamespace
 }
 
 const app = new Hono<{ Bindings: Env }>()
