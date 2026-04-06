@@ -61,6 +61,17 @@ const editError = ref('')
 const imageFileInput = ref<HTMLInputElement | null>(null)
 const uploadingImageId = ref<number | null>(null)
 const customImages = ref<Record<number, string>>({})
+const newImageDataUrl = ref<string | null>(null)
+
+function onNewImageFile(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) { alert('Solo se permiten imágenes'); return }
+  if (file.size > 150_000) { alert('La imagen no puede superar 150 KB'); return }
+  const reader = new FileReader()
+  reader.onload = e => { newImageDataUrl.value = e.target?.result as string }
+  reader.readAsDataURL(file)
+}
 
 function startEdit(ex: Exercise) {
   editingId.value = ex.id
@@ -145,9 +156,15 @@ async function addExercise() {
   loading.value = true
   try {
     const ex = await api.exercises.create(newName.value.trim(), newGroup.value)
+    if (newImageDataUrl.value) {
+      await api.exercises.uploadImage(ex.id, newImageDataUrl.value)
+      customImages.value[ex.id] = newImageDataUrl.value
+      ex.imageUrl = `kv:${ex.id}`
+    }
     exercises.value.push(ex)
     newName.value = ''
     newGroup.value = ''
+    newImageDataUrl.value = null
     showAdd.value = false
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Error'
@@ -210,6 +227,17 @@ onMounted(load)
             <option value="" disabled>Grupo muscular</option>
             <option v-for="g in MUSCLE_GROUPS" :key="g.id" :value="g.id">{{ g.label }}</option>
           </select>
+          <!-- Foto opcional -->
+          <div class="flex items-center gap-3">
+            <img v-if="newImageDataUrl" :src="newImageDataUrl" class="w-12 h-12 rounded-xl object-cover bg-gray-800 shrink-0" />
+            <div v-else class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-600 text-xl shrink-0">📷</div>
+            <label class="cursor-pointer text-xs text-accent-400 hover:text-accent-300 transition-colors font-semibold">
+              {{ newImageDataUrl ? 'Cambiar foto' : 'Agregar foto (opcional)' }}
+              <input type="file" accept="image/*" class="hidden" @change="onNewImageFile" />
+            </label>
+            <button v-if="newImageDataUrl" @click="newImageDataUrl = null" class="text-xs text-red-500 hover:text-red-400 ml-auto">Quitar</button>
+            <p v-else class="text-xs text-gray-600 ml-auto">máx 150 KB</p>
+          </div>
           <div v-if="error" class="text-red-400 text-sm">{{ error }}</div>
           <div class="flex gap-2">
             <button
@@ -220,7 +248,7 @@ onMounted(load)
               {{ loading ? 'Guardando...' : 'Agregar' }}
             </button>
             <button
-              @click="showAdd = false; newName = ''; newGroup = ''; error = ''"
+              @click="showAdd = false; newName = ''; newGroup = ''; error = ''; newImageDataUrl = null"
               class="px-4 bg-gray-800 hover:bg-gray-700 text-gray-400 py-2.5 rounded-xl text-sm transition-colors"
             >
               Cancelar
