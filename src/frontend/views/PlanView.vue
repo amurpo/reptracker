@@ -698,8 +698,8 @@ onMounted(() => { load(); loadRoutines() })
           <div v-if="selectedMonthDay" class="mt-4 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
               <div>
-                <p class="text-sm font-semibold text-white">{{ preferences.formatDate(selectedMonthDay) }}</p>
-                <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === calcDayOfWeek(selectedMonthDay))?.full }}</p>
+                <p class="text-sm font-semibold text-white">{{ preferences.formatDate(selectedMonthDay!) }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === calcDayOfWeek(selectedMonthDay!))?.full }}</p>
               </div>
               <button @click="selectedMonthDay = null; monthDayPlan = []" class="text-gray-600 hover:text-gray-300 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
