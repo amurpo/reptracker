@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../lib/api'
 import { useAuthStore } from '../stores/auth'
+import TurnstileWidget from '../components/TurnstileWidget.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -16,16 +17,28 @@ const registered = ref(false)
 const notVerified = ref(false)
 const forgotSent = ref(false)
 
+const turnstileToken = ref('')
+const turnstileRef = ref<InstanceType<typeof TurnstileWidget> | null>(null)
+// En localhost se usa el site key de prueba de Cloudflare (siempre pasa)
+const SITE_KEY = window.location.hostname === 'localhost'
+  ? '1x00000000000000000000AA'
+  : '0x4AAAAAAC0rD5hjSIcMTPH6'
+
+watch(mode, () => {
+  turnstileToken.value = ''
+  turnstileRef.value?.reset()
+})
+
 async function submit() {
   error.value = ''
   notVerified.value = false
   loading.value = true
   try {
     if (mode.value === 'register') {
-      await api.auth.register(email.value, password.value)
+      await api.auth.register(email.value, password.value, turnstileToken.value)
       registered.value = true
     } else {
-      const res = await api.auth.login(email.value, password.value)
+      const res = await api.auth.login(email.value, password.value, turnstileToken.value)
       auth.setAuth(res.token, res.user)
       router.push('/')
     }
@@ -36,6 +49,7 @@ async function submit() {
     } else {
       error.value = msg
     }
+    turnstileRef.value?.reset()
   } finally {
     loading.value = false
   }
@@ -45,10 +59,11 @@ async function submitForgot() {
   error.value = ''
   loading.value = true
   try {
-    await api.auth.forgotPassword(email.value)
+    await api.auth.forgotPassword(email.value, turnstileToken.value)
     forgotSent.value = true
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Error desconocido'
+    turnstileRef.value?.reset()
   } finally {
     loading.value = false
   }
@@ -167,7 +182,8 @@ function switchMode(m: 'login' | 'register' | 'forgot') {
                     class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors" />
                 </div>
                 <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">{{ error }}</div>
-                <button type="submit" :disabled="loading"
+                <TurnstileWidget ref="turnstileRef" :sitekey="SITE_KEY" v-model="turnstileToken" />
+                <button type="submit" :disabled="loading || !turnstileToken"
                   class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors">
                   {{ loading ? 'Enviando...' : 'Enviar enlace' }}
                 </button>
@@ -198,7 +214,9 @@ function switchMode(m: 'login' | 'register' | 'forgot') {
               </div>
               <div v-if="error" class="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-sm">{{ error }}</div>
 
-              <button type="submit" :disabled="loading"
+              <TurnstileWidget ref="turnstileRef" :sitekey="SITE_KEY" v-model="turnstileToken" />
+
+              <button type="submit" :disabled="loading || !turnstileToken"
                 class="w-full bg-accent-600 hover:bg-accent-500 active:bg-accent-700 disabled:opacity-50 text-white font-semibold py-3 rounded-2xl transition-colors mt-1">
                 {{ loading ? 'Cargando...' : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta' }}
               </button>

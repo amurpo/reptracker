@@ -12,6 +12,7 @@ export type Env = {
   DB: D1Database
   JWT_SECRET: string
   RESEND_API_KEY: string
+  TURNSTILE_SECRET: string
   AVATARS: KVNamespace
   EXERCISE_IMAGES: KVNamespace
 }
@@ -26,7 +27,7 @@ app.use('*', async (c, next) => {
   c.res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   c.res.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'self'; object-src 'none'"
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://static.cloudflareinsights.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'self'; object-src 'none'"
   )
 })
 

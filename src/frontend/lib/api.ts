@@ -42,14 +42,14 @@ async function request<T>(method: string, path: string, body?: unknown, skipAuth
 
 export const api = {
   auth: {
-    register: (email: string, password: string) =>
-      request<{ message: string }>('POST', '/auth/register', { email, password }, true),
-    forgotPassword: (email: string) =>
-      request<{ message: string }>('POST', '/auth/forgot-password', { email }, true),
+    register: (email: string, password: string, turnstileToken: string) =>
+      request<{ message: string }>('POST', '/auth/register', { email, password, turnstileToken }, true),
+    forgotPassword: (email: string, turnstileToken: string) =>
+      request<{ message: string }>('POST', '/auth/forgot-password', { email, turnstileToken }, true),
     resetPassword: (token: string, password: string) =>
       request<{ ok: boolean }>('POST', '/auth/reset-password', { token, password }, true),
-    login: (email: string, password: string) =>
-      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password }, true),
+    login: (email: string, password: string, turnstileToken: string) =>
+      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password, turnstileToken }, true),
   },
   exercises: {
     list: () => request<Exercise[]>('GET', '/exercises'),

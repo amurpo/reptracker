@@ -4,6 +4,17 @@ import { eq } from 'drizzle-orm'
 import { getDb, users, emailVerificationTokens, passwordResetTokens } from '../db'
 import type { Env } from '../index'
 
+async function verifyTurnstile(secret: string, token: string, ip?: string): Promise<boolean> {
+  const body = new URLSearchParams({ secret, response: token })
+  if (ip) body.set('remoteip', ip)
+  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body,
+  })
+  const data = await res.json<{ success: boolean }>()
+  return data.success
+}
+
 async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16))
   const key = await crypto.subtle.importKey(
@@ -60,8 +71,11 @@ const auth = new Hono<{ Bindings: Env }>()
 
 auth.post('/register', async (c) => {
   try {
-    const body = await c.req.json<{ email: string; password: string }>()
-    const { email, password } = body
+    const body = await c.req.json<{ email: string; password: string; turnstileToken: string }>()
+    const { email, password, turnstileToken } = body
+
+    const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
+    if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
 
     const emailTrimmed = String(email ?? '').trim().toLowerCase()
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed) && emailTrimmed.length <= 254
@@ -119,8 +133,11 @@ auth.post('/register', async (c) => {
 })
 
 auth.post('/login', async (c) => {
-  const body = await c.req.json<{ email: string; password: string }>()
-  const { email, password } = body
+  const body = await c.req.json<{ email: string; password: string; turnstileToken: string }>()
+  const { email, password, turnstileToken } = body
+
+  const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
+  if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
 
   if (!email || !password) {
     return c.json({ error: 'Email y contraseña requeridos' }, 400)
@@ -172,8 +189,11 @@ auth.get('/verify/:token', async (c) => {
 
 auth.post('/forgot-password', async (c) => {
   try {
-  const { email } = await c.req.json<{ email: string }>()
+  const { email, turnstileToken } = await c.req.json<{ email: string; turnstileToken: string }>()
   if (!email) return c.json({ error: 'Email requerido' }, 400)
+
+  const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
+  if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
 
   const db = getDb(c.env.DB)
   const rows = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.email, email.toLowerCase()))
