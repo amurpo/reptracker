@@ -63,9 +63,10 @@ export const api = {
     deleteImage: (id: number) => request<{ ok: boolean }>('DELETE', `/exercises/${id}/image`),
   },
   plan: {
-    get: () => request<PlanEntry[]>('GET', '/plan'),
-    add: (dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
-      request<PlanEntry>('POST', '/plan', { dayOfWeek, exerciseId, sets, reps, weightKg, isCardio, durationMinutes }),
+    get: (weekStart: string) => request<PlanEntry[]>('GET', `/plan?weekStart=${encodeURIComponent(weekStart)}`),
+    getMonth: (yearMonth: string) => request<string[]>('GET', `/plan/month/${yearMonth}`),
+    add: (weekStart: string, dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('POST', '/plan', { weekStart, dayOfWeek, exerciseId, sets, reps, weightKg, isCardio, durationMinutes }),
     update: (id: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
       request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, weightKg, isCardio, durationMinutes }),
     remove: (id: number) => request<{ ok: boolean }>('DELETE', `/plan/${id}`),
@@ -84,8 +85,8 @@ export const api = {
     save: (name: string, exercises: RoutineExercise[]) =>
       request<Routine>('POST', '/routines', { name, exercises }),
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/routines/${id}`),
-    apply: (id: number, dayOfWeek: number) =>
-      request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek }),
+    apply: (id: number, dayOfWeek: number, weekStart: string) =>
+      request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek, weekStart }),
   },
   sessions: {
     get: (date: string) => request<SessionData>('GET', `/sessions/${date}`),
@@ -124,6 +125,7 @@ export interface Exercise {
 
 export interface PlanEntry {
   id: number
+  weekStart: string
   dayOfWeek: number
   exerciseId: number
   sets: number

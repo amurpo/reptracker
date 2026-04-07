@@ -60,6 +60,7 @@ export const exercises = sqliteTable('exercises', {
 export const weeklyPlan = sqliteTable('weekly_plan', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  weekStart: text('week_start').notNull().default(''),
   dayOfWeek: integer('day_of_week').notNull(),
   exerciseId: integer('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   sets: integer('sets').notNull().default(3),

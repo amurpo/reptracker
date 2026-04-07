@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { api, matchesSearch, type PlanEntry, type Exercise, type SessionData, type Routine } from '../lib/api'
+import { api, matchesSearch, type PlanEntry, type Exercise, type Routine } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
 
 const preferences = usePreferencesStore()
 
-// ── Días base (dow: 0=Lun … 6=Dom) ──────────────────────────────────────────
-const BASE_DAYS = [
+// ── Días base
+// dow = offset desde el inicio de semana del usuario (0 = primer día, 6 = último)
+const BASE_DAYS_MON = [
   { short: 'Lun', full: 'Lunes',      dow: 0 },
   { short: 'Mar', full: 'Martes',     dow: 1 },
   { short: 'Mié', full: 'Miércoles',  dow: 2 },
@@ -14,6 +15,15 @@ const BASE_DAYS = [
   { short: 'Vie', full: 'Viernes',    dow: 4 },
   { short: 'Sáb', full: 'Sábado',     dow: 5 },
   { short: 'Dom', full: 'Domingo',    dow: 6 },
+]
+const BASE_DAYS_SUN = [
+  { short: 'Dom', full: 'Domingo',    dow: 0 },
+  { short: 'Lun', full: 'Lunes',      dow: 1 },
+  { short: 'Mar', full: 'Martes',     dow: 2 },
+  { short: 'Mié', full: 'Miércoles',  dow: 3 },
+  { short: 'Jue', full: 'Jueves',     dow: 4 },
+  { short: 'Vie', full: 'Viernes',    dow: 5 },
+  { short: 'Sáb', full: 'Sábado',     dow: 6 },
 ]
 
 const MUSCLE_GROUPS = [
@@ -38,24 +48,78 @@ const MUSCLE_GROUPS = [
 
 const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
-// Días ordenados según preferencia de inicio de semana
-const orderedDays = computed(() =>
-  preferences.weekStart === 1
-    ? [BASE_DAYS[6], ...BASE_DAYS.slice(0, 6)]  // Dom primero
-    : BASE_DAYS                                   // Lun primero
-)
+const orderedDays = computed(() => preferences.weekStart === 1 ? BASE_DAYS_SUN : BASE_DAYS_MON)
 
-// Día de hoy (dow 0-6)
-const todayDow = (() => {
-  const d = new Date().getDay()
-  return d === 0 ? 6 : d - 1
-})()
+// Calcula el inicio de semana (YYYY-MM-DD) según preferencia del usuario
+function calcWeekStart(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00')
+  const day = d.getDay() // 0=Dom
+  const offset = preferences.weekStart === 1 ? day : (day === 0 ? 6 : day - 1)
+  d.setDate(d.getDate() - offset)
+  return d.toISOString().split('T')[0]
+}
+
+// Offset del día dentro de la semana (0 = primer día, 6 = último)
+function calcDayOfWeek(dateStr: string): number {
+  const ws = calcWeekStart(dateStr)
+  const d1 = new Date(dateStr + 'T12:00:00')
+  const d2 = new Date(ws + 'T12:00:00')
+  return Math.round((d1.getTime() - d2.getTime()) / 86400000)
+}
+
+const todayStr = new Date().toISOString().split('T')[0]
+
+// Semana actualmente visible
+const currentWeekStart = ref(calcWeekStart(todayStr))
+
+// Offset del día de hoy dentro de la semana del usuario
+const todayDow = computed(() => calcDayOfWeek(todayStr))
+
+// Label de la semana actual, muestra mes en caso de cruce
+const weekLabel = computed(() => {
+  const start = new Date(currentWeekStart.value + 'T12:00:00')
+  const end = new Date(start)
+  end.setDate(end.getDate() + 6)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const s0 = orderedDays.value[0].short
+  const s6 = orderedDays.value[6].short
+  const mEnd = MONTH_NAMES[end.getMonth()].slice(0, 3)
+  if (start.getMonth() !== end.getMonth()) {
+    const mStart = MONTH_NAMES[start.getMonth()].slice(0, 3)
+    return `${s0} ${pad(start.getDate())} ${mStart} – ${s6} ${pad(end.getDate())} ${mEnd}`
+  }
+  return `${s0} ${pad(start.getDate())} – ${s6} ${pad(end.getDate())}, ${mEnd}`
+})
+
+// Número de día del mes para el offset dow en la semana actual
+function weekDayDate(dow: number): string {
+  const d = new Date(currentWeekStart.value + 'T12:00:00')
+  d.setDate(d.getDate() + dow)
+  return String(d.getDate()).padStart(2, '0')
+}
+
+function prevWeek() {
+  const d = new Date(currentWeekStart.value + 'T12:00:00')
+  d.setDate(d.getDate() - 7)
+  currentWeekStart.value = d.toISOString().split('T')[0]
+}
+
+function nextWeek() {
+  const d = new Date(currentWeekStart.value + 'T12:00:00')
+  d.setDate(d.getDate() + 7)
+  currentWeekStart.value = d.toISOString().split('T')[0]
+}
+
+function goToCurrentWeek() {
+  currentWeekStart.value = calcWeekStart(todayStr)
+  selectedDay.value = todayDow.value
+}
 
 // ── Vista activa ─────────────────────────────────────────────────────────────
-const view = ref<'week' | 'history'>('week')
+const view = ref<'week' | 'month'>('week')
 
 // ── Plan semanal ─────────────────────────────────────────────────────────────
-const selectedDay = ref(todayDow)
+const selectedDay = ref(todayDow.value)
 const plan = ref<PlanEntry[]>([])
 const exercises = ref<Exercise[]>([])
 const ready = ref(false)
@@ -100,7 +164,7 @@ const availableExercises = computed(() => {
 const dayHasPlan = (dow: number) => plan.value.some((e) => e.dayOfWeek === dow)
 
 async function load() {
-  const [planData, exData] = await Promise.all([api.plan.get(), api.exercises.list()])
+  const [planData, exData] = await Promise.all([api.plan.get(currentWeekStart.value), api.exercises.list()])
   plan.value = planData
   exercises.value = exData
   ready.value = true
@@ -130,6 +194,7 @@ async function addToPlan() {
   saving.value = true
   try {
     const entry = await api.plan.add(
+      currentWeekStart.value,
       selectedDay.value,
       addExerciseId.value,
       addSets.value,
@@ -209,7 +274,7 @@ async function saveRoutine() {
 async function applyRoutine(routineId: number) {
   routineLoading.value = true
   try {
-    const entries = await api.routines.apply(routineId, selectedDay.value)
+    const entries = await api.routines.apply(routineId, selectedDay.value, currentWeekStart.value)
     plan.value = plan.value.filter((e) => e.dayOfWeek !== selectedDay.value)
     plan.value.push(...entries)
     showLoadRoutine.value = false
@@ -223,14 +288,11 @@ async function deleteRoutine(id: number) {
   routines.value = routines.value.filter((r) => r.id !== id)
 }
 
-// ── Historial mensual ────────────────────────────────────────────────────────
+// ── Planificación mensual ────────────────────────────────────────────────────
 const now = new Date()
 const historyYearMonth = ref(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
-const monthSessions = ref<{ date: string; completedSets: number }[]>([])
+const monthPlanDates = ref<string[]>([])
 const historyLoading = ref(false)
-const selectedHistoryDate = ref<string | null>(null)
-const historyDayData = ref<SessionData | null>(null)
-const dayLoading = ref(false)
 
 const historyTitle = computed(() => {
   const [y, m] = historyYearMonth.value.split('-').map(Number)
@@ -240,7 +302,7 @@ const historyTitle = computed(() => {
 async function loadMonth() {
   historyLoading.value = true
   try {
-    monthSessions.value = await api.sessions.getMonth(historyYearMonth.value)
+    monthPlanDates.value = await api.plan.getMonth(historyYearMonth.value)
   } finally {
     historyLoading.value = false
   }
@@ -265,24 +327,18 @@ const calendarCells = computed(() => {
   const [y, m] = historyYearMonth.value.split('-').map(Number)
   const daysInMonth = new Date(y, m, 0).getDate()
   const jsFirstDay = new Date(y, m - 1, 1).getDay() // 0=Dom
-  const dowFirst = jsFirstDay === 0 ? 6 : jsFirstDay - 1 // 0=Lun
-
-  // Posición del primer día en el orden actual
+  const dowFirst = preferences.weekStart === 1 ? jsFirstDay : (jsFirstDay === 0 ? 6 : jsFirstDay - 1)
   const startPos = orderedDays.value.findIndex(d => d.dow === dowFirst)
 
-  const sessionMap = new Map(monthSessions.value.map(s => [s.date, s.completedSets]))
-  const todayStr = (() => {
-    const t = new Date()
-    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
-  })()
+  const planSet = new Set(monthPlanDates.value)
 
-  const cells: ({ day: number; date: string; hasSess: boolean; sets: number; isToday: boolean } | null)[] = []
+  const cells: ({ day: number; date: string; hasPlan: boolean; isToday: boolean } | null)[] = []
 
   for (let i = 0; i < startPos; i++) cells.push(null)
 
   for (let d = 1; d <= daysInMonth; d++) {
     const date = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    cells.push({ day: d, date, hasSess: sessionMap.has(date), sets: sessionMap.get(date) ?? 0, isToday: date === todayStr })
+    cells.push({ day: d, date, hasPlan: planSet.has(date), isToday: date === todayStr })
   }
 
   while (cells.length % 7 !== 0) cells.push(null)
@@ -290,32 +346,55 @@ const calendarCells = computed(() => {
   return cells
 })
 
-function goToPlanDay(date: string) {
-  const js = new Date(date + 'T12:00:00').getDay()
-  selectedDay.value = js === 0 ? 6 : js - 1
+// Seleccionar un día en la vista mensual: muestra resumen sin navegar aún
+const selectedMonthDay = ref<string | null>(null)
+const selectedMonthWeekStart = computed(() => selectedMonthDay.value ? calcWeekStart(selectedMonthDay.value) : null)
+const monthDayPlan = ref<PlanEntry[]>([])
+const monthDayLoading = ref(false)
+
+// Devuelve si una fecha pertenece a la semana seleccionada
+function isInSelectedWeek(date: string): boolean {
+  return selectedMonthWeekStart.value !== null && calcWeekStart(date) === selectedMonthWeekStart.value
+}
+
+async function selectMonthDay(date: string) {
+  if (selectedMonthDay.value === date) {
+    selectedMonthDay.value = null
+    monthDayPlan.value = []
+    return
+  }
+  selectedMonthDay.value = date
+  monthDayPlan.value = []
+  monthDayLoading.value = true
+  try {
+    const ws = calcWeekStart(date)
+    const dow = calcDayOfWeek(date)
+    const weekPlan = await api.plan.get(ws)
+    monthDayPlan.value = weekPlan.filter(e => e.dayOfWeek === dow).sort((a, b) => a.orderIndex - b.orderIndex)
+  } finally {
+    monthDayLoading.value = false
+  }
+}
+
+function goToSelectedWeek() {
+  if (!selectedMonthDay.value) return
+  currentWeekStart.value = calcWeekStart(selectedMonthDay.value)
+  selectedDay.value = calcDayOfWeek(selectedMonthDay.value)
   view.value = 'week'
 }
 
-async function selectHistoryDay(date: string) {
-  if (selectedHistoryDate.value === date) {
-    selectedHistoryDate.value = null
-    historyDayData.value = null
-    return
-  }
-  selectedHistoryDate.value = date
-  historyDayData.value = null
-  dayLoading.value = true
-  try {
-    historyDayData.value = await api.sessions.get(date)
-  } finally {
-    dayLoading.value = false
-  }
-}
-
 watch(view, (v) => {
-  if (v === 'history') loadMonth()
-  selectedHistoryDate.value = null
-  historyDayData.value = null
+  if (v === 'month') loadMonth()
+  selectedMonthDay.value = null
+  monthDayPlan.value = []
+})
+
+watch(currentWeekStart, async () => {
+  ready.value = false
+  plan.value = []
+  const planData = await api.plan.get(currentWeekStart.value)
+  plan.value = planData
+  ready.value = true
 })
 
 onMounted(() => { load(); loadRoutines() })
@@ -332,43 +411,62 @@ onMounted(() => { load(); loadRoutines() })
           class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
           :class="view === 'week' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
         >
-          Plan semanal
+          Semana
         </button>
         <button
-          @click="view = 'history'"
+          @click="view = 'month'"
           class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-          :class="view === 'history' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
+          :class="view === 'month' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
         >
-          Historial
+          Mes
         </button>
       </div>
 
-      <!-- Selector de días (solo en vista semana) -->
-      <div v-if="view === 'week'" class="grid grid-cols-7 gap-1">
-        <button
-          v-for="d in orderedDays"
-          :key="d.dow"
-          @click="selectedDay = d.dow"
-          class="flex flex-col items-center py-2 rounded-xl text-xs font-semibold transition-all"
-          :class="
-            selectedDay === d.dow
-              ? 'bg-accent-600 text-white'
-              : d.dow === todayDow
-              ? 'bg-gray-900 text-accent-400 ring-1 ring-accent-500/40'
-              : 'text-gray-600 hover:text-gray-300'
-          "
-        >
-          {{ d.short }}
-          <span
-            v-if="dayHasPlan(d.dow)"
-            class="w-1 h-1 rounded-full mt-1"
-            :class="selectedDay === d.dow ? 'bg-white/50' : 'bg-accent-500'"
-          />
-          <span v-else class="w-1 h-1 mt-1" />
-        </button>
+      <!-- Navegación de semana + selector de días (vista semana) -->
+      <div v-if="view === 'week'">
+        <div class="flex items-center justify-between px-1 mb-2">
+          <button @click="prevWeek" class="p-1.5 text-gray-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button @click="goToCurrentWeek" class="text-sm font-semibold transition-colors"
+            :class="currentWeekStart === calcWeekStart(todayStr) ? 'text-accent-400' : 'text-white hover:text-accent-400'">
+            {{ weekLabel }}
+          </button>
+          <button @click="nextWeek" class="p-1.5 text-gray-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-7 gap-1">
+          <button
+            v-for="d in orderedDays"
+            :key="d.dow"
+            @click="selectedDay = d.dow"
+            class="flex flex-col items-center py-1.5 rounded-xl text-xs font-semibold transition-all"
+            :class="
+              selectedDay === d.dow
+                ? 'bg-accent-600 text-white'
+                : d.dow === todayDow && currentWeekStart === calcWeekStart(todayStr)
+                ? 'bg-gray-900 text-accent-400 ring-1 ring-accent-500/40'
+                : 'text-gray-600 hover:text-gray-300'
+            "
+          >
+            {{ d.short }}
+            <span class="text-xs font-normal opacity-70">{{ weekDayDate(d.dow) }}</span>
+            <span
+              v-if="dayHasPlan(d.dow)"
+              class="w-1 h-1 rounded-full mt-0.5"
+              :class="selectedDay === d.dow ? 'bg-white/50' : 'bg-accent-500'"
+            />
+            <span v-else class="w-1 h-1 mt-0.5" />
+          </button>
+        </div>
       </div>
 
-      <!-- Navegación de mes (solo en vista historial) -->
+      <!-- Navegación de mes (vista mes) -->
       <div v-else class="flex items-center justify-between px-1">
         <button @click="prevMonth" class="p-1.5 text-gray-400 hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -552,79 +650,75 @@ onMounted(() => { load(); loadRoutines() })
         <!-- Grilla de días -->
         <div class="grid grid-cols-7 gap-1">
           <component
-            :is="cell?.hasSess ? 'button' : 'div'"
+            :is="cell ? 'button' : 'div'"
             v-for="(cell, i) in calendarCells"
             :key="i"
-            @click="cell?.hasSess && selectHistoryDay(cell.date)"
+            @click="cell && selectMonthDay(cell.date)"
             class="aspect-square flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors"
             :class="
               !cell
                 ? ''
-                : selectedHistoryDate === cell.date
+                : selectedMonthDay === cell.date
                 ? 'bg-accent-600 text-white'
-                : cell.isToday && cell.hasSess
-                ? 'ring-1 ring-accent-500 bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
+                : isInSelectedWeek(cell.date)
+                ? cell.isToday
+                  ? 'ring-1 ring-accent-500 bg-accent-500/20 text-accent-300 cursor-pointer'
+                  : cell.hasPlan
+                  ? 'bg-accent-500/20 text-accent-300 cursor-pointer hover:bg-accent-500/30'
+                  : 'bg-gray-800/60 text-gray-400 cursor-pointer hover:bg-gray-800'
                 : cell.isToday
-                ? 'ring-1 ring-accent-500 text-white'
-                : cell.hasSess
+                ? 'ring-1 ring-accent-500 text-white cursor-pointer'
+                : cell.hasPlan
                 ? 'bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
-                : 'text-gray-600'
+                : 'text-gray-600 hover:text-gray-400 cursor-pointer'
             "
           >
             <template v-if="cell">
               <span>{{ cell.day }}</span>
-              <span v-if="cell.hasSess" class="w-1.5 h-1.5 rounded-full mt-0.5"
-                :class="selectedHistoryDate === cell.date ? 'bg-white/60' : 'bg-accent-400'" />
+              <span v-if="cell.hasPlan" class="w-1.5 h-1.5 rounded-full mt-0.5"
+                :class="selectedMonthDay === cell.date || isInSelectedWeek(cell.date) ? 'bg-accent-400' : 'bg-accent-500/70'" />
             </template>
           </component>
         </div>
 
         <!-- Resumen del mes -->
-        <div class="mt-4 grid grid-cols-2 gap-3">
-          <div class="bg-gray-900 rounded-2xl border border-gray-800 px-4 py-4 text-center">
-            <p class="text-2xl font-bold text-white">{{ monthSessions.length }}</p>
-            <p class="text-xs text-gray-500 mt-1">Días entrenados</p>
-          </div>
-          <div class="bg-gray-900 rounded-2xl border border-gray-800 px-4 py-4 text-center">
-            <p class="text-2xl font-bold text-white">{{ monthSessions.reduce((s, r) => s + r.completedSets, 0) }}</p>
-            <p class="text-xs text-gray-500 mt-1">Series completadas</p>
-          </div>
+        <div class="mt-4 bg-gray-900 rounded-2xl border border-gray-800 px-4 py-4 text-center">
+          <p class="text-2xl font-bold text-white">{{ monthPlanDates.length }}</p>
+          <p class="text-xs text-gray-500 mt-1">Días planificados</p>
         </div>
 
-        <!-- Panel detalle día seleccionado -->
+        <!-- Panel resumen del día seleccionado -->
         <Transition
           enter-active-class="transition-all duration-200"
           enter-from-class="opacity-0 translate-y-2"
           leave-active-class="transition-all duration-150"
           leave-to-class="opacity-0 translate-y-2"
         >
-          <div v-if="selectedHistoryDate" class="mt-4 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div v-if="selectedMonthDay" class="mt-4 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
-              <p class="text-sm font-semibold text-white">{{ selectedHistoryDate }}</p>
-              <button @click="selectedHistoryDate = null; historyDayData = null" class="text-gray-600 hover:text-gray-300">
+              <div>
+                <p class="text-sm font-semibold text-white">{{ preferences.formatDate(selectedMonthDay) }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === calcDayOfWeek(selectedMonthDay))?.full }}</p>
+              </div>
+              <button @click="selectedMonthDay = null; monthDayPlan = []" class="text-gray-600 hover:text-gray-300 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
 
-            <div v-if="dayLoading" class="flex justify-center py-6">
+            <div v-if="monthDayLoading" class="flex justify-center py-6">
               <div class="w-5 h-5 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
             </div>
 
-            <template v-else-if="historyDayData">
-              <div v-if="historyDayData.plan.length === 0" class="px-4 py-6 text-center text-gray-600 text-sm">
-                Sin ejercicios registrados
+            <template v-else>
+              <div v-if="monthDayPlan.length === 0" class="px-4 py-5 text-center text-gray-600 text-sm">
+                Sin ejercicios planificados
               </div>
               <div v-else class="divide-y divide-gray-800">
-                <button
-                  v-for="entry in historyDayData.plan"
-                  :key="entry.id"
-                  @click="goToPlanDay(selectedHistoryDate!)"
-                  class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors text-left"
-                >
-                  <div>
-                    <p class="text-sm font-medium text-white">{{ entry.exerciseName }}</p>
+                <div v-for="entry in monthDayPlan" :key="entry.id" class="px-4 py-3 flex items-center gap-3">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">{{ entry.exerciseName }}</p>
                     <p class="text-xs text-gray-500 mt-0.5">
                       <template v-if="entry.isCardio">{{ entry.durationMinutes }} min</template>
                       <template v-else>
@@ -633,19 +727,16 @@ onMounted(() => { load(); loadRoutines() })
                       </template>
                     </p>
                   </div>
-                  <div class="flex items-center gap-2 shrink-0">
-                    <span v-if="!entry.isCardio" class="text-sm font-bold"
-                      :class="historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length === entry.sets ? 'text-green-400' : 'text-gray-500'">
-                      {{ historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length }}/{{ entry.sets }}
-                    </span>
-                    <span v-else class="text-sm font-bold"
-                      :class="historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length > 0 ? 'text-green-400' : 'text-gray-500'">
-                      {{ historyDayData.completedSets.filter(s => s.weeklyPlanId === entry.id).length > 0 ? '✓' : '—' }}
-                    </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                  </div>
+                  <span class="text-xs text-gray-600 shrink-0">{{ entry.muscleGroup }}</span>
+                </div>
+              </div>
+              <div class="px-4 py-3 border-t border-gray-800">
+                <button @click="goToSelectedWeek"
+                  class="w-full bg-accent-600 hover:bg-accent-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                  Editar esta semana
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                  </svg>
                 </button>
               </div>
             </template>

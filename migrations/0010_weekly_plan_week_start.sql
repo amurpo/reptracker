@@ -1,0 +1,1 @@
+ALTER TABLE weekly_plan ADD COLUMN week_start TEXT NOT NULL DEFAULT '';

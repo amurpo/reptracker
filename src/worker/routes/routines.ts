@@ -67,33 +67,33 @@ app.delete('/:id', async (c) => {
   return c.json({ ok: true })
 })
 
-// Aplicar rutina a un día (reemplaza los ejercicios del día)
+// Aplicar rutina a un día de una semana específica (reemplaza los ejercicios del día)
 app.post('/:id/apply', async (c) => {
   const userId = parseInt(c.get('userId'))
   const id = parseInt(c.req.param('id'))
-  const { dayOfWeek } = await c.req.json<{ dayOfWeek: number }>()
+  const { dayOfWeek, weekStart } = await c.req.json<{ dayOfWeek: number; weekStart: string }>()
 
   const dow = Number(dayOfWeek)
   if (!Number.isInteger(dow) || dow < 0 || dow > 6) return c.json({ error: 'dayOfWeek inválido (0-6)' }, 400)
+  if (!weekStart) return c.json({ error: 'weekStart requerido' }, 400)
 
   const db = getDb(c.env.DB)
 
-  // Verificar que la rutina pertenece al usuario
   const routine = await db.select().from(routines).where(and(eq(routines.id, id), eq(routines.userId, userId)))
   if (!routine[0]) return c.json({ error: 'Rutina no encontrada' }, 404)
 
   const routineExs = await db.select().from(routineExercises).where(eq(routineExercises.routineId, id))
 
-  // Borrar plan actual del día
-  await db.delete(weeklyPlan).where(and(eq(weeklyPlan.userId, userId), eq(weeklyPlan.dayOfWeek, dayOfWeek)))
+  // Borrar plan del día para esa semana específica
+  await db.delete(weeklyPlan).where(
+    and(eq(weeklyPlan.userId, userId), eq(weeklyPlan.weekStart, weekStart), eq(weeklyPlan.dayOfWeek, dayOfWeek))
+  )
 
   if (!routineExs.length) return c.json([])
 
-  // Insertar ejercicios de la rutina en el plan del día
   const inserted = await db.insert(weeklyPlan).values(
     routineExs.map((e) => ({
-      userId,
-      dayOfWeek,
+      userId, weekStart, dayOfWeek,
       exerciseId: e.exerciseId,
       sets: e.sets,
       reps: e.reps,
