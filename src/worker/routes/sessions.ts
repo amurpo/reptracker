@@ -60,7 +60,8 @@ app.get('/:date', async (c) => {
   const weekStart = calcWeekStart(date, weekStartPref)
   const dayOfWeek = calcDayOfWeek(date, weekStartPref)
 
-  const today = new Date().toISOString().split('T')[0]
+  // Usar la fecha local del cliente para evitar problemas de zona horaria
+  const today = c.req.query('today') ?? date
 
   // Para fechas pasadas: mostrar solo lo que fue completado realmente
   if (date < today) {

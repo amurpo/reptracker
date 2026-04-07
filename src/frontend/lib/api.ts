@@ -89,7 +89,7 @@ export const api = {
       request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek, weekStart }),
   },
   sessions: {
-    get: (date: string) => request<SessionData>('GET', `/sessions/${date}`),
+    get: (date: string, localToday: string) => request<SessionData>('GET', `/sessions/${date}?today=${localToday}`),
     getMonth: (yearMonth: string) =>
       request<{ date: string; completedSets: number }[]>('GET', `/sessions/month/${yearMonth}`),
     complete: (date: string, weeklyPlanId: number, setNumber: number) =>

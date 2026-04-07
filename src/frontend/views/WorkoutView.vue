@@ -61,7 +61,6 @@ const completedSets = computed(() => sessionData.value.completedSets.filter(s =>
 const completedCardio = computed(() => sessionData.value.completedSets.filter(s =>
   sessionData.value.plan.find(e => e.id === s.weeklyPlanId && e.isCardio)
 ).length)
-const completedTotal = computed(() => sessionData.value.completedSets.length)
 const progress = computed(() => {
   const total = totalSets.value + totalCardio.value
   return total === 0 ? 0 : Math.round((completedSets.value + completedCardio.value) / total * 100)
@@ -100,7 +99,7 @@ async function toggleSet(weeklyPlanId: number, setNumber: number) {
 onMounted(async () => {
   clockInterval = setInterval(() => { now.value = new Date() }, 1000)
   try {
-    sessionData.value = await api.sessions.get(today)
+    sessionData.value = await api.sessions.get(today, today)
   } finally {
     loading.value = false
   }

@@ -67,7 +67,8 @@ function calcDayOfWeek(dateStr: string): number {
   return Math.round((d1.getTime() - d2.getTime()) / 86400000)
 }
 
-const todayStr = new Date().toISOString().split('T')[0]
+const _n = new Date()
+const todayStr = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`
 
 // Semana actualmente visible
 const currentWeekStart = ref(calcWeekStart(todayStr))
