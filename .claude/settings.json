@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"INSTRUCCION OBLIGATORIA: Responde SIEMPRE en espanol neutro latinoamericano. NUNCA uses voseo ni expresiones argentinas. Formas PROHIBIDAS: haces, revisa (con voseo), tenes, podes, sabes, fijate (voseado), dale, che, boludo, posta, andas, estas, sos. Formas CORRECTAS: haz, tienes, puedes, sabes, fijate, ok. Esto aplica a TODO el texto que escribas, sin excepciones.\"}}'",
+            "statusMessage": "Cargando instrucciones de idioma..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"RECORDATORIO: espanol neutro. Prohibido: haces/tenes/podes/sos (voseo). Correcto: haz/tienes/puedes/eres.\"}}'",
+            "statusMessage": ""
+          }
+        ]
+      }
+    ]
+  }
+}

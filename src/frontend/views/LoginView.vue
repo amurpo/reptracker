@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import backImg from '../../assets/back.jpg'
 import { useRouter } from 'vue-router'
 import { api } from '../lib/api'
 import { useAuthStore } from '../stores/auth'
@@ -80,7 +81,7 @@ function switchMode(m: 'login' | 'register' | 'forgot') {
   <div class="min-h-screen flex">
     <!-- Left: image panel (hidden on mobile) -->
     <div class="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
-      <img src="/back.jpg" alt="RepTracker" class="absolute inset-0 w-full h-full object-cover" />
+      <img :src="backImg" alt="RepTracker" class="absolute inset-0 w-full h-full object-cover" />
       <div class="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-transparent" />
       <div class="relative z-10 flex flex-col justify-end p-12 pb-16">
         <div class="flex items-center gap-3 mb-4">

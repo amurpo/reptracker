@@ -668,7 +668,7 @@ onMounted(() => { load(); loadRoutines() })
                   ? 'bg-accent-500/20 text-accent-300 cursor-pointer hover:bg-accent-500/30'
                   : 'bg-gray-800/60 text-gray-400 cursor-pointer hover:bg-gray-800'
                 : cell.isToday
-                ? 'ring-1 ring-accent-500 text-white cursor-pointer'
+                ? 'ring-2 ring-accent-500 bg-accent-500/20 text-accent-300 font-bold cursor-pointer'
                 : cell.hasPlan
                 ? 'bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
                 : 'text-gray-600 hover:text-gray-400 cursor-pointer'
