@@ -148,6 +148,13 @@ const filtered = computed(() => {
 async function load() {
   exercises.value = await api.exercises.list()
   ready.value = true
+  const withKv = exercises.value.filter(e => e.imageUrl?.startsWith('kv:'))
+  await Promise.all(
+    withKv.map(async (ex) => {
+      const r = await api.exercises.getImage(ex.id)
+      if (r.image) customImages.value[ex.id] = r.image
+    })
+  )
 }
 
 async function addExercise() {

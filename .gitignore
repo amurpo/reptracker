@@ -34,3 +34,6 @@ Thumbs.db
 
 # Scripts intermediate files
 scripts/names-en.json
+
+# Claude Code local settings
+.claude/settings.local.json

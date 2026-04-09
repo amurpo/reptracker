@@ -85,7 +85,8 @@ const weightKg = ref<number | null>(null)
 const dateFormat = ref('dd-mm-yyyy')
 const timeFormat = ref('24h')
 const weekStart = ref(0)
-const theme = ref('indigo')
+const theme = ref(preferences.theme || 'indigo')
+const themeSaving = ref(false)
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -133,6 +134,21 @@ onMounted(async () => {
   }
 })
 
+async function saveTheme(themeId: string) {
+  theme.value = themeId
+  applyTheme(themeId)
+  themeSaving.value = true
+  try {
+    await api.profile.update({ theme: themeId })
+    preferences.theme = themeId
+    localStorage.setItem('theme', themeId)
+  } catch {
+    // fallo silencioso — el tema visual ya se aplicó
+  } finally {
+    themeSaving.value = false
+  }
+}
+
 async function save() {
   saving.value = true
   error.value = ''
@@ -158,6 +174,7 @@ async function save() {
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
+    console.error('Profile save error:', e)
     error.value = e instanceof Error ? e.message : 'Error al guardar'
   } finally {
     saving.value = false
@@ -286,7 +303,7 @@ async function save() {
               v-for="t in THEMES"
               :key="t.id"
               type="button"
-              @click="theme = t.id; applyTheme(t.id)"
+              @click="saveTheme(t.id)"
               class="relative text-left p-3 rounded-2xl border transition-all"
               :class="theme === t.id
                 ? 'bg-gray-800 border-white/30 ring-1 ring-white/20'

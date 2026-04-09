@@ -23,8 +23,24 @@ const todayLong = (() => {
 
 const now = ref(_now)
 let clockInterval: ReturnType<typeof setInterval> | undefined
+let syncInterval: ReturnType<typeof setInterval> | undefined
 
-onUnmounted(() => clearInterval(clockInterval))
+async function syncSession() {
+  if (togglingSet.value) return
+  try {
+    sessionData.value = await api.sessions.get(today, today)
+  } catch { /* silencioso */ }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') syncSession()
+}
+
+onUnmounted(() => {
+  clearInterval(clockInterval)
+  clearInterval(syncInterval)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
 
 const sessionData = ref<SessionData>({ session: null, plan: [], completedSets: [] })
 const loading = ref(true)
@@ -61,7 +77,6 @@ const completedSets = computed(() => sessionData.value.completedSets.filter(s =>
 const completedCardio = computed(() => sessionData.value.completedSets.filter(s =>
   sessionData.value.plan.find(e => e.id === s.weeklyPlanId && e.isCardio)
 ).length)
-const completedTotal = computed(() => sessionData.value.completedSets.length)
 const progress = computed(() => {
   const total = totalSets.value + totalCardio.value
   return total === 0 ? 0 : Math.round((completedSets.value + completedCardio.value) / total * 100)
@@ -99,8 +114,10 @@ async function toggleSet(weeklyPlanId: number, setNumber: number) {
 
 onMounted(async () => {
   clockInterval = setInterval(() => { now.value = new Date() }, 1000)
+  syncInterval = setInterval(syncSession, 30_000)
+  document.addEventListener('visibilitychange', onVisibilityChange)
   try {
-    sessionData.value = await api.sessions.get(today)
+    sessionData.value = await api.sessions.get(today, today)
   } finally {
     loading.value = false
   }

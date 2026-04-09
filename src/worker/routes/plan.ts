@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, and, or, isNull } from 'drizzle-orm'
+import { eq, and, or, isNull, sql } from 'drizzle-orm'
 import { getDb, weeklyPlan, exercises } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import type { Env } from '../index'
@@ -37,13 +37,34 @@ function validatePlanFields(fields: {
 
 app.use('*', authMiddleware)
 
+// Días planificados en un mes (para la vista de planificación mensual)
+app.get('/month/:yearMonth', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const yearMonth = c.req.param('yearMonth')
+  const db = getDb(c.env.DB)
+
+  const dateExpr = sql<string>`date(${weeklyPlan.weekStart}, '+' || ${weeklyPlan.dayOfWeek} || ' days')`
+  const pattern = yearMonth + '-%'
+
+  const rows = await db.selectDistinct({ date: dateExpr })
+    .from(weeklyPlan)
+    .where(and(
+      eq(weeklyPlan.userId, userId),
+      sql`date(${weeklyPlan.weekStart}, '+' || ${weeklyPlan.dayOfWeek} || ' days') LIKE ${pattern}`
+    ))
+
+  return c.json(rows.map(r => r.date))
+})
+
 app.get('/', async (c) => {
   const userId = parseInt(c.get('userId'))
+  const weekStart = c.req.query('weekStart') ?? ''
   const db = getDb(c.env.DB)
 
   const plan = await db
     .select({
       id: weeklyPlan.id,
+      weekStart: weeklyPlan.weekStart,
       dayOfWeek: weeklyPlan.dayOfWeek,
       exerciseId: weeklyPlan.exerciseId,
       sets: weeklyPlan.sets,
@@ -57,43 +78,32 @@ app.get('/', async (c) => {
     })
     .from(weeklyPlan)
     .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
-    .where(eq(weeklyPlan.userId, userId))
+    .where(and(eq(weeklyPlan.userId, userId), eq(weeklyPlan.weekStart, weekStart)))
 
   return c.json(plan)
 })
 
 app.post('/', async (c) => {
   const userId = parseInt(c.get('userId'))
-  const { dayOfWeek, exerciseId, sets, reps, weightKg, orderIndex, isCardio, durationMinutes } = await c.req.json<{
-    dayOfWeek: number
-    exerciseId: number
-    sets?: number
-    reps?: number
-    weightKg?: number | null
-    orderIndex?: number
-    isCardio?: number
-    durationMinutes?: number | null
+  const { weekStart, dayOfWeek, exerciseId, sets, reps, weightKg, orderIndex, isCardio, durationMinutes } = await c.req.json<{
+    weekStart: string; dayOfWeek: number; exerciseId: number; sets?: number; reps?: number
+    weightKg?: number | null; orderIndex?: number; isCardio?: number; durationMinutes?: number | null
   }>()
 
-  if (dayOfWeek === undefined || dayOfWeek === null || !exerciseId) {
-    return c.json({ error: 'Día y ejercicio requeridos' }, 400)
-  }
+  if (!weekStart || dayOfWeek === undefined || dayOfWeek === null || !exerciseId)
+    return c.json({ error: 'Semana, día y ejercicio requeridos' }, 400)
   const errPost = validatePlanFields({ dayOfWeek, sets, reps, weightKg, isCardio, durationMinutes })
   if (errPost) return c.json({ error: errPost }, 400)
 
   const db = getDb(c.env.DB)
 
-  // Verify exercise belongs to user
   const ex = await db.select().from(exercises)
     .where(and(eq(exercises.id, exerciseId), or(eq(exercises.userId, userId), isNull(exercises.userId))))
   if (!ex[0]) return c.json({ error: 'Ejercicio no encontrado' }, 404)
 
   const inserted = await db.insert(weeklyPlan).values({
-    userId,
-    dayOfWeek,
-    exerciseId,
-    sets: sets ?? 3,
-    reps: reps ?? 10,
+    userId, weekStart, dayOfWeek, exerciseId,
+    sets: sets ?? 3, reps: reps ?? 10,
     weightKg: weightKg ?? null,
     orderIndex: orderIndex ?? 0,
     isCardio: isCardio ?? 0,
@@ -107,7 +117,9 @@ app.post('/', async (c) => {
 app.put('/:id', async (c) => {
   const userId = parseInt(c.get('userId'))
   const id = parseInt(c.req.param('id'))
-  const { sets, reps, weightKg, isCardio, durationMinutes } = await c.req.json<{ sets: number; reps: number; weightKg?: number | null; isCardio?: number; durationMinutes?: number | null }>()
+  const { sets, reps, weightKg, isCardio, durationMinutes } = await c.req.json<{
+    sets: number; reps: number; weightKg?: number | null; isCardio?: number; durationMinutes?: number | null
+  }>()
   const errPut = validatePlanFields({ sets, reps, weightKg, isCardio, durationMinutes })
   if (errPut) return c.json({ error: errPut }, 400)
   const db = getDb(c.env.DB)
