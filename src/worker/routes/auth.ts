@@ -53,7 +53,7 @@ async function sendVerificationEmail(apiKey: string, to: string, verifyUrl: stri
       subject: 'Confirma tu cuenta en RepTracker',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0f172a;color:#f1f5f9;border-radius:16px;">
-          <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="width:80px;margin-bottom:24px;" />
+          <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="display:block;width:80px;margin:0 auto 24px;" />
           <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;">Confirma tu cuenta</h1>
           <p style="color:#94a3b8;margin:0 0 28px;">Haz clic en el botón para verificar tu email y empezar a usar RepTracker.</p>
           <a href="${verifyUrl}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;">
@@ -216,7 +216,7 @@ auth.post('/forgot-password', async (c) => {
           subject: 'Restablecer contraseña — RepTracker',
           html: `
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0f172a;color:#f1f5f9;border-radius:16px;">
-              <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="width:80px;margin-bottom:24px;" />
+              <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="display:block;width:80px;margin:0 auto 24px;" />
               <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;">Restablecer contraseña</h1>
               <p style="color:#94a3b8;margin:0 0 28px;">Haz clic en el botón para crear una nueva contraseña. El enlace expira en 1 hora.</p>
               <a href="${origin}/reset-password?token=${token}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;">

@@ -41,9 +41,12 @@ app.use('*', async (c, next) => {
   c.res.headers.set('Referrer-Policy', 'no-referrer')
   c.res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   c.res.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
+  c.res.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  c.res.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
+  c.res.headers.set('Cache-Control', 'no-store')
   c.res.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self'; base-uri 'self'; object-src 'none'"
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
   )
 })
 
