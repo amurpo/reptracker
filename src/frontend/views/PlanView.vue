@@ -869,7 +869,7 @@ onMounted(() => { load(); loadRoutines() })
                     autofocus
                   />
                   <!-- Filtros de grupo muscular -->
-                  <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                  <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1 lg:flex-wrap lg:overflow-x-visible">
                     <button @click="modalFilterGroup = 'all'"
                       class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
                       :class="modalFilterGroup === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'">
