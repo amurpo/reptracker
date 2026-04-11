@@ -22,12 +22,14 @@ const app = new Hono<{ Bindings: Env }>()
 // Block unknown paths (WordPress scanners, bots, etc.)
 app.use('*', async (c, next) => {
   const path = new URL(c.req.url).pathname
-  const allowed = ['/', '/login', '/plan', '/exercises', '/profile', '/reset-password', '/verify', '/forgot-password']
+  const allowed = ['/', '/login', '/plan', '/exercises', '/profile', '/reset-password', '/verify', '/forgot-password', '/robots.txt']
   const isAllowed =
     allowed.includes(path) ||
     path.startsWith('/api/') ||
     path.startsWith('/assets/') ||
-    /\.(js|css|ico|png|svg|webp|woff2?)$/.test(path)
+    path.startsWith('/exercises/') ||
+    path.startsWith('/.well-known/') ||
+    /\.(js|css|ico|png|svg|webp|woff2?|jpg|jpeg|txt)$/.test(path)
 
   if (!isAllowed) return c.text('', 404)
   await next()
