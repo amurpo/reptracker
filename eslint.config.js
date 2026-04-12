@@ -64,6 +64,7 @@ export default [
       'vue/html-closing-bracket-spacing': 'off', // estilo, no bug
       'vue/html-self-closing': 'off',            // estilo
       'vue/singleline-html-element-content-newline': 'off',
+      'vue/multiline-html-element-content-newline': 'off',
       'no-console': 'warn',
     },
   },
