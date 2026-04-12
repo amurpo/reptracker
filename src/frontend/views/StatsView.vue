@@ -345,25 +345,6 @@ const chartOption = computed(() => {
         <!-- ── Tarjetas métricas ───────────────────────────────────────── -->
         <div class="grid grid-cols-2 gap-3 mb-6">
 
-          <!-- Racha (full width) -->
-          <div class="col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-orange-500/15 flex items-center justify-center shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <div class="flex items-baseline gap-1.5">
-                <span class="text-4xl font-bold text-white tabular-nums">{{ stats.streak }}</span>
-                <span class="text-gray-500 text-sm">días consecutivos</span>
-              </div>
-              <span class="text-gray-500 text-xs">Racha actual</span>
-            </div>
-            <div v-if="stats.streak >= 3" class="text-xs text-orange-400 font-semibold bg-orange-500/10 rounded-full px-3 py-1 shrink-0">
-              🔥 En racha
-            </div>
-          </div>
-
           <!-- Días este mes -->
           <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
             <div class="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center mb-3">

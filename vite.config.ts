@@ -13,6 +13,15 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     modulePreload: { polyfill: false },
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('echarts') || id.includes('vue-echarts') || id.includes('zrender')) {
+            return 'echarts'
+          }
+        },
+      },
+    },
   },
   server: {
     proxy: {
