@@ -8,6 +8,8 @@ export const users = sqliteTable('users', {
   name: text('name'),
   age: integer('age'),
   weightKg: real('weight_kg'),
+  heightCm: integer('height_cm'),
+  sex: text('sex'),
   emailVerified: integer('email_verified').notNull().default(0),
   dateFormat: text('date_format').notNull().default('dd-mm-yyyy'),
   timeFormat: text('time_format').notNull().default('24h'),

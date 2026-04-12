@@ -27,8 +27,7 @@ async function submit() {
 <template>
   <div class="min-h-screen bg-gray-950 flex items-center justify-center px-6">
     <div class="w-full max-w-sm">
-
-      <button @click="router.push('/login')" class="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-sm mb-8 transition-colors">
+      <button class="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-sm mb-8 transition-colors" @click="router.push('/login')">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
@@ -51,7 +50,7 @@ async function submit() {
         <h1 class="text-2xl font-bold text-white mb-2">¿Olvidaste tu contraseña?</h1>
         <p class="text-gray-500 text-sm mb-6">Ingresa tu email y te enviaremos un enlace para restablecerla.</p>
 
-        <form @submit.prevent="submit" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="submit">
           <div>
             <label class="block text-sm text-gray-400 mb-1.5">Email</label>
             <input
@@ -77,7 +76,6 @@ async function submit() {
           </button>
         </form>
       </template>
-
     </div>
   </div>
 </template>

@@ -82,6 +82,8 @@ async function onFileChange(e: Event) {
 const name = ref('')
 const age = ref<number | null>(null)
 const weightKg = ref<number | null>(null)
+const heightCm = ref<number | null>(null)
+const sex = ref<string | null>(null)
 const dateFormat = ref('dd-mm-yyyy')
 const timeFormat = ref('24h')
 const weekStart = ref(0)
@@ -123,6 +125,8 @@ onMounted(async () => {
     name.value = profile.name ?? ''
     age.value = profile.age
     weightKg.value = profile.weightKg
+    heightCm.value = profile.heightCm
+    sex.value = profile.sex
     dateFormat.value = profile.dateFormat
     timeFormat.value = profile.timeFormat
     weekStart.value = profile.weekStart
@@ -158,6 +162,8 @@ async function save() {
       name: name.value || undefined,
       age: age.value ?? undefined,
       weightKg: weightKg.value ?? undefined,
+      heightCm: heightCm.value ?? undefined,
+      sex: sex.value ?? undefined,
       dateFormat: dateFormat.value,
       timeFormat: timeFormat.value,
       weekStart: weekStart.value,
@@ -174,7 +180,6 @@ async function save() {
     saved.value = true
     setTimeout(() => { saved.value = false }, 2500)
   } catch (e) {
-    console.error('Profile save error:', e)
     error.value = e instanceof Error ? e.message : 'Error al guardar'
   } finally {
     saving.value = false
@@ -192,13 +197,15 @@ async function save() {
 
     <template v-else>
       <!-- Avatar -->
-      <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp" @change="onFileChange"
-        style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
+      <input
+        ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;"
+        @change="onFileChange"
+      />
       <div class="flex items-center gap-4 mb-8">
         <button
-          @click="onAvatarClick"
           class="relative w-16 h-16 rounded-full overflow-hidden shrink-0 group focus:outline-none"
           :disabled="avatarUploading"
+          @click="onAvatarClick"
         >
           <img v-if="avatarSrc" :src="avatarSrc" class="w-full h-full object-cover" alt="Avatar" />
           <div v-else class="w-full h-full bg-accent-600 flex items-center justify-center text-2xl font-bold text-white select-none">
@@ -221,7 +228,7 @@ async function save() {
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="save" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="save">
         <div>
           <label class="block text-sm text-gray-400 mb-1.5">Nombre</label>
           <input
@@ -256,6 +263,32 @@ async function save() {
               placeholder="—"
               class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
             />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1.5">Altura (cm)</label>
+            <input
+              v-model.number="heightCm"
+              type="number"
+              min="50"
+              max="300"
+              placeholder="—"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-accent-500 transition-colors"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1.5">Sexo</label>
+            <select
+              v-model="sex"
+              class="w-full bg-gray-900 border border-gray-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
+            >
+              <option :value="null">—</option>
+              <option value="male">Masculino</option>
+              <option value="female">Femenino</option>
+              <option value="other">Otro</option>
+            </select>
           </div>
         </div>
 
@@ -303,11 +336,11 @@ async function save() {
               v-for="t in THEMES"
               :key="t.id"
               type="button"
-              @click="saveTheme(t.id)"
               class="relative text-left p-3 rounded-2xl border transition-all"
               :class="theme === t.id
                 ? 'bg-gray-800 border-white/30 ring-1 ring-white/20'
                 : 'bg-gray-900 border-gray-800 hover:border-gray-600'"
+              @click="saveTheme(t.id)"
             >
               <!-- Checkmark -->
               <svg v-if="theme === t.id" xmlns="http://www.w3.org/2000/svg" class="absolute top-2.5 right-2.5 w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -343,7 +376,7 @@ async function save() {
       <!-- Cambiar contraseña -->
       <div class="mt-8 pt-6 border-t border-gray-800">
         <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Cambiar contraseña</h2>
-        <form @submit.prevent="changePassword" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="changePassword">
           <div>
             <label class="block text-sm text-gray-400 mb-1.5">Contraseña actual</label>
             <input

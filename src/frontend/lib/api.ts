@@ -29,7 +29,7 @@ async function request<T>(method: string, path: string, body?: unknown, skipAuth
   }
 
   const text = await res.text()
-  let data: unknown = {}
+  let data: unknown
   try {
     data = text ? JSON.parse(text) : {}
   } catch {
@@ -73,7 +73,7 @@ export const api = {
   },
   profile: {
     get: () => request<UserProfile>('GET', '/profile'),
-    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme'>>) =>
+    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'heightCm' | 'sex' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme'>>) =>
       request<UserProfile>('PUT', '/profile', data),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
@@ -87,6 +87,14 @@ export const api = {
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/routines/${id}`),
     apply: (id: number, dayOfWeek: number, weekStart: string) =>
       request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek, weekStart }),
+  },
+  stats: {
+    summary: (month: string, today: string) =>
+      request<StatsSummary>('GET', `/stats/summary?month=${encodeURIComponent(month)}&today=${encodeURIComponent(today)}`),
+    progressionExercises: () =>
+      request<{ id: number; name: string; muscleGroup: string }[]>('GET', '/stats/progression-exercises'),
+    progression: (exerciseId: number) =>
+      request<{ date: string; maxWeightKg: number; estimated1RM: number }[]>('GET', `/stats/progression/${exerciseId}`),
   },
   sessions: {
     get: (date: string, localToday: string) => request<SessionData>('GET', `/sessions/${date}?today=${localToday}`),
@@ -105,6 +113,8 @@ export interface UserProfile {
   name: string | null
   age: number | null
   weightKg: number | null
+  heightCm: number | null
+  sex: string | null
   dateFormat: string
   timeFormat: string
   weekStart: number
@@ -173,6 +183,19 @@ export interface RoutineExercise {
   reps: number
   weightKg?: number | null
   orderIndex: number
+}
+
+export interface StatsSummary {
+  daysThisMonth: number
+  setsThisMonth: number
+  totalDays: number
+  streak: number
+  topExercises: { name: string; muscleGroup: string; sets: number }[]
+  weightKg: number | null
+  heightCm: number | null
+  sex: string | null
+  age: number | null
+  strengthRatios: { name: string; muscleGroup: string; estimated1RM: number; bestWeightKg: number }[]
 }
 
 export interface SessionData {

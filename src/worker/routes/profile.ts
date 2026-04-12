@@ -2,22 +2,8 @@ import { Hono } from 'hono'
 import { eq } from 'drizzle-orm'
 import { getDb, users } from '../db'
 import { authMiddleware } from '../middleware/auth'
+import { hashPassword, verifyPassword } from '../lib/crypto'
 import type { Env } from '../index'
-
-async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16))
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
-  const hash = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256)
-  return `${btoa(String.fromCharCode(...new Uint8Array(salt)))}:${btoa(String.fromCharCode(...new Uint8Array(hash)))}`
-}
-
-async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [saltB64, hashB64] = stored.split(':')
-  const salt = Uint8Array.from(atob(saltB64), (c) => c.charCodeAt(0))
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
-  const hash = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256)
-  return btoa(String.fromCharCode(...new Uint8Array(hash))) === hashB64
-}
 
 const profile = new Hono<{ Bindings: Env; Variables: { userId: string } }>()
 
@@ -29,6 +15,8 @@ const userFields = {
   name: users.name,
   age: users.age,
   weightKg: users.weightKg,
+  heightCm: users.heightCm,
+  sex: users.sex,
   dateFormat: users.dateFormat,
   timeFormat: users.timeFormat,
   weekStart: users.weekStart,
@@ -54,6 +42,8 @@ profile.put('/', async (c) => {
     name?: string
     age?: number
     weightKg?: number
+    heightCm?: number
+    sex?: string
     dateFormat?: string
     timeFormat?: string
     weekStart?: number
@@ -76,6 +66,13 @@ profile.put('/', async (c) => {
     if (isNaN(w) || w < 1 || w > 500) return c.json({ error: 'Peso inválido (1-500 kg)' }, 400)
     body.weightKg = Math.round(w * 10) / 10
   }
+  if (body.heightCm !== undefined) {
+    const h = Number(body.heightCm)
+    if (!Number.isInteger(h) || h < 50 || h > 300) return c.json({ error: 'Altura inválida (50-300 cm)' }, 400)
+    body.heightCm = h
+  }
+  if (body.sex !== undefined && !['male', 'female', 'other'].includes(body.sex))
+    return c.json({ error: 'Sexo inválido' }, 400)
   if (body.dateFormat !== undefined && !VALID_DATE_FORMATS.includes(body.dateFormat))
     return c.json({ error: 'Formato de fecha inválido' }, 400)
   if (body.timeFormat !== undefined && !VALID_TIME_FORMATS.includes(body.timeFormat))
@@ -92,6 +89,8 @@ profile.put('/', async (c) => {
       ...(body.name !== undefined && { name: body.name }),
       ...(body.age !== undefined && { age: body.age }),
       ...(body.weightKg !== undefined && { weightKg: body.weightKg }),
+      ...(body.heightCm !== undefined && { heightCm: body.heightCm }),
+      ...(body.sex !== undefined && { sex: body.sex }),
       ...(body.dateFormat !== undefined && { dateFormat: body.dateFormat }),
       ...(body.timeFormat !== undefined && { timeFormat: body.timeFormat }),
       ...(body.weekStart !== undefined && { weekStart: body.weekStart }),

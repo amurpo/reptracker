@@ -35,7 +35,6 @@ onMounted(async () => {
 <template>
   <div class="min-h-screen bg-gray-950 flex items-center justify-center px-6">
     <div class="w-full max-w-sm text-center">
-
       <!-- Loading -->
       <div v-if="status === 'loading'" class="flex flex-col items-center gap-4">
         <div class="w-10 h-10 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
@@ -52,8 +51,8 @@ onMounted(async () => {
         <h1 class="text-xl font-bold text-white mb-2">¡Email verificado!</h1>
         <p class="text-gray-500 text-sm mb-6">Tu cuenta está lista. Ya puedes iniciar sesión.</p>
         <button
-          @click="router.push('/login')"
           class="w-full bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 rounded-2xl transition-colors"
+          @click="router.push('/login')"
         >
           Iniciar sesión
         </button>
@@ -70,13 +69,12 @@ onMounted(async () => {
         <h1 class="text-xl font-bold text-white mb-2">Enlace inválido</h1>
         <p class="text-gray-500 text-sm mb-6">{{ errorMsg }}</p>
         <button
-          @click="router.push('/login')"
           class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-3 rounded-2xl transition-colors"
+          @click="router.push('/login')"
         >
           Volver al inicio
         </button>
       </div>
-
     </div>
   </div>
 </template>

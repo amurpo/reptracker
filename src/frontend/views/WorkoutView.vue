@@ -212,7 +212,8 @@ onMounted(async () => {
               </p>
             </div>
             <div class="flex items-center gap-2">
-              <span v-if="!entry.isCardio"
+              <span
+                v-if="!entry.isCardio"
                 class="text-sm font-bold"
                 :class="completedCount(entry.id, entry.sets) === entry.sets ? 'text-green-400' : 'text-gray-400'"
               >
@@ -231,7 +232,6 @@ onMounted(async () => {
             <!-- Cardio: botón ancho de completado -->
             <template v-if="entry.isCardio">
               <button
-                @click="toggleSet(entry.id, 1)"
                 :disabled="togglingSet === `${entry.id}-1`"
                 class="flex-1 h-12 rounded-xl font-semibold text-sm transition-all active:scale-95 border-2 select-none flex items-center justify-center gap-2"
                 :class="
@@ -239,6 +239,7 @@ onMounted(async () => {
                     ? 'bg-accent-600 border-accent-500 text-white shadow-lg shadow-accent-500/20'
                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-accent-500/50 hover:text-gray-200'
                 "
+                @click="toggleSet(entry.id, 1)"
               >
                 <span v-if="togglingSet !== `${entry.id}-1`">
                   <span v-if="isCompleted(entry.id, 1)">✓ Completado</span>
@@ -252,7 +253,6 @@ onMounted(async () => {
               <button
                 v-for="set in entry.sets"
                 :key="set"
-                @click="toggleSet(entry.id, set)"
                 :disabled="togglingSet === `${entry.id}-${set}`"
                 class="w-14 h-14 rounded-xl font-bold text-base transition-all active:scale-95 border-2 select-none"
                 :class="
@@ -260,6 +260,7 @@ onMounted(async () => {
                     ? 'bg-accent-600 border-accent-500 text-white shadow-lg shadow-accent-500/20'
                     : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-accent-500/50 hover:text-gray-200'
                 "
+                @click="toggleSet(entry.id, set)"
               >
                 <span v-if="togglingSet !== `${entry.id}-${set}`">{{ set }}</span>
                 <span v-else class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />

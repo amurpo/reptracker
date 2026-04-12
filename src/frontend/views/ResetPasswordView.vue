@@ -39,7 +39,6 @@ async function submit() {
 <template>
   <div class="min-h-screen bg-gray-950 flex items-center justify-center px-6">
     <div class="w-full max-w-sm">
-
       <div v-if="done" class="text-center">
         <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -49,8 +48,8 @@ async function submit() {
         <h2 class="text-xl font-bold text-white mb-2">Contraseña actualizada</h2>
         <p class="text-gray-500 text-sm mb-6">Ya puedes iniciar sesión con tu nueva contraseña.</p>
         <button
-          @click="router.push('/login')"
           class="w-full bg-accent-600 hover:bg-accent-500 text-white font-semibold py-3 rounded-2xl transition-colors"
+          @click="router.push('/login')"
         >
           Iniciar sesión
         </button>
@@ -60,7 +59,7 @@ async function submit() {
         <h1 class="text-2xl font-bold text-white mb-2">Nueva contraseña</h1>
         <p class="text-gray-500 text-sm mb-6">Elige una contraseña segura de al menos 8 caracteres.</p>
 
-        <form @submit.prevent="submit" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="submit">
           <div>
             <label class="block text-sm text-gray-400 mb-1.5">Nueva contraseña</label>
             <input
@@ -99,7 +98,6 @@ async function submit() {
           </button>
         </form>
       </template>
-
     </div>
   </div>
 </template>

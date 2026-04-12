@@ -2,43 +2,10 @@ import { Hono } from 'hono'
 import { SignJWT } from 'jose'
 import { eq } from 'drizzle-orm'
 import { getDb, users, emailVerificationTokens, passwordResetTokens } from '../db'
+import { hashPassword, verifyPassword } from '../lib/crypto'
+import { verifyTurnstile } from '../lib/turnstile'
+import { sendVerificationEmail, sendPasswordResetEmail } from '../lib/email'
 import type { Env } from '../index'
-
-async function verifyTurnstile(secret: string, token: string, ip?: string): Promise<boolean> {
-  const body = new URLSearchParams({ secret, response: token })
-  if (ip) body.set('remoteip', ip)
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    body,
-  })
-  const data = await res.json<{ success: boolean }>()
-  return data.success
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16))
-  const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
-  )
-  const hash = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256
-  )
-  const saltB64 = btoa(String.fromCharCode(...new Uint8Array(salt)))
-  const hashB64 = btoa(String.fromCharCode(...new Uint8Array(hash)))
-  return `${saltB64}:${hashB64}`
-}
-
-async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [saltB64, hashB64] = stored.split(':')
-  const salt = Uint8Array.from(atob(saltB64), (c) => c.charCodeAt(0))
-  const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
-  )
-  const hash = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256
-  )
-  return btoa(String.fromCharCode(...new Uint8Array(hash))) === hashB64
-}
 
 async function sendVerificationEmail(apiKey: string, to: string, verifyUrl: string) {
   await fetch('https://api.resend.com/emails', {
@@ -207,26 +174,7 @@ auth.post('/forgot-password', async (c) => {
 
     const origin = new URL(c.req.url).origin
     try {
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${c.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: 'RepTracker <noreply@reptracker.amurpo.icu>',
-          to: rows[0].email,
-          subject: 'Restablecer contraseña — RepTracker',
-          html: `
-            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0f172a;color:#f1f5f9;border-radius:16px;">
-              <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="display:block;width:80px;margin:0 auto 24px;" />
-              <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;">Restablecer contraseña</h1>
-              <p style="color:#94a3b8;margin:0 0 28px;">Haz clic en el botón para crear una nueva contraseña. El enlace expira en 1 hora.</p>
-              <a href="${origin}/reset-password?token=${token}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;">
-                Restablecer contraseña
-              </a>
-              <p style="color:#475569;font-size:13px;margin:28px 0 0;">Si no solicitaste esto, ignora este mensaje.</p>
-            </div>
-          `,
-        }),
-      })
+      await sendPasswordResetEmail(c.env.RESEND_API_KEY, rows[0].email, `${origin}/reset-password?token=${token}`)
     } catch { /* silent */ }
   }
 
