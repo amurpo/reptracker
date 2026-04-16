@@ -40,7 +40,7 @@ async function submit() {
       registered.value = true
     } else {
       const res = await api.auth.login(email.value, password.value, turnstileToken.value)
-      auth.setAuth(res.token, res.user)
+      auth.setAuth(res.user)
       router.push('/')
     }
   } catch (e) {
@@ -86,7 +86,7 @@ function switchMode(m: 'login' | 'register' | 'forgot') {
       <div class="relative z-10 flex flex-col justify-end p-12 pb-16">
         <div class="flex items-center gap-3 mb-4">
           <div class="flex items-center justify-center w-12 h-12 bg-white/10 backdrop-blur rounded-2xl">
-            <img src="/logo-transparency.png" class="w-10 h-10" alt="" />
+            <img src="/assets/logo-transparency.png" class="w-10 h-10" alt="" />
           </div>
           <span class="text-white text-2xl font-bold tracking-tight">RepTracker</span>
         </div>
@@ -101,7 +101,7 @@ function switchMode(m: 'login' | 'register' | 'forgot') {
       <!-- Mobile logo -->
       <div class="flex lg:hidden flex-col items-center mb-6">
         <div class="flex items-center justify-center w-12 h-12 bg-accent-500/20 rounded-2xl mb-2">
-          <img src="/logo-transparency.png" class="w-10 h-10" alt="RepTracker" />
+          <img src="/assets/logo-transparency.png" class="w-10 h-10" alt="RepTracker" />
         </div>
         <h1 class="text-xl font-bold text-white">RepTracker</h1>
       </div>

@@ -1,5 +1,5 @@
 const FROM = 'RepTracker <noreply@reptracker.amurpo.icu>'
-const LOGO = 'https://reptracker.amurpo.icu/logo-transparency.png'
+const LOGO = 'https://reptracker.amurpo.icu/assets/logo-transparency.png'
 
 function baseLayout(content: string): string {
   return `

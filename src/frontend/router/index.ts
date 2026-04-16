@@ -54,11 +54,11 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const token = localStorage.getItem('token')
-  if (!to.meta.public && !token) {
+  const user = localStorage.getItem('user')
+  if (!to.meta.public && !user) {
     return '/login'
   }
-  if (to.meta.public && token) {
+  if (to.meta.public && user) {
     return '/'
   }
 })

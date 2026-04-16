@@ -11,18 +11,14 @@ export function matchesSearch(name: string, muscleGroup: string, query: string):
 }
 
 async function request<T>(method: string, path: string, body?: unknown, skipAuthRedirect = false): Promise<T> {
-  const token = localStorage.getItem('token')
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
   const res = await fetch('/api' + path, {
     method,
-    headers,
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
   if (res.status === 401 && !skipAuthRedirect) {
-    localStorage.removeItem('token')
     localStorage.removeItem('user')
     window.location.href = '/login'
     throw new Error('No autorizado')
@@ -49,7 +45,9 @@ export const api = {
     resetPassword: (token: string, password: string) =>
       request<{ ok: boolean }>('POST', '/auth/reset-password', { token, password }, true),
     login: (email: string, password: string, turnstileToken: string) =>
-      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password, turnstileToken }, true),
+      request<{ user: { id: number; email: string } }>('POST', '/auth/login', { email, password, turnstileToken }, true),
+    logout: () =>
+      request<{ ok: boolean }>('POST', '/auth/logout', undefined, true),
   },
   exercises: {
     list: () => request<Exercise[]>('GET', '/exercises'),

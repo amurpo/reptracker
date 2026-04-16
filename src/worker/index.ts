@@ -58,8 +58,9 @@ app.use(
   '/api/*',
   cors({
     origin: ['http://localhost:5173', 'http://localhost:4173', 'http://localhost:5174'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
   })
 )
 

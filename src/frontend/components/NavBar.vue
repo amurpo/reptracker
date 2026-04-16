@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { api } from '../lib/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,7 +10,8 @@ const auth = useAuthStore()
 
 const showConfirm = ref(false)
 
-function confirmLogout() {
+async function confirmLogout() {
+  try { await api.auth.logout() } catch { /* silent */ }
   auth.logout()
   router.push('/login')
 }
