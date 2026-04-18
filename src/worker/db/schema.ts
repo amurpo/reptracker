@@ -67,6 +67,7 @@ export const weeklyPlan = sqliteTable('weekly_plan', {
   exerciseId: integer('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   sets: integer('sets').notNull().default(3),
   reps: integer('reps').notNull().default(10),
+  repsConfig: text('reps_config'),
   weightKg: real('weight_kg'),
   orderIndex: integer('order_index').notNull().default(0),
   isCardio: integer('is_cardio').notNull().default(0),
@@ -97,6 +98,7 @@ export const routineExercises = sqliteTable('routine_exercises', {
   exerciseId: integer('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   sets: integer('sets').notNull().default(3),
   reps: integer('reps').notNull().default(10),
+  repsConfig: text('reps_config'),
   weightKg: real('weight_kg'),
   orderIndex: integer('order_index').notNull().default(0),
 }, (t) => ({

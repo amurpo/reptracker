@@ -63,10 +63,10 @@ export const api = {
   plan: {
     get: (weekStart: string) => request<PlanEntry[]>('GET', `/plan?weekStart=${encodeURIComponent(weekStart)}`),
     getMonth: (yearMonth: string) => request<string[]>('GET', `/plan/month/${yearMonth}`),
-    add: (weekStart: string, dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
-      request<PlanEntry>('POST', '/plan', { weekStart, dayOfWeek, exerciseId, sets, reps, weightKg, isCardio, durationMinutes }),
-    update: (id: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
-      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, weightKg, isCardio, durationMinutes }),
+    add: (weekStart: string, dayOfWeek: number, exerciseId: number, sets: number, reps: number, repsConfig?: number[] | null, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('POST', '/plan', { weekStart, dayOfWeek, exerciseId, sets, reps, repsConfig, weightKg, isCardio, durationMinutes }),
+    update: (id: number, sets: number, reps: number, repsConfig?: number[] | null, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, repsConfig, weightKg, isCardio, durationMinutes }),
     remove: (id: number) => request<{ ok: boolean }>('DELETE', `/plan/${id}`),
   },
   profile: {
@@ -138,6 +138,7 @@ export interface PlanEntry {
   exerciseId: number
   sets: number
   reps: number
+  repsConfig: number[] | null
   weightKg: number | null
   orderIndex: number
   isCardio: number
@@ -159,6 +160,7 @@ export interface PlanSessionEntry {
   exerciseId: number
   sets: number
   reps: number
+  repsConfig: number[] | null
   weightKg: number | null
   orderIndex: number
   isCardio: number
@@ -179,6 +181,7 @@ export interface RoutineExercise {
   exerciseId: number
   sets: number
   reps: number
+  repsConfig?: number[] | null
   weightKg?: number | null
   orderIndex: number
 }

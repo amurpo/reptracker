@@ -131,6 +131,7 @@ const addExerciseId = ref<number | null>(null)
 const addExerciseName = ref('')
 const addSets = ref(3)
 const addReps = ref(10)
+const addRepsConfig = ref<number[] | null>(null)
 const addWeightKg = ref<number | null>(null)
 const addIsCardio = ref(false)
 const addDurationMinutes = ref<number | null>(30)
@@ -142,6 +143,7 @@ const modalFilterGroup = ref('all')
 const editingId = ref<number | null>(null)
 const editSets = ref(3)
 const editReps = ref(10)
+const editRepsConfig = ref<number[] | null>(null)
 const editWeightKg = ref<number | null>(null)
 const editIsCardio = ref(false)
 const editDurationMinutes = ref<number | null>(null)
@@ -183,6 +185,7 @@ function resetAddModal() {
   addExerciseName.value = ''
   addSets.value = 3
   addReps.value = 10
+  addRepsConfig.value = null
   addWeightKg.value = null
   addIsCardio.value = false
   addDurationMinutes.value = 30
@@ -200,6 +203,7 @@ async function addToPlan() {
       addExerciseId.value,
       addSets.value,
       addIsCardio.value ? 1 : addReps.value,
+      addIsCardio.value ? null : addRepsConfig.value,
       addIsCardio.value ? null : addWeightKg.value,
       addIsCardio.value ? 1 : 0,
       addIsCardio.value ? addDurationMinutes.value : null,
@@ -212,6 +216,49 @@ async function addToPlan() {
   }
 }
 
+// ── Helpers reps config ───────────────────────────────────────────────────────
+function enableAddRepsConfig() {
+  addRepsConfig.value = Array(addSets.value).fill(addReps.value)
+}
+function disableAddRepsConfig() {
+  addRepsConfig.value = null
+}
+function updateAddRepsConfig(i: number, v: number) {
+  if (!addRepsConfig.value) return
+  addRepsConfig.value = addRepsConfig.value.map((x, idx) => idx === i ? v : x)
+}
+
+function enableEditRepsConfig() {
+  editRepsConfig.value = Array(editSets.value).fill(editReps.value)
+}
+function disableEditRepsConfig() {
+  editRepsConfig.value = null
+}
+function updateEditRepsConfig(i: number, v: number) {
+  if (!editRepsConfig.value) return
+  editRepsConfig.value = editRepsConfig.value.map((x, idx) => idx === i ? v : x)
+}
+
+watch(addSets, (newSets) => {
+  if (!addRepsConfig.value) return
+  const cur = addRepsConfig.value
+  if (newSets > cur.length) {
+    addRepsConfig.value = [...cur, ...Array(newSets - cur.length).fill(addReps.value)]
+  } else {
+    addRepsConfig.value = cur.slice(0, newSets)
+  }
+})
+
+watch(editSets, (newSets) => {
+  if (!editRepsConfig.value) return
+  const cur = editRepsConfig.value
+  if (newSets > cur.length) {
+    editRepsConfig.value = [...cur, ...Array(newSets - cur.length).fill(editReps.value)]
+  } else {
+    editRepsConfig.value = cur.slice(0, newSets)
+  }
+})
+
 async function removeFromPlan(id: number) {
   await api.plan.remove(id)
   plan.value = plan.value.filter((e) => e.id !== id)
@@ -221,6 +268,7 @@ function startEdit(entry: PlanEntry) {
   editingId.value = entry.id
   editSets.value = entry.sets
   editReps.value = entry.reps
+  editRepsConfig.value = entry.repsConfig
   editWeightKg.value = entry.weightKg
   editIsCardio.value = entry.isCardio === 1
   editDurationMinutes.value = entry.durationMinutes
@@ -231,6 +279,7 @@ async function saveEdit(id: number) {
     id,
     editSets.value,
     editIsCardio.value ? 1 : editReps.value,
+    editIsCardio.value ? null : editRepsConfig.value,
     editIsCardio.value ? null : editWeightKg.value,
     editIsCardio.value ? 1 : 0,
     editIsCardio.value ? editDurationMinutes.value : null,
@@ -260,6 +309,7 @@ async function saveRoutine() {
       exerciseId: e.exerciseId,
       sets: e.sets,
       reps: e.reps,
+      repsConfig: e.repsConfig,
       weightKg: e.weightKg,
       orderIndex: e.orderIndex,
     }))
@@ -544,7 +594,8 @@ onMounted(() => { load(); loadRoutines() })
                   {{ entry.durationMinutes }} min
                 </template>
                 <template v-else>
-                  {{ entry.sets }} series × {{ entry.reps }} reps
+                  <template v-if="entry.repsConfig">{{ entry.repsConfig.join('-') }} reps</template>
+                  <template v-else>{{ entry.sets }}×{{ entry.reps }} reps</template>
                   <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
                 </template>
               </p>
@@ -609,6 +660,32 @@ onMounted(() => { load(); loadRoutines() })
                     v-model.number="editWeightKg" type="number" min="0" step="0.5" placeholder="—"
                     class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
                   />
+                </div>
+              </div>
+              <!-- Reps por serie (personalizado) -->
+              <div v-if="!editIsCardio && editSets > 1">
+                <div v-if="!editRepsConfig" class="flex">
+                  <button type="button" class="text-xs text-gray-600 hover:text-accent-400 transition-colors" @click="enableEditRepsConfig">
+                    + Personalizar reps por serie
+                  </button>
+                </div>
+                <div v-else>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs text-gray-500">Reps por serie</label>
+                    <button type="button" class="text-xs text-gray-600 hover:text-red-400 transition-colors" @click="disableEditRepsConfig">Quitar</button>
+                  </div>
+                  <div class="flex gap-2 flex-wrap">
+                    <div v-for="(_, i) in editRepsConfig" :key="i" class="text-center">
+                      <span class="text-xs text-gray-600 block mb-1">{{ i + 1 }}</span>
+                      <input
+                        type="number"
+                        :value="editRepsConfig[i]"
+                        min="1" max="200"
+                        class="w-12 bg-gray-800 rounded-lg px-1 py-2 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500"
+                        @change="updateEditRepsConfig(i, Number(($event.target as HTMLInputElement).value))"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- Campo cardio: duración, alineado a la derecha -->
@@ -740,7 +817,8 @@ onMounted(() => { load(); loadRoutines() })
                     <p class="text-xs text-gray-500 mt-0.5">
                       <template v-if="entry.isCardio">{{ entry.durationMinutes }} min</template>
                       <template v-else>
-                        {{ entry.sets }} series × {{ entry.reps }} reps
+                        <template v-if="entry.repsConfig">{{ entry.repsConfig.join('-') }} reps</template>
+                        <template v-else>{{ entry.sets }}×{{ entry.reps }} reps</template>
                         <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
                       </template>
                     </p>
@@ -965,8 +1043,35 @@ onMounted(() => { load(); loadRoutines() })
                     </div>
                   </div>
 
+                  <!-- Reps por serie (personalizado) -->
+                  <div v-if="!addIsCardio && addSets > 1">
+                    <div v-if="!addRepsConfig" class="flex">
+                      <button type="button" class="text-sm text-gray-500 hover:text-accent-400 transition-colors" @click="enableAddRepsConfig">
+                        + Personalizar reps por serie
+                      </button>
+                    </div>
+                    <div v-else>
+                      <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm text-gray-400">Reps por serie</label>
+                        <button type="button" class="text-xs text-gray-600 hover:text-red-400 transition-colors" @click="disableAddRepsConfig">Quitar</button>
+                      </div>
+                      <div class="flex gap-2 flex-wrap">
+                        <div v-for="(_, i) in addRepsConfig" :key="i" class="text-center">
+                          <span class="text-xs text-gray-600 block mb-1">{{ i + 1 }}</span>
+                          <input
+                            type="number"
+                            :value="addRepsConfig[i]"
+                            min="1" max="200"
+                            class="w-14 bg-gray-800 border border-gray-700 rounded-xl px-1 py-2.5 text-white text-sm text-center focus:outline-none focus:border-accent-500 transition-colors"
+                            @change="updateAddRepsConfig(i, Number(($event.target as HTMLInputElement).value))"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Inputs Cardio: duración alineada a la derecha -->
-                  <div v-else class="flex justify-end">
+                  <div v-if="addIsCardio" class="flex justify-end">
                     <div class="w-[180px]">
                       <label class="text-sm text-gray-400 block mb-1.5">Duración (min)</label>
                       <input
