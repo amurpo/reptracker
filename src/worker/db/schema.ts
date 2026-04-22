@@ -105,6 +105,16 @@ export const routineExercises = sqliteTable('routine_exercises', {
   idxRoutine: index('idx_routine_exercises_routine').on(t.routineId),
 }))
 
+export const weightLog = sqliteTable('weight_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  date: text('date').notNull(),
+  weightKg: real('weight_kg').notNull(),
+}, (t) => ({
+  idxWeightLog: index('idx_weight_log_user').on(t.userId, t.date),
+  uniqUserDate: unique().on(t.userId, t.date),
+}))
+
 export const completedSets = sqliteTable('completed_sets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   sessionId: integer('session_id').notNull().references(() => workoutSessions.id, { onDelete: 'cascade' }),

@@ -77,6 +77,9 @@ export const api = {
       request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
     getAvatar: () => request<{ avatar: string | null }>('GET', '/profile/avatar'),
     uploadAvatar: (avatar: string) => request<{ ok: boolean }>('PUT', '/profile/avatar', { avatar }),
+    getWeightLog: () => request<WeightLogEntry[]>('GET', '/profile/weight-log'),
+    logWeight: (date: string, weightKg: number) =>
+      request<{ ok: boolean }>('POST', '/profile/weight-log', { date, weightKg }),
   },
   routines: {
     list: () => request<Routine[]>('GET', '/routines'),
@@ -197,6 +200,11 @@ export interface StatsSummary {
   sex: string | null
   age: number | null
   strengthRatios: { name: string; muscleGroup: string; estimated1RM: number; bestWeightKg: number }[]
+}
+
+export interface WeightLogEntry {
+  date: string
+  weightKg: number
 }
 
 export interface SessionData {

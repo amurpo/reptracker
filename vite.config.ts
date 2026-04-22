@@ -13,6 +13,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     modulePreload: { polyfill: false },
+    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
         manualChunks(id) {

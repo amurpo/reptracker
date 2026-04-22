@@ -7,7 +7,7 @@ import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/compon
 import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
 import { api } from '../lib/api'
-import type { StatsSummary } from '../lib/api'
+import type { StatsSummary, WeightLogEntry } from '../lib/api'
 
 use([LineChart, PieChart, BarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 
@@ -23,13 +23,22 @@ const progData = ref<{ date: string; maxWeightKg: number; estimated1RM: number }
 const progLoading = ref(false)
 const progError = ref('')
 
+// Weight log
+const weightLogData = ref<WeightLogEntry[]>([])
+const logWeightKg = ref('')
+const logWeightDate = ref(today.toISOString().split('T')[0])
+const logWeightSaving = ref(false)
+const logWeightError = ref('')
+const logWeightSuccess = ref(false)
+
 onMounted(async () => {
   const month = today.toISOString().slice(0, 7)
   const todayStr = today.toISOString().split('T')[0]
 
-  const [summaryResult, exercisesResult] = await Promise.allSettled([
+  const [summaryResult, exercisesResult, weightLogResult] = await Promise.allSettled([
     api.stats.summary(month, todayStr),
     api.stats.progressionExercises(),
+    api.profile.getWeightLog(),
   ])
 
   if (summaryResult.status === 'fulfilled') {
@@ -46,8 +55,43 @@ onMounted(async () => {
     }
   }
 
+  if (weightLogResult.status === 'fulfilled') {
+    weightLogData.value = weightLogResult.value
+    if (weightLogResult.value.length > 0) {
+      const last = weightLogResult.value[weightLogResult.value.length - 1]
+      logWeightKg.value = String(last.weightKg)
+    }
+  }
+
   loading.value = false
 })
+
+async function logWeight() {
+  const w = parseFloat(logWeightKg.value)
+  if (isNaN(w) || w < 1 || w > 500) {
+    logWeightError.value = 'Peso inválido (1-500 kg)'
+    return
+  }
+  logWeightSaving.value = true
+  logWeightError.value = ''
+  try {
+    await api.profile.logWeight(logWeightDate.value, w)
+    const rounded = Math.round(w * 10) / 10
+    const idx = weightLogData.value.findIndex(e => e.date === logWeightDate.value)
+    if (idx >= 0) {
+      weightLogData.value[idx] = { date: logWeightDate.value, weightKg: rounded }
+    } else {
+      weightLogData.value.push({ date: logWeightDate.value, weightKg: rounded })
+      weightLogData.value.sort((a, b) => a.date.localeCompare(b.date))
+    }
+    logWeightSuccess.value = true
+    setTimeout(() => { logWeightSuccess.value = false }, 2000)
+  } catch (e) {
+    logWeightError.value = (e as Error).message
+  } finally {
+    logWeightSaving.value = false
+  }
+}
 
 async function loadProgression(exId: number) {
   selectedExId.value = exId
@@ -271,6 +315,52 @@ const topExercisesChartOption = computed(() => {
   }
 })
 
+// Gráfico de historial de peso
+const weightChartOption = computed(() => {
+  if (weightLogData.value.length < 2) return null
+  const { solid, alpha20 } = getAccentColor()
+  const dates = weightLogData.value.map(d => d.date)
+  const weights = weightLogData.value.map(d => d.weightKg)
+  return {
+    backgroundColor: 'transparent',
+    grid: { left: 44, right: 16, top: 16, bottom: 32 },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#1e293b',
+      borderColor: '#334155',
+      textStyle: { color: '#f1f5f9', fontSize: 12 },
+      formatter: (params: { name: string; value: number }[]) =>
+        `${params[0].name}<br/><b>${params[0].value} kg</b>`,
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLine: { lineStyle: { color: '#334155' } },
+      axisTick: { show: false },
+      axisLabel: { color: '#64748b', fontSize: 10, formatter: (v: string) => v.slice(5) },
+    },
+    yAxis: {
+      type: 'value',
+      scale: true,
+      splitLine: { lineStyle: { color: '#1e293b' } },
+      axisLabel: { color: '#64748b', fontSize: 10 },
+    },
+    series: [{
+      type: 'line',
+      data: weights,
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: { color: solid, width: 2 },
+      itemStyle: { color: solid },
+      areaStyle: {
+        color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [{ offset: 0, color: alpha20 }, { offset: 1, color: 'rgba(0,0,0,0)' }] },
+      },
+    }],
+  }
+})
+
 // Gráfico de progresión lineal
 const chartOption = computed(() => {
   const { solid, alpha20 } = getAccentColor()
@@ -321,8 +411,49 @@ const chartOption = computed(() => {
     <div class="max-w-lg lg:max-w-2xl mx-auto px-4 pt-6">
       <h1 class="text-white text-xl font-bold mb-6">Estadísticas</h1>
 
-      <div v-if="loading" class="flex justify-center pt-16">
-        <div class="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <!-- Skeleton de carga -->
+      <div v-if="loading" class="animate-pulse">
+        <!-- Métricas 2x2 -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 h-28">
+            <div class="w-9 h-9 rounded-xl bg-gray-800 mb-3"></div>
+            <div class="h-8 w-14 bg-gray-800 rounded-lg mb-2"></div>
+            <div class="h-3 w-24 bg-gray-800 rounded"></div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 h-28">
+            <div class="w-9 h-9 rounded-xl bg-gray-800 mb-3"></div>
+            <div class="h-8 w-14 bg-gray-800 rounded-lg mb-2"></div>
+            <div class="h-3 w-24 bg-gray-800 rounded"></div>
+          </div>
+          <div class="col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <div class="h-3 w-24 bg-gray-800 rounded mb-2"></div>
+              <div class="h-8 w-32 bg-gray-800 rounded-lg"></div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-gray-800"></div>
+          </div>
+        </div>
+        <!-- IMC placeholder -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+          <div class="h-3 w-32 bg-gray-800 rounded mb-3"></div>
+          <div class="h-8 w-24 bg-gray-800 rounded-lg mb-4"></div>
+          <div class="h-2 bg-gray-800 rounded-full"></div>
+        </div>
+        <!-- Peso placeholder -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+          <div class="h-3 w-36 bg-gray-800 rounded mb-4"></div>
+          <div class="h-40 bg-gray-800 rounded-xl mb-4"></div>
+          <div class="flex gap-2">
+            <div class="flex-1 h-10 bg-gray-800 rounded-xl"></div>
+            <div class="flex-1 h-10 bg-gray-800 rounded-xl"></div>
+            <div class="w-20 h-10 bg-gray-800 rounded-xl"></div>
+          </div>
+        </div>
+        <!-- Actividad placeholder -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+          <div class="h-3 w-40 bg-gray-800 rounded mb-4"></div>
+          <div class="h-40 bg-gray-800 rounded-xl"></div>
+        </div>
       </div>
 
       <p v-else-if="error" class="text-red-400 text-sm text-center pt-16">{{ error }}</p>
@@ -412,6 +543,47 @@ const chartOption = computed(() => {
           </div>
         </div>
 
+        <!-- ── Historial de peso ─────────────────────────────────────── -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+          <h2 class="text-gray-300 text-sm font-semibold mb-4">Historial de peso</h2>
+
+          <VChart v-if="weightChartOption" :option="weightChartOption" style="height: 160px; width: 100%;" autoresize class="mb-4" />
+          <p v-else-if="weightLogData.length === 1" class="text-gray-600 text-xs text-center mb-4">
+            Registra más fechas para ver la evolución.
+          </p>
+
+          <form @submit.prevent="logWeight" class="grid grid-cols-2 gap-2 sm:flex sm:items-end">
+            <div>
+              <label class="text-gray-500 text-xs mb-1 block">Peso (kg)</label>
+              <input
+                v-model="logWeightKg"
+                type="number"
+                step="0.1"
+                min="1"
+                max="500"
+                placeholder="75.5"
+                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-accent-500"
+              />
+            </div>
+            <div>
+              <label class="text-gray-500 text-xs mb-1 block">Fecha</label>
+              <input
+                v-model="logWeightDate"
+                type="date"
+                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-accent-500"
+              />
+            </div>
+            <button
+              type="submit"
+              :disabled="logWeightSaving"
+              class="col-span-2 sm:col-span-1 sm:shrink-0 px-4 py-2 rounded-xl bg-accent-600 text-white text-sm font-medium disabled:opacity-50 transition-opacity"
+            >
+              {{ logWeightSaving ? '...' : logWeightSuccess ? '✓' : 'Guardar' }}
+            </button>
+          </form>
+          <p v-if="logWeightError" class="text-red-400 text-xs mt-2">{{ logWeightError }}</p>
+        </div>
+
         <!-- ── Distribución muscular + Top ejercicios ─────────────────── -->
         <div v-if="stats.topExercises.length > 0" class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
           <h2 class="text-gray-300 text-sm font-semibold mb-4">Actividad — {{ monthName }}</h2>
@@ -442,10 +614,6 @@ const chartOption = computed(() => {
             </div>
           </div>
         </div>
-
-        <p v-else class="text-gray-600 text-sm text-center pb-4">
-          Aún no hay series completadas este mes.
-        </p>
 
         <!-- ── Máximos estimados / niveles de fuerza ──────────────────── -->
         <div v-if="strengthRows.length > 0" class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
@@ -501,14 +669,10 @@ const chartOption = computed(() => {
           <div v-if="progLoading" class="flex justify-center py-10">
             <div class="w-6 h-6 border-2 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <p v-else-if="progError" class="text-red-400 text-xs text-center py-6">{{ progError }}</p>
-          <template v-else-if="progData.length >= 2">
+          <template v-else-if="!progError && progData.length >= 2">
             <VChart :option="chartOption" style="height: 180px; width: 100%;" autoresize />
             <p class="text-gray-600 text-xs mt-2 text-center">1RM estimado por sesión (kg)</p>
           </template>
-          <p v-else class="text-gray-600 text-xs text-center py-6">
-            Necesitas al menos 2 sesiones con peso registrado para ver la progresión.
-          </p>
         </div>
 
       </template>

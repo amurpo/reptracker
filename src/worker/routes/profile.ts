@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { eq } from 'drizzle-orm'
-import { getDb, users } from '../db'
+import { eq, asc } from 'drizzle-orm'
+import { getDb, users, weightLog } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import { hashPassword, verifyPassword } from '../lib/crypto'
 import type { Env } from '../index'
@@ -118,6 +118,39 @@ profile.put('/avatar', async (c) => {
     return c.json({ error: 'Imagen demasiado grande' }, 400)
   }
   await c.env.AVATARS.put(`avatar:${userId}`, avatar)
+  return c.json({ ok: true })
+})
+
+profile.get('/weight-log', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const db = getDb(c.env.DB)
+  const rows = await db
+    .select({ date: weightLog.date, weightKg: weightLog.weightKg })
+    .from(weightLog)
+    .where(eq(weightLog.userId, userId))
+    .orderBy(asc(weightLog.date))
+    .limit(90)
+  return c.json(rows)
+})
+
+profile.post('/weight-log', async (c) => {
+  const userId = parseInt(c.get('userId'))
+  const body = await c.req.json<{ date: string; weightKg: number }>()
+  const { date, weightKg } = body
+
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date))
+    return c.json({ error: 'Fecha inválida (yyyy-mm-dd)' }, 400)
+  const w = Number(weightKg)
+  if (isNaN(w) || w < 1 || w > 500)
+    return c.json({ error: 'Peso inválido (1-500 kg)' }, 400)
+  const rounded = Math.round(w * 10) / 10
+
+  const db = getDb(c.env.DB)
+  await db
+    .insert(weightLog)
+    .values({ userId, date, weightKg: rounded })
+    .onConflictDoUpdate({ target: [weightLog.userId, weightLog.date], set: { weightKg: rounded } })
+
   return c.json({ ok: true })
 })
 
