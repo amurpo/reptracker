@@ -76,6 +76,7 @@ app.get('/summary', async (c) => {
           sql`${weeklyPlan.weightKg} > 0`,
         ))
         .groupBy(exercises.id)
+        .having(sql`count(distinct ${workoutSessions.date}) >= 2`)
         .orderBy(desc(sql`max(${weeklyPlan.weightKg} * (1.0 + ${weeklyPlan.reps} / 30.0))`))
         .limit(8)
     : []
@@ -159,6 +160,7 @@ app.get('/progression-exercises', async (c) => {
       sql`${weeklyPlan.weightKg} > 0`,
     ))
     .groupBy(exercises.id)
+    .having(sql`count(distinct ${workoutSessions.date}) >= 2`)
     .orderBy(exercises.name)
 
   return c.json(rows)
