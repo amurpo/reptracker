@@ -14,7 +14,9 @@ use([LineChart, PieChart, BarChart, GridComponent, TooltipComponent, LegendCompo
 const stats = ref<StatsSummary | null>(null)
 const loading = ref(true)
 const error = ref('')
-const today = new Date()
+const _now = new Date()
+const todayLocal = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
+const today = _now
 
 // Progresión
 const progExercises = ref<{ id: number; name: string; muscleGroup: string }[]>([])
@@ -26,14 +28,14 @@ const progError = ref('')
 // Weight log
 const weightLogData = ref<WeightLogEntry[]>([])
 const logWeightKg = ref('')
-const logWeightDate = ref(today.toISOString().split('T')[0])
+const logWeightDate = ref(todayLocal)
 const logWeightSaving = ref(false)
 const logWeightError = ref('')
 const logWeightSuccess = ref(false)
 
 onMounted(async () => {
-  const month = today.toISOString().slice(0, 7)
-  const todayStr = today.toISOString().split('T')[0]
+  const month = todayLocal.slice(0, 7)
+  const todayStr = todayLocal
 
   const [summaryResult, exercisesResult, weightLogResult] = await Promise.allSettled([
     api.stats.summary(month, todayStr),
@@ -552,7 +554,7 @@ const chartOption = computed(() => {
             Registra más fechas para ver la evolución.
           </p>
 
-          <form @submit.prevent="logWeight" class="grid grid-cols-2 gap-2 sm:flex sm:items-end">
+          <form class="grid grid-cols-2 gap-2 sm:flex sm:items-end" @submit.prevent="logWeight">
             <div>
               <label class="text-gray-500 text-xs mb-1 block">Peso (kg)</label>
               <input
