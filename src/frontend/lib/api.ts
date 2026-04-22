@@ -71,7 +71,7 @@ export const api = {
   },
   profile: {
     get: () => request<UserProfile>('GET', '/profile'),
-    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'heightCm' | 'sex' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme'>>) =>
+    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'heightCm' | 'sex' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme' | 'restTimerSeconds' | 'restTimerSound' | 'restTimerRepeat'>>) =>
       request<UserProfile>('PUT', '/profile', data),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
@@ -120,6 +120,9 @@ export interface UserProfile {
   timeFormat: string
   weekStart: number
   theme: string
+  restTimerSeconds: number
+  restTimerSound: string
+  restTimerRepeat: number
 }
 
 export interface Exercise {

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { api } from '../lib/api'
 import { useAuthStore } from '../stores/auth'
 import { usePreferencesStore, THEMES, applyTheme } from '../stores/preferences'
+import { SOUNDS, playSound, type SoundId } from '../lib/sounds'
 
 const auth = useAuthStore()
 const preferences = usePreferencesStore()
@@ -137,6 +138,40 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+// Timer
+const restTimerSeconds = ref(preferences.restTimerSeconds)
+const restTimerSound = ref<SoundId>(preferences.restTimerSound as SoundId)
+const restTimerRepeat = ref(preferences.restTimerRepeat)
+const timerSaving = ref(false)
+const timerSaved = ref(false)
+
+const TIMER_OPTIONS = [0, 15, 30, 45, 60, 90, 120, 180]
+const REPEAT_OPTIONS = [1, 2, 3, 4, 5]
+
+async function saveTimer(seconds?: number, sound?: SoundId, repeat?: number) {
+  if (seconds !== undefined) restTimerSeconds.value = seconds
+  if (sound !== undefined) restTimerSound.value = sound
+  if (repeat !== undefined) restTimerRepeat.value = repeat
+  timerSaving.value = true
+  try {
+    await api.profile.update({
+      restTimerSeconds: restTimerSeconds.value,
+      restTimerSound: restTimerSound.value,
+      restTimerRepeat: restTimerRepeat.value,
+    })
+    preferences.restTimerSeconds = restTimerSeconds.value
+    preferences.restTimerSound = restTimerSound.value
+    preferences.restTimerRepeat = restTimerRepeat.value
+    localStorage.setItem('restTimerSeconds', String(restTimerSeconds.value))
+    localStorage.setItem('restTimerSound', restTimerSound.value)
+    localStorage.setItem('restTimerRepeat', String(restTimerRepeat.value))
+    timerSaved.value = true
+    setTimeout(() => { timerSaved.value = false }, 2000)
+  } catch { /* fallo silencioso */ } finally {
+    timerSaving.value = false
+  }
+}
 
 async function saveTheme(themeId: string) {
   theme.value = themeId
@@ -372,6 +407,76 @@ async function save() {
           {{ saving ? 'Guardando...' : 'Guardar cambios' }}
         </button>
       </form>
+
+      <!-- Timer de descanso -->
+      <div class="mt-8 pt-6 border-t border-gray-800">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Timer de descanso</h2>
+
+        <!-- Duración -->
+        <div class="mb-5">
+          <label class="block text-sm text-gray-400 mb-2">Duración</label>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="s in TIMER_OPTIONS"
+              :key="s"
+              type="button"
+              class="px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors"
+              :class="restTimerSeconds === s
+                ? 'bg-accent-600 border-accent-500 text-white'
+                : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'"
+              @click="saveTimer(s)"
+            >
+              {{ s === 0 ? 'Sin timer' : s >= 60 ? `${s / 60}min` : `${s}s` }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Repeticiones -->
+        <div v-if="restTimerSeconds > 0">
+          <label class="block text-sm text-gray-400 mb-2">Repeticiones del sonido</label>
+          <div class="flex gap-2">
+            <button
+              v-for="n in REPEAT_OPTIONS"
+              :key="n"
+              type="button"
+              class="flex-1 py-2 rounded-xl border text-sm font-medium transition-colors"
+              :class="restTimerRepeat === n
+                ? 'bg-accent-600 border-accent-500 text-white'
+                : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'"
+              @click="saveTimer(undefined, undefined, n)"
+            >{{ n }}×</button>
+          </div>
+        </div>
+
+        <!-- Sonido -->
+        <div>
+          <label class="block text-sm text-gray-400 mb-2">Sonido al terminar</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              v-for="snd in SOUNDS"
+              :key="snd.id"
+              type="button"
+              class="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm transition-colors"
+              :class="restTimerSound === snd.id
+                ? 'bg-accent-600 border-accent-500 text-white'
+                : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'"
+              @click="saveTimer(undefined, snd.id)"
+            >
+              <span class="text-base leading-none">{{ snd.emoji }}</span>
+              <span>{{ snd.label }}</span>
+              <button
+                type="button"
+                class="ml-auto shrink-0 text-xs opacity-60 hover:opacity-100"
+                @click.stop="playSound(snd.id)"
+              >▶</button>
+            </button>
+          </div>
+          <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
+            <p v-if="timerSaved" class="text-accent-400 text-xs mt-2">✓ Guardado</p>
+            <p v-else-if="timerSaving" class="text-gray-600 text-xs mt-2">Guardando...</p>
+          </Transition>
+        </div>
+      </div>
 
       <!-- Cambiar contraseña -->
       <div class="mt-8 pt-6 border-t border-gray-800">

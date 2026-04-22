@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN rest_timer_seconds INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN rest_timer_sound TEXT NOT NULL DEFAULT 'bell';
+ALTER TABLE users ADD COLUMN rest_timer_repeat INTEGER NOT NULL DEFAULT 1;
