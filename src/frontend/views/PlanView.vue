@@ -689,7 +689,7 @@ onMounted(() => { load(); loadRoutines() })
                 </div>
               </div>
               <!-- Campo cardio: duración, alineado a la derecha -->
-              <div v-else class="flex justify-end">
+              <div v-if="editIsCardio" class="flex justify-end">
                 <div class="w-[160px]">
                   <label class="text-xs text-gray-500 block mb-1">Duración (min)</label>
                   <input

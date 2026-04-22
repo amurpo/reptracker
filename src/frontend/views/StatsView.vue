@@ -37,11 +37,13 @@ onMounted(async () => {
   const month = todayLocal.slice(0, 7)
   const todayStr = todayLocal
 
+  const minDelay = new Promise(resolve => setTimeout(resolve, 350))
   const [summaryResult, exercisesResult, weightLogResult] = await Promise.allSettled([
     api.stats.summary(month, todayStr),
     api.stats.progressionExercises(),
     api.profile.getWeightLog(),
   ])
+  await minDelay
 
   if (summaryResult.status === 'fulfilled') {
     stats.value = summaryResult.value
