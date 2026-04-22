@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
 import { usePreferencesStore, applyTheme } from './stores/preferences'
@@ -14,9 +14,11 @@ const showNav = computed(() => !route.meta.public)
 // para evitar el flash al color por defecto
 applyTheme(localStorage.getItem('theme') || 'indigo')
 
-onMounted(() => {
-  if (auth.user) preferences.load()
-})
+// Carga preferencias cuando el usuario se autentica (incluso en browser nuevo donde
+// onMounted ya corrió antes del login)
+watch(() => auth.user, (user) => {
+  if (user) preferences.load()
+}, { immediate: true })
 </script>
 
 <template>
