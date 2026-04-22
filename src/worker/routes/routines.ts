@@ -30,7 +30,7 @@ app.post('/', async (c) => {
   const userId = parseInt(c.get('userId'))
   const { name, exercises: exList } = await c.req.json<{
     name: string
-    exercises: { exerciseId: number; sets: number; reps: number; weightKg?: number | null; orderIndex: number }[]
+    exercises: { exerciseId: number; sets: number; reps: number; repsConfig?: number | null; weightKg?: number | null; orderIndex: number }[]
   }>()
 
   const nameTrimmed = String(name ?? '').trim()
@@ -49,6 +49,7 @@ app.post('/', async (c) => {
       exerciseId: e.exerciseId,
       sets: e.sets,
       reps: e.reps,
+      repsConfig: e.repsConfig ? JSON.stringify(e.repsConfig) : null,
       weightKg: e.weightKg ?? null,
       orderIndex: e.orderIndex,
     }))
@@ -97,6 +98,7 @@ app.post('/:id/apply', async (c) => {
       exerciseId: e.exerciseId,
       sets: e.sets,
       reps: e.reps,
+      repsConfig: e.repsConfig ?? null,
       weightKg: e.weightKg,
       orderIndex: e.orderIndex,
     }))
@@ -106,7 +108,12 @@ app.post('/:id/apply', async (c) => {
   const result = await Promise.all(inserted.map(async (entry) => {
     const ex = await db.select({ name: exercises.name, muscleGroup: exercises.muscleGroup })
       .from(exercises).where(eq(exercises.id, entry.exerciseId))
-    return { ...entry, exerciseName: ex[0]?.name ?? '', muscleGroup: ex[0]?.muscleGroup ?? '' }
+    return {
+      ...entry,
+      repsConfig: entry.repsConfig ? JSON.parse(entry.repsConfig) as number[] : null,
+      exerciseName: ex[0]?.name ?? '',
+      muscleGroup: ex[0]?.muscleGroup ?? '',
+    }
   }))
 
   return c.json(result)

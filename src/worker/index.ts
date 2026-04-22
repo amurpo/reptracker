@@ -7,6 +7,7 @@ import planRoutes from './routes/plan'
 import sessionsRoutes from './routes/sessions'
 import profileRoutes from './routes/profile'
 import routinesRoutes from './routes/routines'
+import statsRoutes from './routes/stats'
 
 export type Env = {
   DB: D1Database
@@ -22,7 +23,7 @@ const app = new Hono<{ Bindings: Env }>()
 // Block unknown paths (WordPress scanners, bots, etc.)
 app.use('*', async (c, next) => {
   const path = new URL(c.req.url).pathname
-  const allowed = ['/', '/login', '/plan', '/exercises', '/profile', '/reset-password', '/verify', '/forgot-password', '/robots.txt']
+  const allowed = ['/', '/login', '/plan', '/exercises', '/profile', '/stats', '/reset-password', '/verify', '/forgot-password', '/robots.txt']
   const isAllowed =
     allowed.includes(path) ||
     path.startsWith('/api/') ||
@@ -57,8 +58,9 @@ app.use(
   '/api/*',
   cors({
     origin: ['http://localhost:5173', 'http://localhost:4173', 'http://localhost:5174'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
   })
 )
 
@@ -68,5 +70,6 @@ app.route('/api/plan', planRoutes)
 app.route('/api/sessions', sessionsRoutes)
 app.route('/api/profile', profileRoutes)
 app.route('/api/routines', routinesRoutes)
+app.route('/api/stats', statsRoutes)
 
 export default app

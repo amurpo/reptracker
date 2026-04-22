@@ -8,6 +8,8 @@ export const users = sqliteTable('users', {
   name: text('name'),
   age: integer('age'),
   weightKg: real('weight_kg'),
+  heightCm: integer('height_cm'),
+  sex: text('sex'),
   emailVerified: integer('email_verified').notNull().default(0),
   dateFormat: text('date_format').notNull().default('dd-mm-yyyy'),
   timeFormat: text('time_format').notNull().default('24h'),
@@ -65,6 +67,7 @@ export const weeklyPlan = sqliteTable('weekly_plan', {
   exerciseId: integer('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   sets: integer('sets').notNull().default(3),
   reps: integer('reps').notNull().default(10),
+  repsConfig: text('reps_config'),
   weightKg: real('weight_kg'),
   orderIndex: integer('order_index').notNull().default(0),
   isCardio: integer('is_cardio').notNull().default(0),
@@ -95,10 +98,21 @@ export const routineExercises = sqliteTable('routine_exercises', {
   exerciseId: integer('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
   sets: integer('sets').notNull().default(3),
   reps: integer('reps').notNull().default(10),
+  repsConfig: text('reps_config'),
   weightKg: real('weight_kg'),
   orderIndex: integer('order_index').notNull().default(0),
 }, (t) => ({
   idxRoutine: index('idx_routine_exercises_routine').on(t.routineId),
+}))
+
+export const weightLog = sqliteTable('weight_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  date: text('date').notNull(),
+  weightKg: real('weight_kg').notNull(),
+}, (t) => ({
+  idxWeightLog: index('idx_weight_log_user').on(t.userId, t.date),
+  uniqUserDate: unique().on(t.userId, t.date),
 }))
 
 export const completedSets = sqliteTable('completed_sets', {

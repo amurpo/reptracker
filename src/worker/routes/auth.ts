@@ -1,71 +1,14 @@
 import { Hono } from 'hono'
+import { setCookie, deleteCookie } from 'hono/cookie'
 import { SignJWT } from 'jose'
 import { eq } from 'drizzle-orm'
 import { getDb, users, emailVerificationTokens, passwordResetTokens } from '../db'
+import { hashPassword, verifyPassword } from '../lib/crypto'
+import { verifyTurnstile } from '../lib/turnstile'
+import { sendVerificationEmail, sendPasswordResetEmail } from '../lib/email'
 import type { Env } from '../index'
 
-async function verifyTurnstile(secret: string, token: string, ip?: string): Promise<boolean> {
-  const body = new URLSearchParams({ secret, response: token })
-  if (ip) body.set('remoteip', ip)
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    body,
-  })
-  const data = await res.json<{ success: boolean }>()
-  return data.success
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16))
-  const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
-  )
-  const hash = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256
-  )
-  const saltB64 = btoa(String.fromCharCode(...new Uint8Array(salt)))
-  const hashB64 = btoa(String.fromCharCode(...new Uint8Array(hash)))
-  return `${saltB64}:${hashB64}`
-}
-
-async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [saltB64, hashB64] = stored.split(':')
-  const salt = Uint8Array.from(atob(saltB64), (c) => c.charCodeAt(0))
-  const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
-  )
-  const hash = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256
-  )
-  return btoa(String.fromCharCode(...new Uint8Array(hash))) === hashB64
-}
-
-async function sendVerificationEmail(apiKey: string, to: string, verifyUrl: string) {
-  await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'RepTracker <noreply@reptracker.amurpo.icu>',
-      to,
-      subject: 'Confirma tu cuenta en RepTracker',
-      html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0f172a;color:#f1f5f9;border-radius:16px;">
-          <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="display:block;width:80px;margin:0 auto 24px;" />
-          <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;">Confirma tu cuenta</h1>
-          <p style="color:#94a3b8;margin:0 0 28px;">Haz clic en el botón para verificar tu email y empezar a usar RepTracker.</p>
-          <a href="${verifyUrl}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;">
-            Verificar email
-          </a>
-          <p style="color:#475569;font-size:13px;margin:28px 0 0;">El enlace expira en 24 horas. Si no creaste esta cuenta, ignora este mensaje.</p>
-        </div>
-      `,
-    }),
-  })
-}
-
+const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 días en segundos
 
 const auth = new Hono<{ Bindings: Env }>()
 
@@ -87,7 +30,7 @@ auth.post('/register', async (c) => {
     const existing = await db
       .select({ id: users.id, emailVerified: users.emailVerified })
       .from(users)
-      .where(eq(users.email, email.toLowerCase()))
+      .where(eq(users.email, emailTrimmed))
 
     if (existing.length > 0) {
       if (existing[0].emailVerified) {
@@ -102,19 +45,18 @@ auth.post('/register', async (c) => {
       await db.insert(emailVerificationTokens).values({ userId: existing[0].id, token, expiresAt })
       const origin = new URL(c.req.url).origin
       try {
-        await sendVerificationEmail(c.env.RESEND_API_KEY, email.toLowerCase(), `${origin}/verify?token=${token}`)
+        await sendVerificationEmail(c.env.RESEND_API_KEY, emailTrimmed, `${origin}/verify?token=${token}`)
       } catch { /* silent */ }
       return c.json({ message: 'Te reenviamos el email de confirmación.' })
     }
 
     const passwordHash = await hashPassword(password)
     const inserted = await db.insert(users).values({
-      email: email.toLowerCase(),
+      email: emailTrimmed,
       passwordHash,
     }).returning({ id: users.id, email: users.email })
 
     const user = inserted[0]
-
     const token = crypto.randomUUID()
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     await db.insert(emailVerificationTokens).values({ userId: user.id, token, expiresAt })
@@ -122,9 +64,7 @@ auth.post('/register', async (c) => {
     const origin = new URL(c.req.url).origin
     try {
       await sendVerificationEmail(c.env.RESEND_API_KEY, user.email, `${origin}/verify?token=${token}`)
-    } catch {
-      // El registro fue exitoso aunque el email falle
-    }
+    } catch { /* silent */ }
 
     return c.json({ message: 'Te enviamos un email para confirmar tu cuenta.' })
   } catch (err) {
@@ -156,12 +96,26 @@ auth.post('/login', async (c) => {
   }
 
   const secret = new TextEncoder().encode(c.env.JWT_SECRET)
-  const token = await new SignJWT({ sub: String(user.id) })
+  const jwt = await new SignJWT({ sub: String(user.id) })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('30d')
     .sign(secret)
 
-  return c.json({ token, user: { id: user.id, email: user.email } })
+  const isSecure = new URL(c.req.url).protocol === 'https:'
+  setCookie(c, 'session', jwt, {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: 'Strict',
+    path: '/',
+    maxAge: SESSION_MAX_AGE,
+  })
+
+  return c.json({ user: { id: user.id, email: user.email } })
+})
+
+auth.post('/logout', async (c) => {
+  deleteCookie(c, 'session', { path: '/' })
+  return c.json({ ok: true })
 })
 
 auth.get('/verify/:token', async (c) => {
@@ -189,48 +143,29 @@ auth.get('/verify/:token', async (c) => {
 
 auth.post('/forgot-password', async (c) => {
   try {
-  const { email, turnstileToken } = await c.req.json<{ email: string; turnstileToken: string }>()
-  if (!email) return c.json({ error: 'Email requerido' }, 400)
+    const { email, turnstileToken } = await c.req.json<{ email: string; turnstileToken: string }>()
+    if (!email) return c.json({ error: 'Email requerido' }, 400)
 
-  const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
-  if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
+    const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
+    if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
 
-  const db = getDb(c.env.DB)
-  const rows = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.email, email.toLowerCase()))
+    const db = getDb(c.env.DB)
+    const rows = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.email, email.toLowerCase()))
 
-  // Siempre responder igual para no revelar si el email existe
-  if (rows[0]) {
-    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, rows[0].id))
-    const token = crypto.randomUUID()
-    const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString() // 1 hora
-    await db.insert(passwordResetTokens).values({ userId: rows[0].id, token, expiresAt })
+    // Siempre responder igual para no revelar si el email existe
+    if (rows[0]) {
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, rows[0].id))
+      const token = crypto.randomUUID()
+      const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString()
+      await db.insert(passwordResetTokens).values({ userId: rows[0].id, token, expiresAt })
 
-    const origin = new URL(c.req.url).origin
-    try {
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${c.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: 'RepTracker <noreply@reptracker.amurpo.icu>',
-          to: rows[0].email,
-          subject: 'Restablecer contraseña — RepTracker',
-          html: `
-            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0f172a;color:#f1f5f9;border-radius:16px;">
-              <img src="https://reptracker.amurpo.icu/logo-transparency.png" alt="RepTracker" style="display:block;width:80px;margin:0 auto 24px;" />
-              <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;">Restablecer contraseña</h1>
-              <p style="color:#94a3b8;margin:0 0 28px;">Haz clic en el botón para crear una nueva contraseña. El enlace expira en 1 hora.</p>
-              <a href="${origin}/reset-password?token=${token}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;font-size:15px;">
-                Restablecer contraseña
-              </a>
-              <p style="color:#475569;font-size:13px;margin:28px 0 0;">Si no solicitaste esto, ignora este mensaje.</p>
-            </div>
-          `,
-        }),
-      })
-    } catch { /* silent */ }
-  }
+      const origin = new URL(c.req.url).origin
+      try {
+        await sendPasswordResetEmail(c.env.RESEND_API_KEY, rows[0].email, `${origin}/reset-password?token=${token}`)
+      } catch { /* silent */ }
+    }
 
-  return c.json({ message: 'Si ese email está registrado, recibirás un enlace en breve.' })
+    return c.json({ message: 'Si ese email está registrado, recibirás un enlace en breve.' })
   } catch (err) {
     return c.json({ error: String(err) }, 500)
   }

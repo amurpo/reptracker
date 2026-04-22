@@ -12,7 +12,7 @@
     "noEmit": true,
     "jsx": "preserve",
     "strict": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {

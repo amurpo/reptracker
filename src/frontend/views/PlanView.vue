@@ -131,6 +131,7 @@ const addExerciseId = ref<number | null>(null)
 const addExerciseName = ref('')
 const addSets = ref(3)
 const addReps = ref(10)
+const addRepsConfig = ref<number[] | null>(null)
 const addWeightKg = ref<number | null>(null)
 const addIsCardio = ref(false)
 const addDurationMinutes = ref<number | null>(30)
@@ -142,6 +143,7 @@ const modalFilterGroup = ref('all')
 const editingId = ref<number | null>(null)
 const editSets = ref(3)
 const editReps = ref(10)
+const editRepsConfig = ref<number[] | null>(null)
 const editWeightKg = ref<number | null>(null)
 const editIsCardio = ref(false)
 const editDurationMinutes = ref<number | null>(null)
@@ -183,6 +185,7 @@ function resetAddModal() {
   addExerciseName.value = ''
   addSets.value = 3
   addReps.value = 10
+  addRepsConfig.value = null
   addWeightKg.value = null
   addIsCardio.value = false
   addDurationMinutes.value = 30
@@ -200,6 +203,7 @@ async function addToPlan() {
       addExerciseId.value,
       addSets.value,
       addIsCardio.value ? 1 : addReps.value,
+      addIsCardio.value ? null : addRepsConfig.value,
       addIsCardio.value ? null : addWeightKg.value,
       addIsCardio.value ? 1 : 0,
       addIsCardio.value ? addDurationMinutes.value : null,
@@ -212,6 +216,49 @@ async function addToPlan() {
   }
 }
 
+// ── Helpers reps config ───────────────────────────────────────────────────────
+function enableAddRepsConfig() {
+  addRepsConfig.value = Array(addSets.value).fill(addReps.value)
+}
+function disableAddRepsConfig() {
+  addRepsConfig.value = null
+}
+function updateAddRepsConfig(i: number, v: number) {
+  if (!addRepsConfig.value) return
+  addRepsConfig.value = addRepsConfig.value.map((x, idx) => idx === i ? v : x)
+}
+
+function enableEditRepsConfig() {
+  editRepsConfig.value = Array(editSets.value).fill(editReps.value)
+}
+function disableEditRepsConfig() {
+  editRepsConfig.value = null
+}
+function updateEditRepsConfig(i: number, v: number) {
+  if (!editRepsConfig.value) return
+  editRepsConfig.value = editRepsConfig.value.map((x, idx) => idx === i ? v : x)
+}
+
+watch(addSets, (newSets) => {
+  if (!addRepsConfig.value) return
+  const cur = addRepsConfig.value
+  if (newSets > cur.length) {
+    addRepsConfig.value = [...cur, ...Array(newSets - cur.length).fill(addReps.value)]
+  } else {
+    addRepsConfig.value = cur.slice(0, newSets)
+  }
+})
+
+watch(editSets, (newSets) => {
+  if (!editRepsConfig.value) return
+  const cur = editRepsConfig.value
+  if (newSets > cur.length) {
+    editRepsConfig.value = [...cur, ...Array(newSets - cur.length).fill(editReps.value)]
+  } else {
+    editRepsConfig.value = cur.slice(0, newSets)
+  }
+})
+
 async function removeFromPlan(id: number) {
   await api.plan.remove(id)
   plan.value = plan.value.filter((e) => e.id !== id)
@@ -221,6 +268,7 @@ function startEdit(entry: PlanEntry) {
   editingId.value = entry.id
   editSets.value = entry.sets
   editReps.value = entry.reps
+  editRepsConfig.value = entry.repsConfig
   editWeightKg.value = entry.weightKg
   editIsCardio.value = entry.isCardio === 1
   editDurationMinutes.value = entry.durationMinutes
@@ -231,6 +279,7 @@ async function saveEdit(id: number) {
     id,
     editSets.value,
     editIsCardio.value ? 1 : editReps.value,
+    editIsCardio.value ? null : editRepsConfig.value,
     editIsCardio.value ? null : editWeightKg.value,
     editIsCardio.value ? 1 : 0,
     editIsCardio.value ? editDurationMinutes.value : null,
@@ -260,6 +309,7 @@ async function saveRoutine() {
       exerciseId: e.exerciseId,
       sets: e.sets,
       reps: e.reps,
+      repsConfig: e.repsConfig,
       weightKg: e.weightKg,
       orderIndex: e.orderIndex,
     }))
@@ -403,21 +453,20 @@ onMounted(() => { load(); loadRoutines() })
 
 <template>
   <div class="max-w-lg lg:max-w-2xl mx-auto">
-
     <!-- Tabs Semana / Historial -->
     <div class="sticky top-0 bg-gray-950 pt-4 pb-3 px-4 z-10 border-b border-gray-800/50">
       <div class="flex bg-gray-900 rounded-2xl p-1 mb-3 border border-gray-800">
         <button
-          @click="view = 'week'"
           class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
           :class="view === 'week' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
+          @click="view = 'week'"
         >
           Semana
         </button>
         <button
-          @click="view = 'month'"
           class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
           :class="view === 'month' ? 'bg-accent-600 text-white' : 'text-gray-400 hover:text-gray-300'"
+          @click="view = 'month'"
         >
           Mes
         </button>
@@ -426,16 +475,18 @@ onMounted(() => { load(); loadRoutines() })
       <!-- Navegación de semana + selector de días (vista semana) -->
       <div v-if="view === 'week'">
         <div class="flex items-center justify-between px-1 mb-2">
-          <button @click="prevWeek" class="p-1.5 text-gray-400 hover:text-white transition-colors">
+          <button class="p-1.5 text-gray-400 hover:text-white transition-colors" @click="prevWeek">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
-          <button @click="goToCurrentWeek" class="text-sm font-semibold transition-colors"
-            :class="currentWeekStart === calcWeekStart(todayStr) ? 'text-accent-400' : 'text-white hover:text-accent-400'">
+          <button
+            class="text-sm font-semibold transition-colors" :class="currentWeekStart === calcWeekStart(todayStr) ? 'text-accent-400' : 'text-white hover:text-accent-400'"
+            @click="goToCurrentWeek"
+          >
             {{ weekLabel }}
           </button>
-          <button @click="nextWeek" class="p-1.5 text-gray-400 hover:text-white transition-colors">
+          <button class="p-1.5 text-gray-400 hover:text-white transition-colors" @click="nextWeek">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
@@ -445,15 +496,15 @@ onMounted(() => { load(); loadRoutines() })
           <button
             v-for="d in orderedDays"
             :key="d.dow"
-            @click="selectedDay = d.dow"
             class="flex flex-col items-center py-1.5 rounded-xl text-xs font-semibold transition-all"
             :class="
               selectedDay === d.dow
                 ? 'bg-accent-600 text-white'
                 : d.dow === todayDow && currentWeekStart === calcWeekStart(todayStr)
-                ? 'bg-gray-900 text-accent-400 ring-1 ring-accent-500/40'
-                : 'text-gray-600 hover:text-gray-300'
+                  ? 'bg-gray-900 text-accent-400 ring-1 ring-accent-500/40'
+                  : 'text-gray-600 hover:text-gray-300'
             "
+            @click="selectedDay = d.dow"
           >
             {{ d.short }}
             <span class="text-xs font-normal opacity-70">{{ weekDayDate(d.dow) }}</span>
@@ -469,13 +520,13 @@ onMounted(() => { load(); loadRoutines() })
 
       <!-- Navegación de mes (vista mes) -->
       <div v-else class="flex items-center justify-between px-1">
-        <button @click="prevMonth" class="p-1.5 text-gray-400 hover:text-white transition-colors">
+        <button class="p-1.5 text-gray-400 hover:text-white transition-colors" @click="prevMonth">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
         </button>
         <span class="text-sm font-semibold text-white">{{ historyTitle }}</span>
-        <button @click="nextMonth" class="p-1.5 text-gray-400 hover:text-white transition-colors">
+        <button class="p-1.5 text-gray-400 hover:text-white transition-colors" @click="nextMonth">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
           </svg>
@@ -493,9 +544,9 @@ onMounted(() => { load(); loadRoutines() })
         <div class="flex items-center gap-1">
           <!-- Cargar rutina -->
           <button
-            @click="showLoadRoutine = true"
             title="Cargar rutina"
             class="flex items-center gap-1.5 text-gray-400 hover:text-accent-400 p-2 sm:px-3 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
+            @click="showLoadRoutine = true"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
@@ -504,10 +555,10 @@ onMounted(() => { load(); loadRoutines() })
           </button>
           <!-- Guardar rutina -->
           <button
-            @click="routineName = orderedDays.find(d => d.dow === selectedDay)?.full ?? ''; showSaveRoutine = true"
             :disabled="dayPlan.length === 0"
             title="Guardar rutina"
             class="flex items-center gap-1.5 text-gray-400 hover:text-accent-400 p-2 sm:px-3 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium disabled:opacity-30 disabled:pointer-events-none"
+            @click="routineName = orderedDays.find(d => d.dow === selectedDay)?.full ?? ''; showSaveRoutine = true"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5z"/>
@@ -516,9 +567,9 @@ onMounted(() => { load(); loadRoutines() })
             <span class="hidden sm:inline">Guardar rutina</span>
           </button>
           <button
-            @click="showAddModal = true"
             class="flex items-center gap-1 bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
             :disabled="exercises.length === 0"
+            @click="showAddModal = true"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -543,23 +594,24 @@ onMounted(() => { load(); loadRoutines() })
                   {{ entry.durationMinutes }} min
                 </template>
                 <template v-else>
-                  {{ entry.sets }} series × {{ entry.reps }} reps
+                  <template v-if="entry.repsConfig">{{ entry.repsConfig.join('-') }} reps</template>
+                  <template v-else>{{ entry.sets }}×{{ entry.reps }} reps</template>
                   <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
                 </template>
               </p>
             </div>
             <div class="flex items-center gap-1 shrink-0">
               <button
-                @click="startEdit(entry)"
                 class="text-gray-600 hover:text-gray-300 p-1.5 transition-colors rounded-lg hover:bg-gray-800"
+                @click="startEdit(entry)"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
               </button>
               <button
-                @click="removeFromPlan(entry.id)"
                 class="text-gray-700 hover:text-red-400 p-1.5 transition-colors rounded-lg hover:bg-gray-800"
+                @click="removeFromPlan(entry.id)"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -578,9 +630,11 @@ onMounted(() => { load(); loadRoutines() })
             <div v-if="editingId === entry.id" class="px-4 pb-3.5 border-t border-gray-800 pt-3 space-y-3">
               <!-- Toggle cardio + campo duración, ambos alineados a la derecha -->
               <div class="flex justify-end">
-                <button type="button" @click="editIsCardio = !editIsCardio"
-                  class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
-                  :class="editIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                <button
+                  type="button" class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
+                  :class="editIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'"
+                  @click="editIsCardio = !editIsCardio"
+                >
                   🏃 Usa tiempo (cardio)
                 </button>
               </div>
@@ -588,33 +642,71 @@ onMounted(() => { load(); loadRoutines() })
               <div v-if="!editIsCardio" class="grid grid-cols-3 gap-2">
                 <div>
                   <label class="text-xs text-gray-500 block mb-1">Series</label>
-                  <input v-model.number="editSets" type="number" min="1" max="20"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  <input
+                    v-model.number="editSets" type="number" min="1" max="20"
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
+                  />
                 </div>
                 <div>
                   <label class="text-xs text-gray-500 block mb-1">Reps</label>
-                  <input v-model.number="editReps" type="number" min="1" max="200"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  <input
+                    v-model.number="editReps" type="number" min="1" max="200"
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
+                  />
                 </div>
                 <div>
                   <label class="text-xs text-gray-500 block mb-1">Peso (kg)</label>
-                  <input v-model.number="editWeightKg" type="number" min="0" step="0.5" placeholder="—"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  <input
+                    v-model.number="editWeightKg" type="number" min="0" step="0.5" placeholder="—"
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
+                  />
+                </div>
+              </div>
+              <!-- Reps por serie (personalizado) -->
+              <div v-if="!editIsCardio && editSets > 1">
+                <div v-if="!editRepsConfig" class="flex">
+                  <button type="button" class="text-xs text-gray-600 hover:text-accent-400 transition-colors" @click="enableEditRepsConfig">
+                    + Personalizar reps por serie
+                  </button>
+                </div>
+                <div v-else>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs text-gray-500">Reps por serie</label>
+                    <button type="button" class="text-xs text-gray-600 hover:text-red-400 transition-colors" @click="disableEditRepsConfig">Quitar</button>
+                  </div>
+                  <div class="flex gap-2 flex-wrap">
+                    <div v-for="(_, i) in editRepsConfig" :key="i" class="text-center">
+                      <span class="text-xs text-gray-600 block mb-1">{{ i + 1 }}</span>
+                      <input
+                        type="number"
+                        :value="editRepsConfig[i]"
+                        min="1" max="200"
+                        class="w-12 bg-gray-800 rounded-lg px-1 py-2 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500"
+                        @change="updateEditRepsConfig(i, Number(($event.target as HTMLInputElement).value))"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- Campo cardio: duración, alineado a la derecha -->
               <div v-else class="flex justify-end">
                 <div class="w-[160px]">
                   <label class="text-xs text-gray-500 block mb-1">Duración (min)</label>
-                  <input v-model.number="editDurationMinutes" type="number" min="1" max="300"
-                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  <input
+                    v-model.number="editDurationMinutes" type="number" min="1" max="300"
+                    class="w-full bg-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
+                  />
                 </div>
               </div>
               <!-- Fila inferior: acciones -->
               <div class="flex items-center justify-end gap-2">
-                <button @click="editingId = null" class="text-gray-500 hover:text-gray-300 px-2 py-1.5 text-sm transition-colors">Cancelar</button>
-                <button @click="saveEdit(entry.id)"
-                  class="bg-accent-600 hover:bg-accent-500 text-white px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors">Guardar</button>
+                <button class="text-gray-500 hover:text-gray-300 px-2 py-1.5 text-sm transition-colors" @click="editingId = null">Cancelar</button>
+                <button
+                  class="bg-accent-600 hover:bg-accent-500 text-white px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors"
+                  @click="saveEdit(entry.id)"
+                >
+                  Guardar
+                </button>
               </div>
             </div>
           </Transition>
@@ -654,30 +746,32 @@ onMounted(() => { load(); loadRoutines() })
             :is="cell ? 'button' : 'div'"
             v-for="(cell, i) in calendarCells"
             :key="i"
-            @click="cell && selectMonthDay(cell.date)"
             class="aspect-square flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors"
             :class="
               !cell
                 ? ''
                 : selectedMonthDay === cell.date
-                ? 'bg-accent-600 text-white'
-                : isInSelectedWeek(cell.date)
-                ? cell.isToday
-                  ? 'ring-1 ring-accent-500 bg-accent-500/20 text-accent-300 cursor-pointer'
-                  : cell.hasPlan
-                  ? 'bg-accent-500/20 text-accent-300 cursor-pointer hover:bg-accent-500/30'
-                  : 'bg-gray-800/60 text-gray-400 cursor-pointer hover:bg-gray-800'
-                : cell.isToday
-                ? 'ring-2 ring-accent-500 bg-accent-500/20 text-accent-300 font-bold cursor-pointer'
-                : cell.hasPlan
-                ? 'bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
-                : 'text-gray-600 hover:text-gray-400 cursor-pointer'
+                  ? 'bg-accent-600 text-white'
+                  : isInSelectedWeek(cell.date)
+                    ? cell.isToday
+                      ? 'ring-1 ring-accent-500 bg-accent-500/20 text-accent-300 cursor-pointer'
+                      : cell.hasPlan
+                        ? 'bg-accent-500/20 text-accent-300 cursor-pointer hover:bg-accent-500/30'
+                        : 'bg-gray-800/60 text-gray-400 cursor-pointer hover:bg-gray-800'
+                    : cell.isToday
+                      ? 'ring-2 ring-accent-500 bg-accent-500/20 text-accent-300 font-bold cursor-pointer'
+                      : cell.hasPlan
+                        ? 'bg-accent-600/20 text-accent-300 cursor-pointer hover:bg-accent-600/30'
+                        : 'text-gray-600 hover:text-gray-400 cursor-pointer'
             "
+            @click="cell && selectMonthDay(cell.date)"
           >
             <template v-if="cell">
               <span>{{ cell.day }}</span>
-              <span v-if="cell.hasPlan" class="w-1.5 h-1.5 rounded-full mt-0.5"
-                :class="selectedMonthDay === cell.date || isInSelectedWeek(cell.date) ? 'bg-accent-400' : 'bg-accent-500/70'" />
+              <span
+                v-if="cell.hasPlan" class="w-1.5 h-1.5 rounded-full mt-0.5"
+                :class="selectedMonthDay === cell.date || isInSelectedWeek(cell.date) ? 'bg-accent-400' : 'bg-accent-500/70'"
+              />
             </template>
           </component>
         </div>
@@ -701,7 +795,7 @@ onMounted(() => { load(); loadRoutines() })
                 <p class="text-sm font-semibold text-white">{{ preferences.formatDate(selectedMonthDay!) }}</p>
                 <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === calcDayOfWeek(selectedMonthDay!))?.full }}</p>
               </div>
-              <button @click="selectedMonthDay = null; monthDayPlan = []" class="text-gray-600 hover:text-gray-300 transition-colors">
+              <button class="text-gray-600 hover:text-gray-300 transition-colors" @click="selectedMonthDay = null; monthDayPlan = []">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -723,7 +817,8 @@ onMounted(() => { load(); loadRoutines() })
                     <p class="text-xs text-gray-500 mt-0.5">
                       <template v-if="entry.isCardio">{{ entry.durationMinutes }} min</template>
                       <template v-else>
-                        {{ entry.sets }} series × {{ entry.reps }} reps
+                        <template v-if="entry.repsConfig">{{ entry.repsConfig.join('-') }} reps</template>
+                        <template v-else>{{ entry.sets }}×{{ entry.reps }} reps</template>
                         <span v-if="entry.weightKg"> · {{ entry.weightKg }} kg</span>
                       </template>
                     </p>
@@ -732,8 +827,10 @@ onMounted(() => { load(); loadRoutines() })
                 </div>
               </div>
               <div class="px-4 py-3 border-t border-gray-800">
-                <button @click="goToSelectedWeek"
-                  class="w-full bg-accent-600 hover:bg-accent-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                <button
+                  class="w-full bg-accent-600 hover:bg-accent-500 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                  @click="goToSelectedWeek"
+                >
                   Editar esta semana
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -754,7 +851,7 @@ onMounted(() => { load(); loadRoutines() })
             <div v-if="showSaveRoutine" class="bg-gray-900 rounded-t-3xl w-full max-w-lg p-6 border-t border-gray-800">
               <div class="flex items-center justify-between mb-5">
                 <h3 class="font-bold text-lg text-white">Guardar rutina</h3>
-                <button @click="showSaveRoutine = false" class="text-gray-500 hover:text-gray-300 transition-colors">
+                <button class="text-gray-500 hover:text-gray-300 transition-colors" @click="showSaveRoutine = false">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
               </div>
@@ -765,13 +862,13 @@ onMounted(() => { load(); loadRoutines() })
                 placeholder="Nombre de la rutina"
                 maxlength="50"
                 class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors mb-4"
-                @keyup.enter="saveRoutine"
                 autofocus
+                @keyup.enter="saveRoutine"
               />
               <button
-                @click="saveRoutine"
                 :disabled="!routineName.trim() || routineSaving"
                 class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-3 rounded-2xl font-semibold transition-colors"
+                @click="saveRoutine"
               >
                 {{ routineSaving ? 'Guardando...' : 'Guardar' }}
               </button>
@@ -789,7 +886,7 @@ onMounted(() => { load(); loadRoutines() })
             <div v-if="showLoadRoutine" class="bg-gray-900 rounded-t-3xl w-full max-w-lg p-6 border-t border-gray-800 max-h-[70vh] flex flex-col">
               <div class="flex items-center justify-between mb-5">
                 <h3 class="font-bold text-lg text-white">Cargar rutina</h3>
-                <button @click="showLoadRoutine = false" class="text-gray-500 hover:text-gray-300 transition-colors">
+                <button class="text-gray-500 hover:text-gray-300 transition-colors" @click="showLoadRoutine = false">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
               </div>
@@ -805,16 +902,16 @@ onMounted(() => { load(); loadRoutines() })
                   class="flex items-center gap-3 bg-gray-800 rounded-2xl px-4 py-3"
                 >
                   <button
-                    @click="applyRoutine(r.id)"
                     :disabled="routineLoading"
                     class="flex-1 text-left"
+                    @click="applyRoutine(r.id)"
                   >
                     <p class="text-sm font-semibold text-white">{{ r.name }}</p>
                     <p class="text-xs text-gray-500 mt-0.5">{{ r.exerciseCount }} ejercicio{{ r.exerciseCount !== 1 ? 's' : '' }}</p>
                   </button>
                   <button
-                    @click="deleteRoutine(r.id)"
                     class="text-gray-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-gray-700 transition-colors shrink-0"
+                    @click="deleteRoutine(r.id)"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                   </button>
@@ -834,11 +931,10 @@ onMounted(() => { load(); loadRoutines() })
         <div v-if="showAddModal" class="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" @click.self="showAddModal = false; resetAddModal()">
           <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
             <div v-if="showAddModal" class="bg-gray-900 rounded-t-3xl w-full max-w-lg max-h-[88vh] flex flex-col border-t border-gray-800">
-
               <!-- Header -->
               <div class="flex items-center justify-between px-6 pt-5 pb-4 shrink-0">
                 <div class="flex items-center gap-3">
-                  <button v-if="addStep === 'config'" @click="addStep = 'search'" class="text-gray-400 hover:text-white transition-colors">
+                  <button v-if="addStep === 'config'" class="text-gray-400 hover:text-white transition-colors" @click="addStep = 'search'">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
                     </svg>
@@ -850,7 +946,7 @@ onMounted(() => { load(); loadRoutines() })
                     <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === selectedDay)?.full }}</p>
                   </div>
                 </div>
-                <button @click="showAddModal = false; resetAddModal()" class="text-gray-500 hover:text-gray-300 transition-colors">
+                <button class="text-gray-500 hover:text-gray-300 transition-colors" @click="showAddModal = false; resetAddModal()">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
@@ -870,14 +966,18 @@ onMounted(() => { load(); loadRoutines() })
                   />
                   <!-- Filtros de grupo muscular -->
                   <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1 lg:flex-wrap lg:overflow-x-visible">
-                    <button @click="modalFilterGroup = 'all'"
+                    <button
                       class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-                      :class="modalFilterGroup === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'">
+                      :class="modalFilterGroup === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
+                      @click="modalFilterGroup = 'all'"
+                    >
                       Todos
                     </button>
-                    <button v-for="g in MUSCLE_GROUPS" :key="g.id" @click="modalFilterGroup = g.id"
-                      class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-                      :class="modalFilterGroup === g.id ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'">
+                    <button
+                      v-for="g in MUSCLE_GROUPS" :key="g.id" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+                      :class="modalFilterGroup === g.id ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
+                      @click="modalFilterGroup = g.id"
+                    >
                       {{ g.label }}
                     </button>
                   </div>
@@ -887,8 +987,8 @@ onMounted(() => { load(); loadRoutines() })
                   <button
                     v-for="ex in availableExercises"
                     :key="ex.id"
-                    @click="selectExercise(ex)"
                     class="w-full text-left px-4 py-3 rounded-xl text-sm bg-gray-800 hover:bg-gray-750 border border-transparent hover:border-gray-600 transition-all flex items-center justify-between"
+                    @click="selectExercise(ex)"
                   >
                     <span>
                       <span class="font-semibold text-white">{{ ex.name }}</span>
@@ -909,9 +1009,11 @@ onMounted(() => { load(); loadRoutines() })
                 <div class="px-6 pb-6 space-y-4 overflow-y-auto flex-1">
                   <!-- Toggle cardio arriba a la derecha -->
                   <div class="flex justify-end">
-                    <button type="button" @click="addIsCardio = !addIsCardio"
-                      class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
-                      :class="addIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                    <button
+                      type="button" class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
+                      :class="addIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'"
+                      @click="addIsCardio = !addIsCardio"
+                    >
                       🏃 Usa tiempo (cardio)
                     </button>
                   </div>
@@ -920,40 +1022,74 @@ onMounted(() => { load(); loadRoutines() })
                   <div v-if="!addIsCardio" class="flex gap-3">
                     <div class="flex-1">
                       <label class="text-sm text-gray-400 block mb-1.5">Series</label>
-                      <input v-model.number="addSets" type="number" min="1" max="20"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                      <input
+                        v-model.number="addSets" type="number" min="1" max="20"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
+                      />
                     </div>
                     <div class="flex-1">
                       <label class="text-sm text-gray-400 block mb-1.5">Reps</label>
-                      <input v-model.number="addReps" type="number" min="1" max="200"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                      <input
+                        v-model.number="addReps" type="number" min="1" max="200"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
+                      />
                     </div>
                     <div class="flex-1">
                       <label class="text-sm text-gray-400 block mb-1.5">Peso (kg)</label>
-                      <input v-model.number="addWeightKg" type="number" min="0" step="0.5" placeholder="—"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                      <input
+                        v-model.number="addWeightKg" type="number" min="0" step="0.5" placeholder="—"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Reps por serie (personalizado) -->
+                  <div v-if="!addIsCardio && addSets > 1">
+                    <div v-if="!addRepsConfig" class="flex">
+                      <button type="button" class="text-sm text-gray-500 hover:text-accent-400 transition-colors" @click="enableAddRepsConfig">
+                        + Personalizar reps por serie
+                      </button>
+                    </div>
+                    <div v-else>
+                      <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm text-gray-400">Reps por serie</label>
+                        <button type="button" class="text-xs text-gray-600 hover:text-red-400 transition-colors" @click="disableAddRepsConfig">Quitar</button>
+                      </div>
+                      <div class="flex gap-2 flex-wrap">
+                        <div v-for="(_, i) in addRepsConfig" :key="i" class="text-center">
+                          <span class="text-xs text-gray-600 block mb-1">{{ i + 1 }}</span>
+                          <input
+                            type="number"
+                            :value="addRepsConfig[i]"
+                            min="1" max="200"
+                            class="w-14 bg-gray-800 border border-gray-700 rounded-xl px-1 py-2.5 text-white text-sm text-center focus:outline-none focus:border-accent-500 transition-colors"
+                            @change="updateAddRepsConfig(i, Number(($event.target as HTMLInputElement).value))"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Inputs Cardio: duración alineada a la derecha -->
-                  <div v-else class="flex justify-end">
+                  <div v-if="addIsCardio" class="flex justify-end">
                     <div class="w-[180px]">
                       <label class="text-sm text-gray-400 block mb-1.5">Duración (min)</label>
-                      <input v-model.number="addDurationMinutes" type="number" min="1" max="300"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors" />
+                      <input
+                        v-model.number="addDurationMinutes" type="number" min="1" max="300"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
+                      />
                     </div>
                   </div>
 
                   <button
-                    @click="addToPlan"
                     :disabled="saving"
                     class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-3.5 rounded-2xl font-semibold transition-colors"
+                    @click="addToPlan"
                   >
                     {{ saving ? 'Guardando...' : 'Agregar al plan' }}
                   </button>
                 </div>
               </template>
-
             </div>
           </Transition>
         </div>

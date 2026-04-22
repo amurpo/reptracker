@@ -11,25 +11,21 @@ export function matchesSearch(name: string, muscleGroup: string, query: string):
 }
 
 async function request<T>(method: string, path: string, body?: unknown, skipAuthRedirect = false): Promise<T> {
-  const token = localStorage.getItem('token')
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
   const res = await fetch('/api' + path, {
     method,
-    headers,
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
   if (res.status === 401 && !skipAuthRedirect) {
-    localStorage.removeItem('token')
     localStorage.removeItem('user')
     window.location.href = '/login'
     throw new Error('No autorizado')
   }
 
   const text = await res.text()
-  let data: unknown = {}
+  let data: unknown
   try {
     data = text ? JSON.parse(text) : {}
   } catch {
@@ -49,7 +45,9 @@ export const api = {
     resetPassword: (token: string, password: string) =>
       request<{ ok: boolean }>('POST', '/auth/reset-password', { token, password }, true),
     login: (email: string, password: string, turnstileToken: string) =>
-      request<{ token: string; user: { id: number; email: string } }>('POST', '/auth/login', { email, password, turnstileToken }, true),
+      request<{ user: { id: number; email: string } }>('POST', '/auth/login', { email, password, turnstileToken }, true),
+    logout: () =>
+      request<{ ok: boolean }>('POST', '/auth/logout', undefined, true),
   },
   exercises: {
     list: () => request<Exercise[]>('GET', '/exercises'),
@@ -65,20 +63,23 @@ export const api = {
   plan: {
     get: (weekStart: string) => request<PlanEntry[]>('GET', `/plan?weekStart=${encodeURIComponent(weekStart)}`),
     getMonth: (yearMonth: string) => request<string[]>('GET', `/plan/month/${yearMonth}`),
-    add: (weekStart: string, dayOfWeek: number, exerciseId: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
-      request<PlanEntry>('POST', '/plan', { weekStart, dayOfWeek, exerciseId, sets, reps, weightKg, isCardio, durationMinutes }),
-    update: (id: number, sets: number, reps: number, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
-      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, weightKg, isCardio, durationMinutes }),
+    add: (weekStart: string, dayOfWeek: number, exerciseId: number, sets: number, reps: number, repsConfig?: number[] | null, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('POST', '/plan', { weekStart, dayOfWeek, exerciseId, sets, reps, repsConfig, weightKg, isCardio, durationMinutes }),
+    update: (id: number, sets: number, reps: number, repsConfig?: number[] | null, weightKg?: number | null, isCardio?: number, durationMinutes?: number | null) =>
+      request<PlanEntry>('PUT', `/plan/${id}`, { sets, reps, repsConfig, weightKg, isCardio, durationMinutes }),
     remove: (id: number) => request<{ ok: boolean }>('DELETE', `/plan/${id}`),
   },
   profile: {
     get: () => request<UserProfile>('GET', '/profile'),
-    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme'>>) =>
+    update: (data: Partial<Pick<UserProfile, 'name' | 'age' | 'weightKg' | 'heightCm' | 'sex' | 'dateFormat' | 'timeFormat' | 'weekStart' | 'theme'>>) =>
       request<UserProfile>('PUT', '/profile', data),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<{ ok: boolean }>('PUT', '/profile/password', { currentPassword, newPassword }),
     getAvatar: () => request<{ avatar: string | null }>('GET', '/profile/avatar'),
     uploadAvatar: (avatar: string) => request<{ ok: boolean }>('PUT', '/profile/avatar', { avatar }),
+    getWeightLog: () => request<WeightLogEntry[]>('GET', '/profile/weight-log'),
+    logWeight: (date: string, weightKg: number) =>
+      request<{ ok: boolean }>('POST', '/profile/weight-log', { date, weightKg }),
   },
   routines: {
     list: () => request<Routine[]>('GET', '/routines'),
@@ -87,6 +88,14 @@ export const api = {
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/routines/${id}`),
     apply: (id: number, dayOfWeek: number, weekStart: string) =>
       request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek, weekStart }),
+  },
+  stats: {
+    summary: (month: string, today: string) =>
+      request<StatsSummary>('GET', `/stats/summary?month=${encodeURIComponent(month)}&today=${encodeURIComponent(today)}`),
+    progressionExercises: () =>
+      request<{ id: number; name: string; muscleGroup: string }[]>('GET', '/stats/progression-exercises'),
+    progression: (exerciseId: number) =>
+      request<{ date: string; maxWeightKg: number; estimated1RM: number }[]>('GET', `/stats/progression/${exerciseId}`),
   },
   sessions: {
     get: (date: string, localToday: string) => request<SessionData>('GET', `/sessions/${date}?today=${localToday}`),
@@ -105,6 +114,8 @@ export interface UserProfile {
   name: string | null
   age: number | null
   weightKg: number | null
+  heightCm: number | null
+  sex: string | null
   dateFormat: string
   timeFormat: string
   weekStart: number
@@ -130,6 +141,7 @@ export interface PlanEntry {
   exerciseId: number
   sets: number
   reps: number
+  repsConfig: number[] | null
   weightKg: number | null
   orderIndex: number
   isCardio: number
@@ -151,6 +163,7 @@ export interface PlanSessionEntry {
   exerciseId: number
   sets: number
   reps: number
+  repsConfig: number[] | null
   weightKg: number | null
   orderIndex: number
   isCardio: number
@@ -171,8 +184,27 @@ export interface RoutineExercise {
   exerciseId: number
   sets: number
   reps: number
+  repsConfig?: number[] | null
   weightKg?: number | null
   orderIndex: number
+}
+
+export interface StatsSummary {
+  daysThisMonth: number
+  setsThisMonth: number
+  totalDays: number
+  streak: number
+  topExercises: { name: string; muscleGroup: string; sets: number }[]
+  weightKg: number | null
+  heightCm: number | null
+  sex: string | null
+  age: number | null
+  strengthRatios: { name: string; muscleGroup: string; estimated1RM: number; bestWeightKg: number }[]
+}
+
+export interface WeightLogEntry {
+  date: string
+  weightKg: number
 }
 
 export interface SessionData {

@@ -202,8 +202,8 @@ onMounted(load)
     <div class="flex items-center justify-between mb-5 pt-2">
       <h1 class="text-xl font-bold">Ejercicios</h1>
       <button
-        @click="showAdd = !showAdd"
         class="bg-accent-600 hover:bg-accent-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+        @click="showAdd = !showAdd"
       >
         + Nuevo
       </button>
@@ -242,21 +242,21 @@ onMounted(load)
               {{ newImageDataUrl ? 'Cambiar foto' : 'Agregar foto (opcional)' }}
               <input type="file" accept="image/*" class="hidden" @change="onNewImageFile" />
             </label>
-            <button v-if="newImageDataUrl" @click="newImageDataUrl = null" class="text-xs text-red-500 hover:text-red-400 ml-auto">Quitar</button>
+            <button v-if="newImageDataUrl" class="text-xs text-red-500 hover:text-red-400 ml-auto" @click="newImageDataUrl = null">Quitar</button>
             <p v-else class="text-xs text-gray-600 ml-auto">máx 150 KB</p>
           </div>
           <div v-if="error" class="text-red-400 text-sm">{{ error }}</div>
           <div class="flex gap-2">
             <button
-              @click="addExercise"
               :disabled="loading || !newName.trim() || !newGroup"
               class="flex-1 bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors"
+              @click="addExercise"
             >
               {{ loading ? 'Guardando...' : 'Agregar' }}
             </button>
             <button
-              @click="showAdd = false; newName = ''; newGroup = ''; error = ''; newImageDataUrl = null"
               class="px-4 bg-gray-800 hover:bg-gray-700 text-gray-400 py-2.5 rounded-xl text-sm transition-colors"
+              @click="showAdd = false; newName = ''; newGroup = ''; error = ''; newImageDataUrl = null"
             >
               Cancelar
             </button>
@@ -281,25 +281,25 @@ onMounted(load)
     <!-- Filter chips -->
     <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide lg:flex-wrap lg:overflow-x-visible">
       <button
-        @click="filter = 'all'"
         class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"
         :class="filter === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
+        @click="filter = 'all'"
       >
         Todos
       </button>
       <button
-        @click="filter = 'mine'"
         class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"
         :class="filter === 'mine' ? 'bg-accent-600 text-white' : 'bg-accent-600/20 text-accent-400'"
+        @click="filter = 'mine'"
       >
         ✦ Mis ejercicios
       </button>
       <button
         v-for="g in MUSCLE_GROUPS"
         :key="g.id"
-        @click="filter = g.id"
         class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors"
         :class="filter === g.id ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
+        @click="filter = g.id"
       >
         {{ g.label }}
       </button>
@@ -313,12 +313,16 @@ onMounted(load)
         class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden"
       >
         <!-- Fila principal -->
-        <div class="px-4 py-3.5 flex items-center justify-between cursor-pointer"
-          @click="expandedId = expandedId === ex.id ? null : ex.id">
+        <div
+          class="px-4 py-3.5 flex items-center justify-between cursor-pointer"
+          @click="expandedId = expandedId === ex.id ? null : ex.id"
+        >
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <!-- Miniatura -->
-            <img v-if="exerciseImage(ex)" :src="exerciseImage(ex)!" :alt="ex.name"
-              class="w-10 h-10 rounded-xl object-cover shrink-0 bg-gray-800" loading="lazy" />
+            <img
+              v-if="exerciseImage(ex)" :src="exerciseImage(ex)!" :alt="ex.name"
+              class="w-10 h-10 rounded-xl object-cover shrink-0 bg-gray-800" loading="lazy"
+            />
             <div v-else class="w-10 h-10 rounded-xl bg-gray-800 shrink-0 flex items-center justify-center text-gray-600 text-lg">💪</div>
             <div class="min-w-0">
               <p class="font-semibold text-white text-sm">{{ ex.name }}</p>
@@ -328,25 +332,25 @@ onMounted(load)
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0 ml-2" @click.stop>
-          <div v-if="ex.isCustom === 1" class="flex items-center gap-1">
-            <button
-              @click="editingId === ex.id ? editingId = null : startEdit(ex)"
-              class="text-gray-600 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-gray-800"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
-            </button>
-            <button
-              @click="deleteExercise(ex.id)"
-              :disabled="deletingId === ex.id"
-              class="text-gray-700 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-gray-800 disabled:opacity-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-            </button>
-          </div>
+            <div v-if="ex.isCustom === 1" class="flex items-center gap-1">
+              <button
+                class="text-gray-600 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-gray-800"
+                @click="editingId === ex.id ? editingId = null : startEdit(ex)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button
+                :disabled="deletingId === ex.id"
+                class="text-gray-700 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                @click="deleteExercise(ex.id)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
         <!-- Imagen expandida -->
@@ -396,8 +400,8 @@ onMounted(load)
                 </label>
                 <button
                   v-if="customImages[ex.id]"
-                  @click="removeImage(ex.id)"
                   class="text-xs text-red-500 hover:text-red-400 transition-colors text-left"
+                  @click="removeImage(ex.id)"
                 >
                   Eliminar foto
                 </button>
@@ -406,11 +410,11 @@ onMounted(load)
             </div>
             <div v-if="editError" class="text-red-400 text-xs">{{ editError }}</div>
             <div class="flex gap-2 justify-end">
-              <button @click="editingId = null" class="text-gray-500 hover:text-gray-300 px-3 py-1.5 text-sm transition-colors">Cancelar</button>
+              <button class="text-gray-500 hover:text-gray-300 px-3 py-1.5 text-sm transition-colors" @click="editingId = null">Cancelar</button>
               <button
-                @click="saveEdit(ex.id)"
                 :disabled="editLoading || !editName.trim() || !editGroup"
                 class="bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors"
+                @click="saveEdit(ex.id)"
               >
                 {{ editLoading ? 'Guardando...' : 'Guardar' }}
               </button>

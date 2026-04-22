@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { api } from '../lib/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,7 +10,8 @@ const auth = useAuthStore()
 
 const showConfirm = ref(false)
 
-function confirmLogout() {
+async function confirmLogout() {
+  try { await api.auth.logout() } catch { /* silent */ }
   auth.logout()
   router.push('/login')
 }
@@ -56,6 +58,19 @@ function confirmLogout() {
       </RouterLink>
 
       <RouterLink
+        to="/stats"
+        class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors"
+        :class="route.path === '/stats' ? 'text-accent-400' : 'text-gray-500'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        Stats
+      </RouterLink>
+
+      <RouterLink
         to="/profile"
         class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors"
         :class="route.path === '/profile' ? 'text-accent-400' : 'text-gray-500'"
@@ -68,8 +83,8 @@ function confirmLogout() {
       </RouterLink>
 
       <button
-        @click="showConfirm = true"
         class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-medium transition-colors text-gray-500 hover:text-red-400"
+        @click="showConfirm = true"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -100,14 +115,14 @@ function confirmLogout() {
         <p class="text-gray-500 text-sm mb-6">¿Seguro que quieres salir de tu cuenta?</p>
         <div class="flex gap-3">
           <button
-            @click="showConfirm = false"
             class="flex-1 py-3 rounded-2xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold text-sm transition-colors"
+            @click="showConfirm = false"
           >
             Cancelar
           </button>
           <button
-            @click="confirmLogout"
             class="flex-1 py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition-colors"
+            @click="confirmLogout"
           >
             Cerrar sesión
           </button>

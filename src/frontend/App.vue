@@ -15,7 +15,7 @@ const showNav = computed(() => !route.meta.public)
 applyTheme(localStorage.getItem('theme') || 'indigo')
 
 onMounted(() => {
-  if (auth.token) preferences.load()
+  if (auth.user) preferences.load()
 })
 </script>
 

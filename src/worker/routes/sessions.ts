@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { eq, and, like, sql, inArray } from 'drizzle-orm'
 import { getDb, workoutSessions, completedSets, weeklyPlan, exercises, users } from '../db'
 import { authMiddleware } from '../middleware/auth'
+import { calcWeekStart, calcDayOfWeek } from '../lib/dates'
 import type { Env } from '../index'
 
 type Variables = { userId: string }
@@ -9,24 +10,6 @@ type Variables = { userId: string }
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 app.use('*', authMiddleware)
-
-/** Calcula el inicio de semana para una fecha dada según la preferencia del usuario.
- *  weekStartPref: 0 = lunes primero, 1 = domingo primero
- *  day_of_week resultante: 0 = primer día de la semana del usuario, 6 = último */
-function calcWeekStart(dateStr: string, weekStartPref: number): string {
-  const d = new Date(dateStr + 'T12:00:00')
-  const day = d.getDay() // 0=Dom, 1=Lun, ..., 6=Sáb
-  const offset = weekStartPref === 1 ? day : (day === 0 ? 6 : day - 1)
-  d.setDate(d.getDate() - offset)
-  return d.toISOString().split('T')[0]
-}
-
-function calcDayOfWeek(dateStr: string, weekStartPref: number): number {
-  const weekStart = calcWeekStart(dateStr, weekStartPref)
-  const d1 = new Date(dateStr + 'T12:00:00')
-  const d2 = new Date(weekStart + 'T12:00:00')
-  return Math.round((d1.getTime() - d2.getTime()) / 86400000)
-}
 
 // Get all sessions for a month (YYYY-MM)
 app.get('/month/:yearMonth', async (c) => {
@@ -125,7 +108,7 @@ app.get('/:date', async (c) => {
   }
 
   // Obtener o crear sesión
-  let sessionRows = await db.select().from(workoutSessions)
+  const sessionRows = await db.select().from(workoutSessions)
     .where(and(eq(workoutSessions.userId, userId), eq(workoutSessions.date, date)))
   let session = sessionRows[0]
 
@@ -147,7 +130,7 @@ app.post('/:date/complete', async (c) => {
   const { weeklyPlanId, setNumber } = await c.req.json<{ weeklyPlanId: number; setNumber: number }>()
   const db = getDb(c.env.DB)
 
-  let sessionRows = await db.select().from(workoutSessions)
+  const sessionRows = await db.select().from(workoutSessions)
     .where(and(eq(workoutSessions.userId, userId), eq(workoutSessions.date, date)))
   let session = sessionRows[0]
 
