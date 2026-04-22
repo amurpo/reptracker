@@ -15,6 +15,9 @@ export const users = sqliteTable('users', {
   timeFormat: text('time_format').notNull().default('24h'),
   weekStart: integer('week_start').notNull().default(0),
   theme: text('theme').notNull().default('indigo'),
+  restTimerSeconds: integer('rest_timer_seconds').notNull().default(0),
+  restTimerSound: text('rest_timer_sound').notNull().default('bell'),
+  restTimerRepeat: integer('rest_timer_repeat').notNull().default(1),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
 })
 

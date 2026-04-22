@@ -23,6 +23,9 @@ export const usePreferencesStore = defineStore('preferences', () => {
   const timeFormat = ref(localStorage.getItem('timeFormat') || '24h')
   const weekStart = ref(parseInt(localStorage.getItem('weekStart') || '0'))
   const theme = ref(localStorage.getItem('theme') || 'indigo')
+  const restTimerSeconds = ref(parseInt(localStorage.getItem('restTimerSeconds') || '0'))
+  const restTimerSound = ref(localStorage.getItem('restTimerSound') || 'bell')
+  const restTimerRepeat = ref(parseInt(localStorage.getItem('restTimerRepeat') || '1'))
 
   async function load() {
     try {
@@ -31,9 +34,15 @@ export const usePreferencesStore = defineStore('preferences', () => {
       timeFormat.value = profile.timeFormat
       weekStart.value = profile.weekStart
       theme.value = profile.theme || 'indigo'
+      restTimerSeconds.value = profile.restTimerSeconds ?? 90
+      restTimerSound.value = profile.restTimerSound ?? 'bell'
+      restTimerRepeat.value = profile.restTimerRepeat ?? 1
       localStorage.setItem('dateFormat', profile.dateFormat)
       localStorage.setItem('timeFormat', profile.timeFormat)
       localStorage.setItem('weekStart', String(profile.weekStart))
+      localStorage.setItem('restTimerSeconds', String(restTimerSeconds.value))
+      localStorage.setItem('restTimerSound', restTimerSound.value)
+      localStorage.setItem('restTimerRepeat', String(restTimerRepeat.value))
       applyTheme(theme.value)
     } catch { /* usa el valor en caché */ }
   }
@@ -52,5 +61,5 @@ export const usePreferencesStore = defineStore('preferences', () => {
     return date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
   }
 
-  return { dateFormat, timeFormat, weekStart, theme, load, formatDate, formatTime }
+  return { dateFormat, timeFormat, weekStart, theme, restTimerSeconds, restTimerSound, restTimerRepeat, load, formatDate, formatTime }
 })

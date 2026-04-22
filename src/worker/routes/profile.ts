@@ -21,6 +21,9 @@ const userFields = {
   timeFormat: users.timeFormat,
   weekStart: users.weekStart,
   theme: users.theme,
+  restTimerSeconds: users.restTimerSeconds,
+  restTimerSound: users.restTimerSound,
+  restTimerRepeat: users.restTimerRepeat,
 }
 
 profile.get('/', async (c) => {
@@ -35,6 +38,9 @@ const VALID_DATE_FORMATS = ['dd-mm-yyyy', 'mm-dd-yyyy', 'yyyy-mm-dd']
 const VALID_TIME_FORMATS = ['24h', '12h']
 const VALID_WEEK_STARTS = [0, 1]
 const VALID_THEMES = ['indigo', 'violet', 'emerald', 'sky', 'rose', 'amber']
+const VALID_TIMER_SECONDS = [0, 15, 30, 45, 60, 90, 120, 180]
+const VALID_TIMER_SOUNDS = ['bell', 'beep', 'chime', 'airhorn', 'rooster', 'bear']
+const VALID_TIMER_REPEATS = [1, 2, 3, 4, 5]
 
 profile.put('/', async (c) => {
   const userId = parseInt(c.get('userId'))
@@ -48,6 +54,9 @@ profile.put('/', async (c) => {
     timeFormat?: string
     weekStart?: number
     theme?: string
+    restTimerSeconds?: number
+    restTimerSound?: string
+    restTimerRepeat?: number
   }>()
 
   // Validar campos
@@ -81,6 +90,12 @@ profile.put('/', async (c) => {
     return c.json({ error: 'Inicio de semana inválido' }, 400)
   if (body.theme !== undefined && !VALID_THEMES.includes(body.theme))
     return c.json({ error: 'Tema inválido' }, 400)
+  if (body.restTimerSeconds !== undefined && !VALID_TIMER_SECONDS.includes(body.restTimerSeconds))
+    return c.json({ error: 'Duración de timer inválida' }, 400)
+  if (body.restTimerSound !== undefined && !VALID_TIMER_SOUNDS.includes(body.restTimerSound))
+    return c.json({ error: 'Sonido de timer inválido' }, 400)
+  if (body.restTimerRepeat !== undefined && !VALID_TIMER_REPEATS.includes(body.restTimerRepeat))
+    return c.json({ error: 'Repeticiones de timer inválidas' }, 400)
 
   const db = getDb(c.env.DB)
   const updated = await db
@@ -95,6 +110,9 @@ profile.put('/', async (c) => {
       ...(body.timeFormat !== undefined && { timeFormat: body.timeFormat }),
       ...(body.weekStart !== undefined && { weekStart: body.weekStart }),
       ...(body.theme !== undefined && { theme: body.theme }),
+      ...(body.restTimerSeconds !== undefined && { restTimerSeconds: body.restTimerSeconds }),
+      ...(body.restTimerSound !== undefined && { restTimerSound: body.restTimerSound }),
+      ...(body.restTimerRepeat !== undefined && { restTimerRepeat: body.restTimerRepeat }),
     })
     .where(eq(users.id, userId))
     .returning(userFields)

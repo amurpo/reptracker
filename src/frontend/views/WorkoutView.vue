@@ -2,6 +2,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api, type SessionData } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
+import RestTimer from '../components/RestTimer.vue'
+import type { SoundId } from '../lib/sounds'
 
 const preferences = usePreferencesStore()
 
@@ -45,6 +47,11 @@ onUnmounted(() => {
 const sessionData = ref<SessionData>({ session: null, plan: [], completedSets: [] })
 const loading = ref(true)
 const togglingSet = ref<string | null>(null)
+
+const timerActive = ref(false)
+const timerSeconds = computed(() => preferences.restTimerSeconds)
+const timerSound = computed(() => preferences.restTimerSound as SoundId)
+const timerRepeat = computed(() => preferences.restTimerRepeat)
 
 function isCompleted(weeklyPlanId: number, setNumber: number): boolean {
   return sessionData.value.completedSets.some(
@@ -106,6 +113,8 @@ async function toggleSet(weeklyPlanId: number, setNumber: number) {
         setNumber,
         completedAt: new Date().toISOString(),
       })
+      const entry = sessionData.value.plan.find(e => e.id === weeklyPlanId)
+      if (!entry?.isCardio && timerSeconds.value > 0) timerActive.value = true
     }
   } finally {
     togglingSet.value = null
@@ -125,6 +134,14 @@ onMounted(async () => {
 </script>
 
 <template>
+  <RestTimer
+    v-if="timerActive"
+    :seconds="timerSeconds"
+    :sound="timerSound"
+    :repeat="timerRepeat"
+    @done="timerActive = false"
+    @skip="timerActive = false"
+  />
   <div class="max-w-lg lg:max-w-2xl mx-auto">
     <!-- Header -->
     <div class="px-4 pt-6 pb-2">
