@@ -36,7 +36,7 @@ app.use('*', async (c, next) => {
     path.startsWith('/assets/') ||
     path.startsWith('/exercises/') ||
     path.startsWith('/.well-known/') ||
-    /\.(js|css|ico|png|svg|webp|woff2?|jpg|jpeg|txt)$/.test(path)
+    /\.(js|css|ico|png|svg|webp|woff2?|jpg|jpeg|txt|ogg)$/.test(path)
 
   if (!isAllowed) return c.text('', 404)
   await next()
@@ -55,7 +55,7 @@ app.use('*', async (c, next) => {
   c.res.headers.set('Cache-Control', 'no-store')
   c.res.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
   )
 })
 
