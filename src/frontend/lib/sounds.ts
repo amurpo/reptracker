@@ -40,9 +40,12 @@ function peakNormalizedGain(buffer: AudioBuffer): number {
 
 async function playSampleSound(url: string): Promise<void> {
   try {
+    // AudioContext debe crearse antes del primer await para quedar dentro
+    // del contexto de gesto del usuario (después de un await el browser lo suspende)
+    const ctx = new AudioContext()
+    await ctx.resume()
     const buffer = await getAudioBuffer(url)
     await new Promise<void>(resolve => {
-      const ctx = new AudioContext()
       const source = ctx.createBufferSource()
       source.buffer = buffer
       const gain = ctx.createGain()
