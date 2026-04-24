@@ -8,6 +8,11 @@ import sessionsRoutes from './routes/sessions'
 import profileRoutes from './routes/profile'
 import routinesRoutes from './routes/routines'
 import statsRoutes from './routes/stats'
+import { FROM, baseLayout, verificationHtml, passwordResetHtml } from './lib/email'
+
+export type EmailJob =
+  | { type: 'verification'; to: string; verifyUrl: string }
+  | { type: 'password_reset'; to: string; resetUrl: string }
 
 export type Env = {
   DB: D1Database
@@ -16,6 +21,7 @@ export type Env = {
   TURNSTILE_SECRET: string
   AVATARS: KVNamespace
   EXERCISE_IMAGES: KVNamespace
+  EMAIL_QUEUE: Queue<EmailJob>
 }
 
 const app = new Hono<{ Bindings: Env }>()
@@ -72,4 +78,41 @@ app.route('/api/profile', profileRoutes)
 app.route('/api/routines', routinesRoutes)
 app.route('/api/stats', statsRoutes)
 
-export default app
+async function sendViaResend(apiKey: string, to: string, subject: string, html: string) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: FROM, to, subject, html }),
+  })
+  if (!res.ok) throw new Error(`Resend error ${res.status}`)
+}
+
+export default {
+  fetch: app.fetch.bind(app),
+
+  async queue(batch: MessageBatch<EmailJob>, env: Env) {
+    for (const msg of batch.messages) {
+      try {
+        const job = msg.body
+        if (job.type === 'verification') {
+          await sendViaResend(
+            env.RESEND_API_KEY,
+            job.to,
+            'Confirma tu cuenta en RepTracker',
+            baseLayout(verificationHtml(job.verifyUrl)),
+          )
+        } else if (job.type === 'password_reset') {
+          await sendViaResend(
+            env.RESEND_API_KEY,
+            job.to,
+            'Restablecer contraseña — RepTracker',
+            baseLayout(passwordResetHtml(job.resetUrl)),
+          )
+        }
+        msg.ack()
+      } catch {
+        msg.retry()
+      }
+    }
+  },
+}

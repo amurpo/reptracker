@@ -33,5 +33,15 @@ preview_id = "9062031d0a124b339ce84e3740755189"
 enabled = true
 invocation_logs = true
 
+[[queues.producers]]
+binding = "EMAIL_QUEUE"
+queue = "reptracker-email-queue"
+
+[[queues.consumers]]
+queue = "reptracker-email-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+
 [build]
 command = "npm install && npm run build && npm run build:worker"
