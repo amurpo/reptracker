@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm'
 import { getDb, users, emailVerificationTokens, passwordResetTokens } from '../db'
 import { hashPassword, verifyPassword } from '../lib/crypto'
 import { verifyTurnstile } from '../lib/turnstile'
-import { sendVerificationEmail, sendPasswordResetEmail } from '../lib/email'
+import type { EmailJob } from '../index'
 import type { Env } from '../index'
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 días en segundos
@@ -45,7 +45,7 @@ auth.post('/register', async (c) => {
       await db.insert(emailVerificationTokens).values({ userId: existing[0].id, token, expiresAt })
       const origin = new URL(c.req.url).origin
       try {
-        await sendVerificationEmail(c.env.RESEND_API_KEY, emailTrimmed, `${origin}/verify?token=${token}`)
+        await c.env.EMAIL_QUEUE.send({ type: 'verification', to: emailTrimmed, verifyUrl: `${origin}/verify?token=${token}` } satisfies EmailJob)
       } catch { /* silent */ }
       return c.json({ message: 'Te reenviamos el email de confirmación.' })
     }
@@ -63,7 +63,7 @@ auth.post('/register', async (c) => {
 
     const origin = new URL(c.req.url).origin
     try {
-      await sendVerificationEmail(c.env.RESEND_API_KEY, user.email, `${origin}/verify?token=${token}`)
+      await c.env.EMAIL_QUEUE.send({ type: 'verification', to: user.email, verifyUrl: `${origin}/verify?token=${token}` } satisfies EmailJob)
     } catch { /* silent */ }
 
     return c.json({ message: 'Te enviamos un email para confirmar tu cuenta.' })
@@ -161,7 +161,7 @@ auth.post('/forgot-password', async (c) => {
 
       const origin = new URL(c.req.url).origin
       try {
-        await sendPasswordResetEmail(c.env.RESEND_API_KEY, rows[0].email, `${origin}/reset-password?token=${token}`)
+        await c.env.EMAIL_QUEUE.send({ type: 'password_reset', to: rows[0].email, resetUrl: `${origin}/reset-password?token=${token}` } satisfies EmailJob)
       } catch { /* silent */ }
     }
 
