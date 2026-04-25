@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { api, type SessionData } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
+import { formatTime } from '../lib/formatters'
 import RestTimer from '../components/RestTimer.vue'
 import type { SoundId } from '../lib/sounds'
 
@@ -69,7 +70,7 @@ function completedCount(weeklyPlanId: number, totalSets: number): number {
 
 // "13:28:53" → "13:28" / "01:28:53 PM" → "01:28 PM"
 const timeMain = computed(() => {
-  const full = preferences.formatTime(now.value)
+  const full = formatTime(now.value, preferences.timeFormat)
   const parts = full.split(':')
   const ampm = full.includes('AM') ? ' AM' : full.includes('PM') ? ' PM' : ''
   return `${parts[0]}:${parts[1]}${ampm}`

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { api, matchesSearch, type PlanEntry, type Exercise, type Routine } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
+import { formatDate } from '../lib/formatters'
 
 const preferences = usePreferencesStore()
 
@@ -792,7 +793,7 @@ onMounted(() => { load(); loadRoutines() })
           <div v-if="selectedMonthDay" class="mt-4 bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
               <div>
-                <p class="text-sm font-semibold text-white">{{ preferences.formatDate(selectedMonthDay!) }}</p>
+                <p class="text-sm font-semibold text-white">{{ formatDate(selectedMonthDay!, preferences.dateFormat) }}</p>
                 <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === calcDayOfWeek(selectedMonthDay!))?.full }}</p>
               </div>
               <button class="text-gray-600 hover:text-gray-300 transition-colors" @click="selectedMonthDay = null; monthDayPlan = []">

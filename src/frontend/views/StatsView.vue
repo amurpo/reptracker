@@ -278,7 +278,7 @@ const topExercisesChartOption = computed(() => {
   const exs = stats.value.topExercises.slice(0, 6)
   return {
     backgroundColor: 'transparent',
-    grid: { left: 8, right: 36, top: 4, bottom: 4, outerBounds: true },
+    grid: { left: 8, right: 36, top: 4, bottom: 4 },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'none' },
