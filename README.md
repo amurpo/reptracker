@@ -30,6 +30,11 @@ TURNSTILE_SECRET=...
 
 > Para desarrollo local Turnstile acepta el secret `1x0000000000000000000000000000000AA` (siempre aprueba).
 
+## Créditos
+
+- [free-exercise-db](https://github.com/yuhonas/free-exercise-db) de [yuhonas](https://github.com/yuhonas) — catálogo de ejercicios e imágenes bajo licencia libre. Sin este repo el catálogo no existiría.
+- [Cloudflare](https://cloudflare.com) — Workers, D1, KV, Queues, Turnstile, WAF. La infraestructura completa de la app corre sobre su plataforma.
+
 ## Deploy
 
 ```bash
