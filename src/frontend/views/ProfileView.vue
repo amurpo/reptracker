@@ -464,11 +464,11 @@ async function save() {
             >
               <span class="text-base leading-none">{{ snd.emoji }}</span>
               <span>{{ snd.label }}</span>
-              <button
-                type="button"
-                class="ml-auto shrink-0 text-xs opacity-60 hover:opacity-100"
+              <span
+                role="button"
+                class="ml-auto shrink-0 text-xs opacity-60 hover:opacity-100 cursor-pointer"
                 @click.stop="playSound(snd.id)"
-              >▶</button>
+              >▶</span>
             </button>
           </div>
           <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">

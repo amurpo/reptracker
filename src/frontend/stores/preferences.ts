@@ -47,19 +47,5 @@ export const usePreferencesStore = defineStore('preferences', () => {
     } catch { /* usa el valor en caché */ }
   }
 
-  function formatDate(isoDate: string): string {
-    const [y, m, d] = isoDate.split('-')
-    if (dateFormat.value === 'mm-dd-yyyy') return `${m}-${d}-${y}`
-    if (dateFormat.value === 'yyyy-mm-dd') return isoDate
-    return `${d}-${m}-${y}`
-  }
-
-  function formatTime(date: Date): string {
-    if (timeFormat.value === '12h') {
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
-    }
-    return date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
-  }
-
-  return { dateFormat, timeFormat, weekStart, theme, restTimerSeconds, restTimerSound, restTimerRepeat, load, formatDate, formatTime }
+  return { dateFormat, timeFormat, weekStart, theme, restTimerSeconds, restTimerSound, restTimerRepeat, load }
 })

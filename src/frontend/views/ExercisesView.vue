@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { api, matchesSearch, type Exercise } from '../lib/api'
+import ExerciseImage from '../components/ExerciseImage.vue'
 
 const MUSCLE_GROUPS = [
   { id: 'pecho', label: 'Pecho' },
@@ -319,11 +320,14 @@ onMounted(load)
         >
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <!-- Miniatura -->
-            <img
-              v-if="exerciseImage(ex)" :src="exerciseImage(ex)!" :alt="ex.name"
-              class="w-10 h-10 rounded-xl object-cover shrink-0 bg-gray-800" loading="lazy"
-            />
-            <div v-else class="w-10 h-10 rounded-xl bg-gray-800 shrink-0 flex items-center justify-center text-gray-600 text-lg">💪</div>
+            <ExerciseImage
+              :src="exerciseImage(ex)" :alt="ex.name"
+              class="w-10 h-10 rounded-xl object-cover shrink-0 bg-gray-800"
+            >
+              <template #placeholder>
+                <div class="w-10 h-10 rounded-xl bg-gray-800 shrink-0 flex items-center justify-center text-gray-600 text-lg">💪</div>
+              </template>
+            </ExerciseImage>
             <div class="min-w-0">
               <p class="font-semibold text-white text-sm">{{ ex.name }}</p>
               <p class="text-xs mt-0.5" :class="muscleColor(ex.muscleGroup)">
@@ -356,7 +360,10 @@ onMounted(load)
         <!-- Imagen expandida -->
         <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
           <div v-if="expandedId === ex.id && exerciseImage(ex)" class="border-t border-gray-800">
-            <img :src="exerciseImage(ex)!" :alt="ex.name" class="w-full max-h-72 object-contain bg-gray-950" loading="lazy" />
+            <ExerciseImage
+              :src="exerciseImage(ex)" :alt="ex.name" :animated="true"
+              class="w-full max-h-72 object-contain bg-gray-950"
+            />
           </div>
         </Transition>
         <!-- Formulario edición inline -->
