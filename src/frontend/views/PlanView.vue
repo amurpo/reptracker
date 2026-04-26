@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { api, matchesSearch, type PlanEntry, type Exercise, type Routine } from '../lib/api'
+import { api, type PlanEntry, type Exercise, type Routine } from '../lib/api'
 import { usePreferencesStore } from '../stores/preferences'
 import { formatDate } from '../lib/formatters'
+import AddExerciseModal from '../components/AddExerciseModal.vue'
 
 const preferences = usePreferencesStore()
 
@@ -25,26 +26,6 @@ const BASE_DAYS_SUN = [
   { short: 'Jue', full: 'Jueves',     dow: 4 },
   { short: 'Vie', full: 'Viernes',    dow: 5 },
   { short: 'Sáb', full: 'Sábado',     dow: 6 },
-]
-
-const MUSCLE_GROUPS = [
-  { id: 'pecho', label: 'Pecho' },
-  { id: 'dorsales', label: 'Dorsales' },
-  { id: 'hombros', label: 'Hombros' },
-  { id: 'bíceps', label: 'Bíceps' },
-  { id: 'tríceps', label: 'Tríceps' },
-  { id: 'cuádriceps', label: 'Cuádriceps' },
-  { id: 'isquiotibiales', label: 'Isquiotibiales' },
-  { id: 'abdominales', label: 'Abdominales' },
-  { id: 'glúteos', label: 'Glúteos' },
-  { id: 'pantorrillas', label: 'Pantorrillas' },
-  { id: 'trapecios', label: 'Trapecios' },
-  { id: 'antebrazos', label: 'Antebrazos' },
-  { id: 'lumbar', label: 'Lumbar' },
-  { id: 'espalda media', label: 'Espalda media' },
-  { id: 'abductores', label: 'Abductores' },
-  { id: 'aductores', label: 'Aductores' },
-  { id: 'cuello', label: 'Cuello' },
 ]
 
 const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -127,18 +108,6 @@ const exercises = ref<Exercise[]>([])
 const ready = ref(false)
 // ── Modal agregar ─────────────────────────────────────────────────────────────
 const showAddModal = ref(false)
-const addStep = ref<'search' | 'config'>('search')
-const addExerciseId = ref<number | null>(null)
-const addExerciseName = ref('')
-const addSets = ref(3)
-const addReps = ref(10)
-const addRepsConfig = ref<number[] | null>(null)
-const addWeightKg = ref<number | null>(null)
-const addIsCardio = ref(false)
-const addDurationMinutes = ref<number | null>(30)
-const saving = ref(false)
-const searchQuery = ref('')
-const modalFilterGroup = ref('all')
 
 // ── Modal editar ──────────────────────────────────────────────────────────────
 const editingId = ref<number | null>(null)
@@ -155,16 +124,6 @@ const dayPlan = computed(() =>
     .sort((a, b) => a.orderIndex - b.orderIndex)
 )
 
-const availableExercises = computed(() => {
-  const q = searchQuery.value.toLowerCase().trim()
-  return exercises.value.filter((e) => {
-    if (dayPlan.value.find((p) => p.exerciseId === e.id)) return false
-    if (modalFilterGroup.value !== 'all' && e.muscleGroup !== modalFilterGroup.value) return false
-    if (!q) return true
-    return matchesSearch(e.name, e.muscleGroup, q)
-  })
-})
-
 const dayHasPlan = (dow: number) => plan.value.some((e) => e.dayOfWeek === dow)
 
 async function load() {
@@ -174,61 +133,7 @@ async function load() {
   ready.value = true
 }
 
-function selectExercise(ex: Exercise) {
-  addExerciseId.value = ex.id
-  addExerciseName.value = ex.name
-  addStep.value = 'config'
-}
-
-function resetAddModal() {
-  addStep.value = 'search'
-  addExerciseId.value = null
-  addExerciseName.value = ''
-  addSets.value = 3
-  addReps.value = 10
-  addRepsConfig.value = null
-  addWeightKg.value = null
-  addIsCardio.value = false
-  addDurationMinutes.value = 30
-  searchQuery.value = ''
-  modalFilterGroup.value = 'all'
-}
-
-async function addToPlan() {
-  if (!addExerciseId.value) return
-  saving.value = true
-  try {
-    const entry = await api.plan.add(
-      currentWeekStart.value,
-      selectedDay.value,
-      addExerciseId.value,
-      addSets.value,
-      addIsCardio.value ? 1 : addReps.value,
-      addIsCardio.value ? null : addRepsConfig.value,
-      addIsCardio.value ? null : addWeightKg.value,
-      addIsCardio.value ? 1 : 0,
-      addIsCardio.value ? addDurationMinutes.value : null,
-    )
-    plan.value.push(entry)
-    showAddModal.value = false
-    resetAddModal()
-  } finally {
-    saving.value = false
-  }
-}
-
 // ── Helpers reps config ───────────────────────────────────────────────────────
-function enableAddRepsConfig() {
-  addRepsConfig.value = Array(addSets.value).fill(addReps.value)
-}
-function disableAddRepsConfig() {
-  addRepsConfig.value = null
-}
-function updateAddRepsConfig(i: number, v: number) {
-  if (!addRepsConfig.value) return
-  addRepsConfig.value = addRepsConfig.value.map((x, idx) => idx === i ? v : x)
-}
-
 function enableEditRepsConfig() {
   editRepsConfig.value = Array(editSets.value).fill(editReps.value)
 }
@@ -239,16 +144,6 @@ function updateEditRepsConfig(i: number, v: number) {
   if (!editRepsConfig.value) return
   editRepsConfig.value = editRepsConfig.value.map((x, idx) => idx === i ? v : x)
 }
-
-watch(addSets, (newSets) => {
-  if (!addRepsConfig.value) return
-  const cur = addRepsConfig.value
-  if (newSets > cur.length) {
-    addRepsConfig.value = [...cur, ...Array(newSets - cur.length).fill(addReps.value)]
-  } else {
-    addRepsConfig.value = cur.slice(0, newSets)
-  }
-})
 
 watch(editSets, (newSets) => {
   if (!editRepsConfig.value) return
@@ -926,175 +821,15 @@ onMounted(() => { load(); loadRoutines() })
       </Transition>
     </Teleport>
 
-    <!-- ── MODAL AGREGAR (dos pasos) ────────────────────────────────────── -->
-    <Teleport to="body">
-      <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" leave-active-class="transition-all duration-150" leave-to-class="opacity-0">
-        <div v-if="showAddModal" class="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" @click.self="showAddModal = false; resetAddModal()">
-          <Transition enter-active-class="transition-all duration-200" enter-from-class="translate-y-full" leave-active-class="transition-all duration-150" leave-to-class="translate-y-full">
-            <div v-if="showAddModal" class="bg-gray-900 rounded-t-3xl w-full max-w-lg max-h-[88vh] flex flex-col border-t border-gray-800">
-              <!-- Header -->
-              <div class="flex items-center justify-between px-6 pt-5 pb-4 shrink-0">
-                <div class="flex items-center gap-3">
-                  <button v-if="addStep === 'config'" class="text-gray-400 hover:text-white transition-colors" @click="addStep = 'search'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                  </button>
-                  <div>
-                    <h3 class="font-bold text-white leading-tight">
-                      {{ addStep === 'search' ? 'Elegir ejercicio' : addExerciseName }}
-                    </h3>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ orderedDays.find(d => d.dow === selectedDay)?.full }}</p>
-                  </div>
-                </div>
-                <button class="text-gray-500 hover:text-gray-300 transition-colors" @click="showAddModal = false; resetAddModal()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-
-              <!-- PASO 1: Buscar y elegir ejercicio -->
-              <template v-if="addStep === 'search'">
-                <div class="px-6 pb-3 shrink-0 space-y-3">
-                  <!-- Búsqueda -->
-                  <input
-                    v-model="searchQuery"
-                    type="search"
-                    placeholder="Buscar ejercicio..."
-                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors"
-                    autofocus
-                  />
-                  <!-- Filtros de grupo muscular -->
-                  <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1 lg:flex-wrap lg:overflow-x-visible">
-                    <button
-                      class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-                      :class="modalFilterGroup === 'all' ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
-                      @click="modalFilterGroup = 'all'"
-                    >
-                      Todos
-                    </button>
-                    <button
-                      v-for="g in MUSCLE_GROUPS" :key="g.id" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-                      :class="modalFilterGroup === g.id ? 'bg-accent-600 text-white' : 'bg-gray-800 text-gray-400'"
-                      @click="modalFilterGroup = g.id"
-                    >
-                      {{ g.label }}
-                    </button>
-                  </div>
-                </div>
-                <!-- Lista -->
-                <div class="overflow-y-auto flex-1 min-h-0 px-6 pb-6 space-y-1">
-                  <button
-                    v-for="ex in availableExercises"
-                    :key="ex.id"
-                    class="w-full text-left px-4 py-3 rounded-xl text-sm bg-gray-800 hover:bg-gray-750 border border-transparent hover:border-gray-600 transition-all flex items-center justify-between"
-                    @click="selectExercise(ex)"
-                  >
-                    <span>
-                      <span class="font-semibold text-white">{{ ex.name }}</span>
-                      <span class="text-xs ml-2 text-gray-500">{{ ex.muscleGroup }}</span>
-                    </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                  </button>
-                  <p v-if="availableExercises.length === 0" class="text-gray-600 text-sm text-center py-8">
-                    Sin ejercicios disponibles
-                  </p>
-                </div>
-              </template>
-
-              <!-- PASO 2: Configurar -->
-              <template v-else>
-                <div class="px-6 pb-6 space-y-4 overflow-y-auto flex-1">
-                  <!-- Toggle cardio arriba a la derecha -->
-                  <div class="flex justify-end">
-                    <button
-                      type="button" class="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 border transition-colors"
-                      :class="addIsCardio ? 'border-accent-500 text-accent-400 bg-accent-500/10' : 'border-gray-700 text-gray-500 hover:border-gray-600'"
-                      @click="addIsCardio = !addIsCardio"
-                    >
-                      🏃 Usa tiempo (cardio)
-                    </button>
-                  </div>
-
-                  <!-- Inputs Fuerza -->
-                  <div v-if="!addIsCardio" class="flex gap-3">
-                    <div class="flex-1">
-                      <label class="text-sm text-gray-400 block mb-1.5">Series</label>
-                      <input
-                        v-model.number="addSets" type="number" min="1" max="20"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
-                      />
-                    </div>
-                    <div class="flex-1">
-                      <label class="text-sm text-gray-400 block mb-1.5">Reps</label>
-                      <input
-                        v-model.number="addReps" type="number" min="1" max="200"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
-                      />
-                    </div>
-                    <div class="flex-1">
-                      <label class="text-sm text-gray-400 block mb-1.5">Peso (kg)</label>
-                      <input
-                        v-model.number="addWeightKg" type="number" min="0" step="0.5" placeholder="—"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Reps por serie (personalizado) -->
-                  <div v-if="!addIsCardio && addSets > 1">
-                    <div v-if="!addRepsConfig" class="flex">
-                      <button type="button" class="text-sm text-gray-500 hover:text-accent-400 transition-colors" @click="enableAddRepsConfig">
-                        + Personalizar reps por serie
-                      </button>
-                    </div>
-                    <div v-else>
-                      <div class="flex items-center justify-between mb-3">
-                        <label class="text-sm text-gray-400">Reps por serie</label>
-                        <button type="button" class="text-xs text-gray-600 hover:text-red-400 transition-colors" @click="disableAddRepsConfig">Quitar</button>
-                      </div>
-                      <div class="flex gap-2 flex-wrap">
-                        <div v-for="(_, i) in addRepsConfig" :key="i" class="text-center">
-                          <span class="text-xs text-gray-600 block mb-1">{{ i + 1 }}</span>
-                          <input
-                            type="number"
-                            :value="addRepsConfig[i]"
-                            min="1" max="200"
-                            class="w-14 bg-gray-800 border border-gray-700 rounded-xl px-1 py-2.5 text-white text-sm text-center focus:outline-none focus:border-accent-500 transition-colors"
-                            @change="updateAddRepsConfig(i, Number(($event.target as HTMLInputElement).value))"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Inputs Cardio: duración alineada a la derecha -->
-                  <div v-if="addIsCardio" class="flex justify-end">
-                    <div class="w-[180px]">
-                      <label class="text-sm text-gray-400 block mb-1.5">Duración (min)</label>
-                      <input
-                        v-model.number="addDurationMinutes" type="number" min="1" max="300"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    :disabled="saving"
-                    class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-3.5 rounded-2xl font-semibold transition-colors"
-                    @click="addToPlan"
-                  >
-                    {{ saving ? 'Guardando...' : 'Agregar al plan' }}
-                  </button>
-                </div>
-              </template>
-            </div>
-          </Transition>
-        </div>
-      </Transition>
-    </Teleport>
+    <AddExerciseModal
+      :show="showAddModal"
+      :exercises="exercises"
+      :day-plan="dayPlan"
+      :selected-day="selectedDay"
+      :day-label="orderedDays.find(d => d.dow === selectedDay)?.full ?? ''"
+      :current-week-start="currentWeekStart"
+      @close="showAddModal = false"
+      @added="plan.push($event)"
+    />
   </div>
 </template>
