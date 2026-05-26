@@ -1,3 +1,7 @@
+<script lang="ts">
+export default { inheritAttrs: false }
+</script>
+
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 
@@ -48,6 +52,6 @@ onUnmounted(stop)
 </script>
 
 <template>
-  <img v-if="displaySrc" :src="displaySrc" :alt="alt ?? ''" @error="onError" />
+  <img v-if="displaySrc" v-bind="$attrs" :src="displaySrc" :alt="alt ?? ''" @error="onError" />
   <slot v-else name="placeholder" />
 </template>

@@ -42,8 +42,11 @@ function formatTime(s: number) {
   return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : String(s)
 }
 
-let rafId: number
-let startTime: number
+let rafId: number | null = null
+let doneTimeoutId: number | null = null
+let startTime = 0
+let endTime = 0
+let wakeLock: WakeLockSentinel | null = null
 
 async function playSoundRepeated() {
   const times = props.repeat ?? 1
@@ -52,26 +55,82 @@ async function playSoundRepeated() {
   }
 }
 
-function tick(now: number) {
-  elapsed.value = now - startTime
-  if (elapsed.value >= totalMs) {
-    elapsed.value = totalMs
-    finished.value = true
-    playSoundRepeated()
+function finish() {
+  if (finished.value) return
+  elapsed.value = totalMs
+  finished.value = true
+  if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null }
+  if (doneTimeoutId !== null) { clearTimeout(doneTimeoutId); doneTimeoutId = null }
+  releaseWakeLock()
+  playSoundRepeated()
+}
+
+function tick() {
+  const now = Date.now()
+  elapsed.value = Math.min(now - startTime, totalMs)
+  if (now >= endTime) {
+    finish()
     return
   }
   rafId = requestAnimationFrame(tick)
 }
 
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+      wakeLock = await navigator.wakeLock.request('screen')
+      wakeLock.addEventListener('release', () => { wakeLock = null })
+    }
+  } catch {
+    // Permiso denegado o no soportado: se ignora, el visibilitychange cubre el fallback.
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {})
+    wakeLock = null
+  }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    // Recompute por si el rAF se pausó con la pantalla apagada.
+    if (!finished.value) {
+      const now = Date.now()
+      elapsed.value = Math.min(now - startTime, totalMs)
+      if (now >= endTime) {
+        finish()
+      } else {
+        if (rafId !== null) cancelAnimationFrame(rafId)
+        rafId = requestAnimationFrame(tick)
+        requestWakeLock()
+      }
+    }
+  }
+}
+
 onMounted(() => {
-  startTime = performance.now()
+  startTime = Date.now()
+  endTime = startTime + totalMs
   rafId = requestAnimationFrame(tick)
+  // Fallback absoluto: dispara aunque rAF esté pausado en background (sujeto a throttling del navegador).
+  doneTimeoutId = window.setTimeout(finish, totalMs)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  requestWakeLock()
 })
 
-onUnmounted(() => cancelAnimationFrame(rafId))
+onUnmounted(() => {
+  if (rafId !== null) cancelAnimationFrame(rafId)
+  if (doneTimeoutId !== null) clearTimeout(doneTimeoutId)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  releaseWakeLock()
+})
 
 function close() {
-  cancelAnimationFrame(rafId)
+  if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null }
+  if (doneTimeoutId !== null) { clearTimeout(doneTimeoutId); doneTimeoutId = null }
+  releaseWakeLock()
   if (finished.value) emit('done'); else emit('skip')
 }
 </script>

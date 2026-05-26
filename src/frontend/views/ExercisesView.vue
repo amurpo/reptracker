@@ -59,7 +59,6 @@ const editName = ref('')
 const editGroup = ref('')
 const editLoading = ref(false)
 const editError = ref('')
-const imageFileInput = ref<HTMLInputElement | null>(null)
 const uploadingImageId = ref<number | null>(null)
 const customImages = ref<Record<number, string>>({})
 const newImageDataUrl = ref<string | null>(null)
@@ -322,7 +321,7 @@ onMounted(load)
             <!-- Miniatura -->
             <ExerciseImage
               :src="exerciseImage(ex)" :alt="ex.name"
-              class="w-10 h-10 rounded-xl object-cover shrink-0 bg-gray-800"
+              class="w-10 h-10 rounded-xl object-contain shrink-0 bg-gray-900"
             >
               <template #placeholder>
                 <div class="w-10 h-10 rounded-xl bg-gray-800 shrink-0 flex items-center justify-center text-gray-600 text-lg">💪</div>
@@ -362,7 +361,7 @@ onMounted(load)
           <div v-if="expandedId === ex.id && exerciseImage(ex)" class="border-t border-gray-800">
             <ExerciseImage
               :src="exerciseImage(ex)" :alt="ex.name" :animated="true"
-              class="w-full max-h-72 object-contain bg-gray-950"
+              class="w-full max-h-72 lg:max-h-96 rounded-md object-contain bg-gray-950"
             />
           </div>
         </Transition>
@@ -397,7 +396,6 @@ onMounted(load)
                 <label class="cursor-pointer text-xs text-accent-400 hover:text-accent-300 transition-colors font-semibold">
                   {{ uploadingImageId === ex.id ? 'Subiendo...' : customImages[ex.id] ? 'Cambiar foto' : 'Subir foto' }}
                   <input
-                    ref="imageFileInput"
                     type="file"
                     accept="image/*"
                     class="hidden"

@@ -22,8 +22,8 @@ watch(() => auth.user, (user) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-    <main class="flex-1 overflow-auto overscroll-none" :style="showNav ? 'padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))' : ''">
+  <div class="h-[100dvh] overflow-y-auto overscroll-none bg-gray-950 text-gray-100">
+    <main :style="showNav ? 'padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))' : ''">
       <RouterView />
     </main>
     <NavBar v-if="showNav" />

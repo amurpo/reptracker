@@ -60,12 +60,14 @@
   html {
     background-color: theme('colors.gray.950');
     overscroll-behavior: none;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100%;
   }
   body {
     background-color: theme('colors.gray.950');
     overscroll-behavior: none;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100%;
     -webkit-tap-highlight-color: transparent;
   }
 }
