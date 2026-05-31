@@ -4,13 +4,13 @@ import { getDb, workoutSessions, completedSets, weeklyPlan, exercises, users } f
 import { authMiddleware } from '../middleware/auth'
 import type { Env } from '../index'
 
-type Variables = { userId: string }
+type Variables = { userId: number }
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 app.use('*', authMiddleware)
 
 app.get('/summary', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const db = getDb(c.env.DB)
 
   const yearMonth = c.req.query('month') ?? new Date().toISOString().slice(0, 7)
@@ -113,16 +113,18 @@ app.get('/summary', async (c) => {
 
 // Progresión histórica de un ejercicio: max weight por sesión
 app.get('/progression/:exerciseId', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const exerciseId = parseInt(c.req.param('exerciseId'))
   const db = getDb(c.env.DB)
 
   const rows = await db
     .select({
+      // Un único max() garantiza (regla de SQLite para min/max) que las columnas
+      // "bare" (reps y el 1RM) salgan de la misma fila: la serie más pesada de la sesión.
       date: workoutSessions.date,
       maxWeightKg: sql<number>`max(${weeklyPlan.weightKg})`,
       repsAtMax: sql<number>`${weeklyPlan.reps}`,
-      estimated1RM: sql<number>`max(${weeklyPlan.weightKg} * (1.0 + ${weeklyPlan.reps} / 30.0))`,
+      estimated1RM: sql<number>`${weeklyPlan.weightKg} * (1.0 + ${weeklyPlan.reps} / 30.0)`,
     })
     .from(completedSets)
     .innerJoin(workoutSessions, eq(completedSets.sessionId, workoutSessions.id))
@@ -141,7 +143,7 @@ app.get('/progression/:exerciseId', async (c) => {
 
 // Lista de ejercicios de fuerza que el usuario ha registrado con peso
 app.get('/progression-exercises', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const db = getDb(c.env.DB)
 
   const rows = await db

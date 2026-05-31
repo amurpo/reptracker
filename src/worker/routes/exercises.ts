@@ -4,7 +4,7 @@ import { getDb, exercises } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import type { Env } from '../index'
 
-type Variables = { userId: string }
+type Variables = { userId: number }
 
 const VALID_MUSCLE_GROUPS = [
   'abdominales', 'abductores', 'aductores', 'bíceps', 'pantorrillas',
@@ -26,7 +26,7 @@ app.use('*', authMiddleware)
 
 // GET / — catálogo global + ejercicios custom del usuario (no eliminados)
 app.get('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const db = getDb(c.env.DB)
 
   const list = await db
@@ -47,7 +47,7 @@ app.get('/', async (c) => {
 
 // POST / — crear ejercicio custom (máx 20)
 app.post('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const { name, muscleGroup } = await c.req.json<{ name: string; muscleGroup: string }>()
   const err = validateExerciseFields(name, muscleGroup)
   if (err) return c.json({ error: err }, 400)
@@ -79,7 +79,7 @@ app.post('/', async (c) => {
 
 // PATCH /:id — editar nombre y grupo muscular (solo ejercicios custom propios)
 app.patch('/:id', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const { name, muscleGroup } = await c.req.json<{ name: string; muscleGroup: string }>()
   const err = validateExerciseFields(name, muscleGroup)
@@ -115,7 +115,7 @@ app.get('/:id/image', async (c) => {
 
 // PUT /:id/image — subir imagen custom (solo ejercicios propios, máx 200KB)
 app.put('/:id/image', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const { image } = await c.req.json<{ image: string }>()
 
@@ -145,7 +145,7 @@ app.put('/:id/image', async (c) => {
 
 // DELETE /:id/image — eliminar imagen custom
 app.delete('/:id/image', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
 
   const db = getDb(c.env.DB)
@@ -162,7 +162,7 @@ app.delete('/:id/image', async (c) => {
 
 // DELETE /:id — soft delete (solo ejercicios custom propios)
 app.delete('/:id', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const db = getDb(c.env.DB)
 

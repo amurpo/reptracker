@@ -5,15 +5,38 @@ import { authMiddleware } from '../middleware/auth'
 import { calcWeekStart, calcDayOfWeek } from '../lib/dates'
 import type { Env } from '../index'
 
-type Variables = { userId: string }
+type Variables = { userId: number }
+type Db = ReturnType<typeof getDb>
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 app.use('*', authMiddleware)
 
-// Get all sessions for a month (YYYY-MM)
+// Columnas del plan + nombre/grupo del ejercicio para la vista de sesión.
+const planColumns = {
+  id: weeklyPlan.id,
+  exerciseId: weeklyPlan.exerciseId,
+  sets: weeklyPlan.sets,
+  reps: weeklyPlan.reps,
+  weightKg: weeklyPlan.weightKg,
+  orderIndex: weeklyPlan.orderIndex,
+  isCardio: weeklyPlan.isCardio,
+  durationMinutes: weeklyPlan.durationMinutes,
+  exerciseName: exercises.name,
+  muscleGroup: exercises.muscleGroup,
+}
+
+async function getOrCreateSession(db: Db, userId: number, date: string) {
+  const rows = await db.select().from(workoutSessions)
+    .where(and(eq(workoutSessions.userId, userId), eq(workoutSessions.date, date)))
+  if (rows[0]) return rows[0]
+  const inserted = await db.insert(workoutSessions).values({ userId, date }).returning()
+  return inserted[0]
+}
+
+// Todas las sesiones de un mes (YYYY-MM)
 app.get('/month/:yearMonth', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const yearMonth = c.req.param('yearMonth')
   const db = getDb(c.env.DB)
 
@@ -30,9 +53,9 @@ app.get('/month/:yearMonth', async (c) => {
   return c.json(rows)
 })
 
-// Get session for a date
+// Sesión de una fecha
 app.get('/:date', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const date = c.req.param('date') // YYYY-MM-DD
   const db = getDb(c.env.DB)
 
@@ -62,18 +85,7 @@ app.get('/:date', async (c) => {
     const planIds = [...new Set(completed.map(s => s.weeklyPlanId))]
 
     const plan = await db
-      .select({
-        id: weeklyPlan.id,
-        exerciseId: weeklyPlan.exerciseId,
-        sets: weeklyPlan.sets,
-        reps: weeklyPlan.reps,
-        weightKg: weeklyPlan.weightKg,
-        orderIndex: weeklyPlan.orderIndex,
-        isCardio: weeklyPlan.isCardio,
-        durationMinutes: weeklyPlan.durationMinutes,
-        exerciseName: exercises.name,
-        muscleGroup: exercises.muscleGroup,
-      })
+      .select(planColumns)
       .from(weeklyPlan)
       .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
       .where(inArray(weeklyPlan.id, planIds))
@@ -83,18 +95,7 @@ app.get('/:date', async (c) => {
 
   // Para hoy: usar el plan de la semana actual
   const plan = await db
-    .select({
-      id: weeklyPlan.id,
-      exerciseId: weeklyPlan.exerciseId,
-      sets: weeklyPlan.sets,
-      reps: weeklyPlan.reps,
-      weightKg: weeklyPlan.weightKg,
-      orderIndex: weeklyPlan.orderIndex,
-      isCardio: weeklyPlan.isCardio,
-      durationMinutes: weeklyPlan.durationMinutes,
-      exerciseName: exercises.name,
-      muscleGroup: exercises.muscleGroup,
-    })
+    .select(planColumns)
     .from(weeklyPlan)
     .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
     .where(and(
@@ -107,15 +108,7 @@ app.get('/:date', async (c) => {
     return c.json({ session: null, plan: [], completedSets: [] })
   }
 
-  // Obtener o crear sesión
-  const sessionRows = await db.select().from(workoutSessions)
-    .where(and(eq(workoutSessions.userId, userId), eq(workoutSessions.date, date)))
-  let session = sessionRows[0]
-
-  if (!session) {
-    const inserted = await db.insert(workoutSessions).values({ userId, date }).returning()
-    session = inserted[0]
-  }
+  const session = await getOrCreateSession(db, userId, date)
 
   const completed = await db.select().from(completedSets)
     .where(eq(completedSets.sessionId, session.id))
@@ -125,19 +118,12 @@ app.get('/:date', async (c) => {
 
 // Marcar un set como completado
 app.post('/:date/complete', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const date = c.req.param('date')
   const { weeklyPlanId, setNumber } = await c.req.json<{ weeklyPlanId: number; setNumber: number }>()
   const db = getDb(c.env.DB)
 
-  const sessionRows = await db.select().from(workoutSessions)
-    .where(and(eq(workoutSessions.userId, userId), eq(workoutSessions.date, date)))
-  let session = sessionRows[0]
-
-  if (!session) {
-    const inserted = await db.insert(workoutSessions).values({ userId, date }).returning()
-    session = inserted[0]
-  }
+  const session = await getOrCreateSession(db, userId, date)
 
   await db.insert(completedSets).values({
     sessionId: session.id,
@@ -150,7 +136,7 @@ app.post('/:date/complete', async (c) => {
 
 // Desmarcar un set
 app.delete('/:date/complete', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const date = c.req.param('date')
   const { weeklyPlanId, setNumber } = await c.req.json<{ weeklyPlanId: number; setNumber: number }>()
   const db = getDb(c.env.DB)

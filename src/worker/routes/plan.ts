@@ -2,9 +2,10 @@ import { Hono } from 'hono'
 import { eq, and, or, isNull, sql } from 'drizzle-orm'
 import { getDb, weeklyPlan, exercises } from '../db'
 import { authMiddleware } from '../middleware/auth'
+import { parseRepsConfig, serializeRepsConfig } from '../lib/repsConfig'
 import type { Env } from '../index'
 
-type Variables = { userId: string }
+type Variables = { userId: number }
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -46,7 +47,7 @@ app.use('*', authMiddleware)
 
 // Días planificados en un mes (para la vista de planificación mensual)
 app.get('/month/:yearMonth', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const yearMonth = c.req.param('yearMonth')
   const db = getDb(c.env.DB)
 
@@ -64,7 +65,7 @@ app.get('/month/:yearMonth', async (c) => {
 })
 
 app.get('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const weekStart = c.req.query('weekStart') ?? ''
   const db = getDb(c.env.DB)
 
@@ -90,12 +91,12 @@ app.get('/', async (c) => {
 
   return c.json(plan.map(e => ({
     ...e,
-    repsConfig: e.repsConfig ? JSON.parse(e.repsConfig) as number[] : null,
+    repsConfig: parseRepsConfig(e.repsConfig),
   })))
 })
 
 app.post('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const { weekStart, dayOfWeek, exerciseId, sets, reps, repsConfig, weightKg, orderIndex, isCardio, durationMinutes } = await c.req.json<{
     weekStart: string; dayOfWeek: number; exerciseId: number; sets?: number; reps?: number
     repsConfig?: number[] | null; weightKg?: number | null; orderIndex?: number; isCardio?: number; durationMinutes?: number | null
@@ -115,7 +116,7 @@ app.post('/', async (c) => {
   const inserted = await db.insert(weeklyPlan).values({
     userId, weekStart, dayOfWeek, exerciseId,
     sets: sets ?? 3, reps: reps ?? 10,
-    repsConfig: repsConfig ? JSON.stringify(repsConfig) : null,
+    repsConfig: serializeRepsConfig(repsConfig),
     weightKg: weightKg ?? null,
     orderIndex: orderIndex ?? 0,
     isCardio: isCardio ?? 0,
@@ -125,14 +126,14 @@ app.post('/', async (c) => {
   const entry = inserted[0]
   return c.json({
     ...entry,
-    repsConfig: entry.repsConfig ? JSON.parse(entry.repsConfig) as number[] : null,
+    repsConfig: parseRepsConfig(entry.repsConfig),
     exerciseName: ex[0].name,
     muscleGroup: ex[0].muscleGroup,
   }, 201)
 })
 
 app.put('/:id', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const { sets, reps, repsConfig, weightKg, isCardio, durationMinutes } = await c.req.json<{
     sets: number; reps: number; repsConfig?: number[] | null; weightKg?: number | null; isCardio?: number; durationMinutes?: number | null
@@ -142,16 +143,16 @@ app.put('/:id', async (c) => {
   const db = getDb(c.env.DB)
 
   const updated = await db.update(weeklyPlan)
-    .set({ sets, reps, repsConfig: repsConfig ? JSON.stringify(repsConfig) : null, weightKg: weightKg ?? null, isCardio: isCardio ?? 0, durationMinutes: durationMinutes ?? null })
+    .set({ sets, reps, repsConfig: serializeRepsConfig(repsConfig), weightKg: weightKg ?? null, isCardio: isCardio ?? 0, durationMinutes: durationMinutes ?? null })
     .where(and(eq(weeklyPlan.id, id), eq(weeklyPlan.userId, userId)))
     .returning()
 
   const u = updated[0]
-  return c.json({ ...u, repsConfig: u.repsConfig ? JSON.parse(u.repsConfig) as number[] : null })
+  return c.json({ ...u, repsConfig: parseRepsConfig(u.repsConfig) })
 })
 
 app.delete('/:id', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const db = getDb(c.env.DB)
 

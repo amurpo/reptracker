@@ -11,6 +11,7 @@ export const users = sqliteTable('users', {
   heightCm: integer('height_cm'),
   sex: text('sex'),
   emailVerified: integer('email_verified').notNull().default(0),
+  tokenVersion: integer('token_version').notNull().default(0),
   dateFormat: text('date_format').notNull().default('dd-mm-yyyy'),
   timeFormat: text('time_format').notNull().default('24h'),
   weekStart: integer('week_start').notNull().default(0),

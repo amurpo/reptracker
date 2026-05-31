@@ -1,11 +1,12 @@
 import { Hono } from 'hono'
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, sql } from 'drizzle-orm'
 import { getDb, users, weightLog } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import { hashPassword, verifyPassword } from '../lib/crypto'
+import { issueSession } from '../lib/session'
 import type { Env } from '../index'
 
-const profile = new Hono<{ Bindings: Env; Variables: { userId: string } }>()
+const profile = new Hono<{ Bindings: Env; Variables: { userId: number } }>()
 
 profile.use('/*', authMiddleware)
 
@@ -27,7 +28,7 @@ const userFields = {
 }
 
 profile.get('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const db = getDb(c.env.DB)
   const rows = await db.select(userFields).from(users).where(eq(users.id, userId))
   if (!rows[0]) return c.json({ error: 'Usuario no encontrado' }, 404)
@@ -43,7 +44,7 @@ const VALID_TIMER_SOUNDS = ['bell', 'beep', 'chime', 'airhorn', 'rooster', 'bear
 const VALID_TIMER_REPEATS = [1, 2, 3, 4, 5]
 
 profile.put('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const body = await c.req.json<{
     name?: string
     age?: number
@@ -140,7 +141,7 @@ profile.put('/avatar', async (c) => {
 })
 
 profile.get('/weight-log', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const db = getDb(c.env.DB)
   const rows = await db
     .select({ date: weightLog.date, weightKg: weightLog.weightKg })
@@ -152,7 +153,7 @@ profile.get('/weight-log', async (c) => {
 })
 
 profile.post('/weight-log', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const body = await c.req.json<{ date: string; weightKg: number }>()
   const { date, weightKg } = body
 
@@ -173,7 +174,7 @@ profile.post('/weight-log', async (c) => {
 })
 
 profile.put('/password', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const body = await c.req.json<{ currentPassword: string; newPassword: string }>()
   const { currentPassword, newPassword } = body
 
@@ -190,7 +191,14 @@ profile.put('/password', async (c) => {
   }
 
   const newHash = await hashPassword(newPassword)
-  await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, userId))
+  const updated = await db
+    .update(users)
+    .set({ passwordHash: newHash, tokenVersion: sql`${users.tokenVersion} + 1` })
+    .where(eq(users.id, userId))
+    .returning({ tokenVersion: users.tokenVersion })
+
+  // Invalida las demás sesiones y renueva la cookie actual para no desconectar al usuario.
+  await issueSession(c, c.env.JWT_SECRET, userId, updated[0].tokenVersion)
 
   return c.json({ ok: true })
 })

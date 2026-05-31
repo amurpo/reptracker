@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   height_cm     INTEGER,
   sex           TEXT,
   email_verified INTEGER NOT NULL DEFAULT 0,
+  token_version INTEGER NOT NULL DEFAULT 0,
   date_format   TEXT    NOT NULL DEFAULT 'dd-mm-yyyy',
   time_format   TEXT    NOT NULL DEFAULT '24h',
   week_start    INTEGER NOT NULL DEFAULT 0,
