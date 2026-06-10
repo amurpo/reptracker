@@ -1,14 +1,12 @@
 import { Hono } from 'hono'
-import { setCookie, deleteCookie } from 'hono/cookie'
-import { SignJWT } from 'jose'
-import { eq } from 'drizzle-orm'
+import { deleteCookie } from 'hono/cookie'
+import { eq, sql } from 'drizzle-orm'
 import { getDb, users, emailVerificationTokens, passwordResetTokens } from '../db'
-import { hashPassword, verifyPassword } from '../lib/crypto'
-import { verifyTurnstile } from '../lib/turnstile'
+import { hashPassword, verifyPassword, needsRehash } from '../lib/crypto'
+import { requireTurnstile } from '../lib/turnstile'
+import { issueSession } from '../lib/session'
 import type { EmailJob } from '../index'
 import type { Env } from '../index'
-
-const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 días en segundos
 
 const auth = new Hono<{ Bindings: Env }>()
 
@@ -17,8 +15,8 @@ auth.post('/register', async (c) => {
     const body = await c.req.json<{ email: string; password: string; turnstileToken: string }>()
     const { email, password, turnstileToken } = body
 
-    const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
-    if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
+    const tsErr = await requireTurnstile(c, turnstileToken)
+    if (tsErr) return tsErr
 
     const emailTrimmed = String(email ?? '').trim().toLowerCase()
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed) && emailTrimmed.length <= 254
@@ -68,7 +66,9 @@ auth.post('/register', async (c) => {
 
     return c.json({ message: 'Te enviamos un email para confirmar tu cuenta.' })
   } catch (err) {
-    return c.json({ error: String(err) }, 500)
+    // eslint-disable-next-line no-console
+    console.error('register error:', err)
+    return c.json({ error: 'No pudimos completar el registro. Inténtalo más tarde.' }, 500)
   }
 })
 
@@ -76,8 +76,8 @@ auth.post('/login', async (c) => {
   const body = await c.req.json<{ email: string; password: string; turnstileToken: string }>()
   const { email, password, turnstileToken } = body
 
-  const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
-  if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
+  const tsErr = await requireTurnstile(c, turnstileToken)
+  if (tsErr) return tsErr
 
   if (!email || !password) {
     return c.json({ error: 'Email y contraseña requeridos' }, 400)
@@ -95,20 +95,15 @@ auth.post('/login', async (c) => {
     return c.json({ error: 'email_not_verified' }, 403)
   }
 
-  const secret = new TextEncoder().encode(c.env.JWT_SECRET)
-  const jwt = await new SignJWT({ sub: String(user.id) })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('30d')
-    .sign(secret)
+  // Migrar de forma transparente los hashes con parámetros antiguos.
+  if (needsRehash(user.passwordHash)) {
+    try {
+      const fresh = await hashPassword(password)
+      await db.update(users).set({ passwordHash: fresh }).where(eq(users.id, user.id))
+    } catch { /* no bloquear el login si falla el rehash */ }
+  }
 
-  const isSecure = new URL(c.req.url).protocol === 'https:'
-  setCookie(c, 'session', jwt, {
-    httpOnly: true,
-    secure: isSecure,
-    sameSite: 'Strict',
-    path: '/',
-    maxAge: SESSION_MAX_AGE,
-  })
+  await issueSession(c, c.env.JWT_SECRET, user.id, user.tokenVersion)
 
   return c.json({ user: { id: user.id, email: user.email } })
 })
@@ -146,8 +141,8 @@ auth.post('/forgot-password', async (c) => {
     const { email, turnstileToken } = await c.req.json<{ email: string; turnstileToken: string }>()
     if (!email) return c.json({ error: 'Email requerido' }, 400)
 
-    const turnstileOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, turnstileToken ?? '', c.req.header('CF-Connecting-IP'))
-    if (!turnstileOk) return c.json({ error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }, 400)
+    const tsErr = await requireTurnstile(c, turnstileToken)
+    if (tsErr) return tsErr
 
     const db = getDb(c.env.DB)
     const rows = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.email, email.toLowerCase()))
@@ -167,7 +162,9 @@ auth.post('/forgot-password', async (c) => {
 
     return c.json({ message: 'Si ese email está registrado, recibirás un enlace en breve.' })
   } catch (err) {
-    return c.json({ error: String(err) }, 500)
+    // eslint-disable-next-line no-console
+    console.error('forgot-password error:', err)
+    return c.json({ error: 'No pudimos procesar la solicitud. Inténtalo más tarde.' }, 500)
   }
 })
 
@@ -188,7 +185,10 @@ auth.post('/reset-password', async (c) => {
   }
 
   const newHash = await hashPassword(password)
-  await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, record.userId))
+  await db
+    .update(users)
+    .set({ passwordHash: newHash, tokenVersion: sql`${users.tokenVersion} + 1` })
+    .where(eq(users.id, record.userId))
   await db.delete(passwordResetTokens).where(eq(passwordResetTokens.token, token))
 
   return c.json({ ok: true })

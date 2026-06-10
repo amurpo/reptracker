@@ -1,10 +1,11 @@
 import { Hono } from 'hono'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, or, isNull, inArray, sql } from 'drizzle-orm'
 import { getDb, routines, routineExercises, weeklyPlan, exercises } from '../db'
 import { authMiddleware } from '../middleware/auth'
+import { parseRepsConfig, serializeRepsConfig } from '../lib/repsConfig'
 import type { Env } from '../index'
 
-type Variables = { userId: string }
+type Variables = { userId: number }
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -12,25 +13,31 @@ app.use('*', authMiddleware)
 
 // Listar rutinas del usuario (con conteo de ejercicios)
 app.get('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const db = getDb(c.env.DB)
 
-  const list = await db.select().from(routines).where(eq(routines.userId, userId))
+  const list = await db
+    .select({
+      id: routines.id,
+      userId: routines.userId,
+      name: routines.name,
+      createdAt: routines.createdAt,
+      exerciseCount: sql<number>`count(${routineExercises.id})`,
+    })
+    .from(routines)
+    .leftJoin(routineExercises, eq(routineExercises.routineId, routines.id))
+    .where(eq(routines.userId, userId))
+    .groupBy(routines.id)
 
-  const withCount = await Promise.all(list.map(async (r) => {
-    const exs = await db.select().from(routineExercises).where(eq(routineExercises.routineId, r.id))
-    return { ...r, exerciseCount: exs.length }
-  }))
-
-  return c.json(withCount)
+  return c.json(list)
 })
 
 // Guardar rutina (nombre + ejercicios del día actual)
 app.post('/', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const { name, exercises: exList } = await c.req.json<{
     name: string
-    exercises: { exerciseId: number; sets: number; reps: number; repsConfig?: number | null; weightKg?: number | null; orderIndex: number }[]
+    exercises: { exerciseId: number; sets: number; reps: number; repsConfig?: number[] | null; weightKg?: number | null; orderIndex: number }[]
   }>()
 
   const nameTrimmed = String(name ?? '').trim()
@@ -38,7 +45,41 @@ app.post('/', async (c) => {
   if (!exList?.length) return c.json({ error: 'La rutina debe tener al menos un ejercicio' }, 400)
   if (exList.length > 30) return c.json({ error: 'La rutina no puede tener más de 30 ejercicios' }, 400)
 
+  // Validar rangos de cada ejercicio
+  for (const e of exList) {
+    const id = Number(e.exerciseId)
+    const s = Number(e.sets)
+    const r = Number(e.reps)
+    if (!Number.isInteger(id) || id < 1) return c.json({ error: 'Ejercicio inválido' }, 400)
+    if (!Number.isInteger(s) || s < 1 || s > 20) return c.json({ error: 'Series inválidas (1-20)' }, 400)
+    if (!Number.isInteger(r) || r < 1 || r > 200) return c.json({ error: 'Repeticiones inválidas (1-200)' }, 400)
+    if (e.weightKg != null) {
+      const w = Number(e.weightKg)
+      if (isNaN(w) || w < 0 || w > 1000) return c.json({ error: 'Peso inválido (0-1000 kg)' }, 400)
+    }
+    if (e.repsConfig != null) {
+      if (!Array.isArray(e.repsConfig) || e.repsConfig.length !== s ||
+          e.repsConfig.some(v => !Number.isInteger(v) || v < 1 || v > 200))
+        return c.json({ error: 'repsConfig debe tener un entero (1-200) por serie' }, 400)
+    }
+  }
+
   const db = getDb(c.env.DB)
+
+  // Verificar que todos los ejercicios sean del catálogo global o ejercicios propios no eliminados.
+  const ids = [...new Set(exList.map(e => Number(e.exerciseId)))]
+  const allowed = await db
+    .select({ id: exercises.id })
+    .from(exercises)
+    .where(and(
+      inArray(exercises.id, ids),
+      eq(exercises.isDeleted, 0),
+      or(isNull(exercises.userId), and(eq(exercises.userId, userId), eq(exercises.isCustom, 1))),
+    ))
+  const allowedSet = new Set(allowed.map(r => r.id))
+  if (ids.some(id => !allowedSet.has(id))) {
+    return c.json({ error: 'Algún ejercicio no existe o no te pertenece' }, 404)
+  }
 
   const inserted = await db.insert(routines).values({ userId, name: nameTrimmed }).returning()
   const routine = inserted[0]
@@ -49,7 +90,7 @@ app.post('/', async (c) => {
       exerciseId: e.exerciseId,
       sets: e.sets,
       reps: e.reps,
-      repsConfig: e.repsConfig ? JSON.stringify(e.repsConfig) : null,
+      repsConfig: serializeRepsConfig(e.repsConfig),
       weightKg: e.weightKg ?? null,
       orderIndex: e.orderIndex,
     }))
@@ -60,7 +101,7 @@ app.post('/', async (c) => {
 
 // Eliminar rutina
 app.delete('/:id', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const db = getDb(c.env.DB)
 
@@ -70,7 +111,7 @@ app.delete('/:id', async (c) => {
 
 // Aplicar rutina a un día de una semana específica (reemplaza los ejercicios del día)
 app.post('/:id/apply', async (c) => {
-  const userId = parseInt(c.get('userId'))
+  const userId = c.get('userId')
   const id = parseInt(c.req.param('id'))
   const { dayOfWeek, weekStart } = await c.req.json<{ dayOfWeek: number; weekStart: string }>()
 
@@ -104,16 +145,19 @@ app.post('/:id/apply', async (c) => {
     }))
   ).returning()
 
-  // Join con nombre de ejercicio para devolver PlanEntry completo
-  const result = await Promise.all(inserted.map(async (entry) => {
-    const ex = await db.select({ name: exercises.name, muscleGroup: exercises.muscleGroup })
-      .from(exercises).where(eq(exercises.id, entry.exerciseId))
-    return {
-      ...entry,
-      repsConfig: entry.repsConfig ? JSON.parse(entry.repsConfig) as number[] : null,
-      exerciseName: ex[0]?.name ?? '',
-      muscleGroup: ex[0]?.muscleGroup ?? '',
-    }
+  // Nombres de ejercicios en una sola consulta para devolver PlanEntry completo
+  const exIds = [...new Set(inserted.map(e => e.exerciseId))]
+  const exRows = await db
+    .select({ id: exercises.id, name: exercises.name, muscleGroup: exercises.muscleGroup })
+    .from(exercises)
+    .where(inArray(exercises.id, exIds))
+  const exMap = new Map(exRows.map(e => [e.id, e]))
+
+  const result = inserted.map((entry) => ({
+    ...entry,
+    repsConfig: parseRepsConfig(entry.repsConfig),
+    exerciseName: exMap.get(entry.exerciseId)?.name ?? '',
+    muscleGroup: exMap.get(entry.exerciseId)?.muscleGroup ?? '',
   }))
 
   return c.json(result)
