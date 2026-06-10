@@ -197,24 +197,47 @@ async function loadRoutines() {
   routines.value = await api.routines.list()
 }
 
+function dayPlanAsRoutineExercises() {
+  return dayPlan.value.map((e) => ({
+    exerciseId: e.exerciseId,
+    sets: e.sets,
+    reps: e.reps,
+    repsConfig: e.repsConfig,
+    weightKg: e.weightKg,
+    orderIndex: e.orderIndex,
+  }))
+}
+
 async function saveRoutine() {
   if (!routineName.value.trim() || !dayPlan.value.length) return
   routineSaving.value = true
   try {
-    const ex = dayPlan.value.map((e) => ({
-      exerciseId: e.exerciseId,
-      sets: e.sets,
-      reps: e.reps,
-      repsConfig: e.repsConfig,
-      weightKg: e.weightKg,
-      orderIndex: e.orderIndex,
-    }))
-    const saved = await api.routines.save(routineName.value, ex)
+    const saved = await api.routines.save(routineName.value, dayPlanAsRoutineExercises())
     routines.value.push(saved)
     showSaveRoutine.value = false
     routineName.value = ''
   } finally {
     routineSaving.value = false
+  }
+}
+
+// Rutina pendiente de confirmación antes de sobrescribirla
+const confirmReplaceId = ref<number | null>(null)
+watch(showSaveRoutine, () => { confirmReplaceId.value = null })
+
+// Sobrescribe una rutina existente con los ejercicios del día actual (conserva su nombre)
+async function replaceRoutine(r: Routine) {
+  if (!dayPlan.value.length) return
+  routineSaving.value = true
+  try {
+    const updated = await api.routines.update(r.id, r.name, dayPlanAsRoutineExercises())
+    const idx = routines.value.findIndex((x) => x.id === r.id)
+    if (idx >= 0) routines.value[idx] = updated
+    showSaveRoutine.value = false
+    routineName.value = ''
+  } finally {
+    routineSaving.value = false
+    confirmReplaceId.value = null
   }
 }
 
@@ -766,8 +789,43 @@ onMounted(() => { load(); loadRoutines() })
                 class="w-full bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-3 rounded-2xl font-semibold transition-colors"
                 @click="saveRoutine"
               >
-                {{ routineSaving ? 'Guardando...' : 'Guardar' }}
+                {{ routineSaving ? 'Guardando...' : 'Guardar como nueva' }}
               </button>
+
+              <template v-if="routines.length > 0">
+                <p class="text-xs text-gray-500 mt-5 mb-2">O reemplazar una existente:</p>
+                <div class="overflow-y-auto space-y-2 max-h-48">
+                  <div v-for="r in routines" :key="r.id" class="bg-gray-800 rounded-2xl">
+                    <button
+                      :disabled="routineSaving"
+                      class="w-full px-4 py-3 text-left hover:bg-gray-700 disabled:opacity-40 rounded-2xl transition-colors"
+                      @click="confirmReplaceId = confirmReplaceId === r.id ? null : r.id"
+                    >
+                      <p class="text-sm font-semibold text-white truncate">{{ r.name }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">{{ r.exerciseCount }} ejercicio{{ r.exerciseCount !== 1 ? 's' : '' }}</p>
+                    </button>
+                    <div v-if="confirmReplaceId === r.id" class="px-4 pb-3">
+                      <p class="text-xs text-gray-400 mb-2">Se reemplazará "{{ r.name }}" con los {{ dayPlan.length }} ejercicio{{ dayPlan.length !== 1 ? 's' : '' }} del día actual. ¿Continuar?</p>
+                      <div class="flex gap-2">
+                        <button
+                          :disabled="routineSaving"
+                          class="flex-1 bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-white py-2 rounded-xl text-sm font-semibold transition-colors"
+                          @click="replaceRoutine(r)"
+                        >
+                          {{ routineSaving ? 'Reemplazando...' : 'Reemplazar' }}
+                        </button>
+                        <button
+                          :disabled="routineSaving"
+                          class="flex-1 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-gray-300 py-2 rounded-xl text-sm font-semibold transition-colors"
+                          @click="confirmReplaceId = null"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
           </Transition>
         </div>

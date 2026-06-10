@@ -115,7 +115,12 @@ async function toggleSet(weeklyPlanId: number, setNumber: number) {
         completedAt: new Date().toISOString(),
       })
       const entry = sessionData.value.plan.find(e => e.id === weeklyPlanId)
-      if (!entry?.isCardio && timerSeconds.value > 0) timerActive.value = true
+      // Sin descanso después de la última serie: el entrenamiento ya terminó
+      if (allDone.value) {
+        timerActive.value = false
+      } else if (!entry?.isCardio && timerSeconds.value > 0) {
+        timerActive.value = true
+      }
     }
   } finally {
     togglingSet.value = null

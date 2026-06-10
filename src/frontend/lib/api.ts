@@ -2,11 +2,20 @@ function norm(s: string) {
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 }
 
-/** Devuelve true si todas las palabras del query aparecen en nombre o grupo muscular */
-export function matchesSearch(name: string, muscleGroup: string, query: string): boolean {
+// Texto de búsqueda normalizado por ejercicio. Normalizar (NFD + regex) es costoso
+// para ~900 ejercicios en cada tecla; se calcula una vez por objeto y se cachea.
+// Las vistas reemplazan el objeto al editar, así que el cache nunca queda obsoleto.
+const searchTextCache = new WeakMap<object, string>()
+
+/** Devuelve true si todas las palabras del query aparecen en nombre, grupo muscular o aliases */
+export function matchesSearch(e: { name: string; muscleGroup: string; aliases?: string[] }, query: string): boolean {
   const words = norm(query).split(/\s+/).filter(Boolean)
   if (!words.length) return true
-  const hay = norm(name) + ' ' + norm(muscleGroup)
+  let hay = searchTextCache.get(e)
+  if (hay === undefined) {
+    hay = norm(e.name) + ' ' + norm(e.muscleGroup) + (e.aliases?.length ? ' ' + e.aliases.map(norm).join(' ') : '')
+    searchTextCache.set(e, hay)
+  }
   return words.every(w => hay.includes(w))
 }
 
@@ -85,6 +94,8 @@ export const api = {
     list: () => request<Routine[]>('GET', '/routines'),
     save: (name: string, exercises: RoutineExercise[]) =>
       request<Routine>('POST', '/routines', { name, exercises }),
+    update: (id: number, name: string, exercises: RoutineExercise[]) =>
+      request<Routine>('PUT', `/routines/${id}`, { name, exercises }),
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/routines/${id}`),
     apply: (id: number, dayOfWeek: number, weekStart: string) =>
       request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek, weekStart }),
@@ -135,6 +146,7 @@ export interface Exercise {
   isCustom: number            // 0 = global, 1 = custom del usuario
   isDeleted: number
   createdAt: string | null
+  aliases?: string[]          // aliases de búsqueda (solo ejercicios del catálogo)
 }
 
 export interface PlanEntry {

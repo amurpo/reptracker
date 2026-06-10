@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { integer, real, text, sqliteTable, index, unique } from 'drizzle-orm/sqlite-core'
+import { integer, real, text, sqliteTable, index, unique, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -46,6 +46,17 @@ export const exerciseCatalog = sqliteTable('exercise_catalog', {
   createdAt: text('created_at').default(sql`(datetime('now'))`),
 }, (t) => ({
   idxMuscle: index('idx_exercise_catalog_muscle').on(t.muscleGroup),
+}))
+
+// Aliases de búsqueda del catálogo global (nombres en inglés y sinónimos comunes).
+// Solo existen para ejercicios del seed; los custom de usuario no tienen aliases.
+export const exerciseAliases = sqliteTable('exercise_aliases', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  catalogId: integer('catalog_id').notNull().references(() => exerciseCatalog.id, { onDelete: 'cascade' }),
+  alias: text('alias').notNull(),
+}, (t) => ({
+  idxCatalog: index('idx_exercise_aliases_catalog').on(t.catalogId),
+  uqCatalogAlias: uniqueIndex('uq_exercise_aliases').on(t.catalogId, t.alias),
 }))
 
 export const exercises = sqliteTable('exercises', {

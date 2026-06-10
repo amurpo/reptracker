@@ -59,6 +59,14 @@ const isCardio = ref(false)
 const durationMinutes = ref<number | null>(30)
 const saving = ref(false)
 const searchQuery = ref('')
+// Filtrar la lista completa en cada tecla se siente lento; se espera una
+// pausa breve en el tipeo antes de aplicar el filtro.
+const debouncedQuery = ref('')
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchQuery, (q) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { debouncedQuery.value = q }, 150)
+})
 const filterGroup = ref('all')
 const customImages = ref<Record<number, string>>({})
 
@@ -77,13 +85,13 @@ function exerciseImage(ex: Exercise): string | null {
 }
 
 const available = computed(() => {
-  const q = searchQuery.value.toLowerCase().trim()
+  const q = debouncedQuery.value.toLowerCase().trim()
   return props.exercises.filter((e) => {
     if (props.dayPlan.find((p) => p.exerciseId === e.id)) return false
     if (filterGroup.value === 'mine') return e.isCustom === 1
     if (filterGroup.value !== 'all' && e.muscleGroup !== filterGroup.value) return false
     if (!q) return true
-    return matchesSearch(e.name, e.muscleGroup, q)
+    return matchesSearch(e, q)
   })
 })
 
@@ -147,7 +155,9 @@ function close() {
   weightKg.value = null
   isCardio.value = false
   durationMinutes.value = 30
+  clearTimeout(searchTimer)
   searchQuery.value = ''
+  debouncedQuery.value = ''
   filterGroup.value = 'all'
 }
 </script>
