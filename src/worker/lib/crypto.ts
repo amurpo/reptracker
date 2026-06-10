@@ -1,5 +1,7 @@
-// Iteraciones actuales para PBKDF2-SHA256 (recomendación OWASP).
-const ITERATIONS = 600_000
+// Iteraciones actuales para PBKDF2-SHA256. OWASP recomienda 600k, pero el
+// runtime de Cloudflare Workers rechaza valores por encima de 100k
+// (NotSupportedError en crypto.subtle.deriveBits), así que usamos su máximo.
+const ITERATIONS = 100_000
 // Hashes creados antes de versionar el formato usaban este valor fijo.
 const LEGACY_ITERATIONS = 100_000
 
