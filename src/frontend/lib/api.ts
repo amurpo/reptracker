@@ -85,6 +85,8 @@ export const api = {
     list: () => request<Routine[]>('GET', '/routines'),
     save: (name: string, exercises: RoutineExercise[]) =>
       request<Routine>('POST', '/routines', { name, exercises }),
+    update: (id: number, name: string, exercises: RoutineExercise[]) =>
+      request<Routine>('PUT', `/routines/${id}`, { name, exercises }),
     delete: (id: number) => request<{ ok: boolean }>('DELETE', `/routines/${id}`),
     apply: (id: number, dayOfWeek: number, weekStart: string) =>
       request<PlanEntry[]>('POST', `/routines/${id}/apply`, { dayOfWeek, weekStart }),
