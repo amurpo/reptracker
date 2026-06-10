@@ -45,6 +45,17 @@ CREATE TABLE IF NOT EXISTS exercise_catalog (
 
 CREATE INDEX IF NOT EXISTS idx_exercise_catalog_muscle ON exercise_catalog(muscle_group);
 
+-- Aliases de búsqueda del catálogo (nombres en inglés y sinónimos comunes).
+-- Poblar con seed_aliases.sql (generado por scripts/generate-aliases-seed.mjs).
+CREATE TABLE IF NOT EXISTS exercise_aliases (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  catalog_id INTEGER NOT NULL REFERENCES exercise_catalog(id) ON DELETE CASCADE,
+  alias      TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_exercise_aliases_catalog ON exercise_aliases(catalog_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_exercise_aliases ON exercise_aliases(catalog_id, alias);
+
 CREATE TABLE IF NOT EXISTS exercises (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id      INTEGER REFERENCES users(id) ON DELETE CASCADE,

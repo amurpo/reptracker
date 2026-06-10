@@ -16,6 +16,9 @@
     "db:seed:generate": "node scripts/generate-catalog-seed.mjs > migrations/seed_catalog.sql",
     "db:seed:local": "wrangler d1 execute reptracker-db --local --file=migrations/seed_catalog.sql",
     "db:seed:remote": "wrangler d1 execute reptracker-db --remote --file=migrations/seed_catalog.sql",
+    "db:aliases:generate": "node scripts/generate-aliases-seed.mjs > migrations/seed_aliases.sql",
+    "db:aliases:local": "wrangler d1 execute reptracker-db --local --file=migrations/seed_aliases.sql",
+    "db:aliases:remote": "wrangler d1 execute reptracker-db --remote --file=migrations/seed_aliases.sql",
     "sync-waf": "node scripts/sync-waf.mjs",
     "sync-waf:dry": "node scripts/sync-waf.mjs --dry-run"
   },

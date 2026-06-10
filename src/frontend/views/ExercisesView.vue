@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { api, matchesSearch, type Exercise } from '../lib/api'
 import ExerciseImage from '../components/ExerciseImage.vue'
 
@@ -47,6 +47,14 @@ const exercises = ref<Exercise[]>([])
 const ready = ref(false)
 const filter = ref('all')
 const searchQuery = ref('')
+// Filtrar/re-renderizar ~900 items en cada tecla se siente lento; se espera
+// una pausa breve en el tipeo antes de aplicar el filtro.
+const debouncedQuery = ref('')
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchQuery, (q) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { debouncedQuery.value = q }, 150)
+})
 const showAdd = ref(false)
 const newName = ref('')
 const newGroup = ref('')
@@ -140,8 +148,8 @@ const filtered = computed(() => {
   let list = exercises.value
   if (filter.value === 'mine') list = list.filter(e => e.isCustom === 1)
   else if (filter.value !== 'all') list = list.filter(e => e.muscleGroup === filter.value)
-  const q = searchQuery.value.trim()
-  if (q) list = list.filter(e => matchesSearch(e.name, e.muscleGroup, q))
+  const q = debouncedQuery.value.trim()
+  if (q) list = list.filter(e => matchesSearch(e, q))
   return list
 })
 

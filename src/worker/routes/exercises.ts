@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { eq, and, or, isNull } from 'drizzle-orm'
-import { getDb, exercises } from '../db'
+import { getDb, exercises, exerciseAliases } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import type { Env } from '../index'
 
@@ -42,7 +42,21 @@ app.get('/', async (c) => {
       )
     )
 
-  return c.json(list)
+  // Aliases de búsqueda del catálogo (solo ejercicios del seed los tienen)
+  const aliasRows = await db
+    .select({ catalogId: exerciseAliases.catalogId, alias: exerciseAliases.alias })
+    .from(exerciseAliases)
+  const aliasMap = new Map<number, string[]>()
+  for (const row of aliasRows) {
+    const arr = aliasMap.get(row.catalogId)
+    if (arr) arr.push(row.alias)
+    else aliasMap.set(row.catalogId, [row.alias])
+  }
+
+  return c.json(list.map((e) => ({
+    ...e,
+    aliases: e.catalogId != null ? aliasMap.get(e.catalogId) ?? [] : [],
+  })))
 })
 
 // POST / — crear ejercicio custom (máx 20)
