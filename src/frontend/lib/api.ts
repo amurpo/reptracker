@@ -207,6 +207,8 @@ export interface RoutineExercise {
 export interface StatsSummary {
   daysThisMonth: number
   setsThisMonth: number
+  cardioMinutesThisMonth: number
+  cardioSessionsThisMonth: number
   totalDays: number
   streak: number
   topExercises: { name: string; muscleGroup: string; sets: number }[]

@@ -278,7 +278,7 @@ onMounted(async () => {
                 v-for="set in entry.sets"
                 :key="set"
                 :disabled="togglingSet === `${entry.id}-${set}`"
-                class="w-14 h-14 rounded-xl font-bold text-base transition-all active:scale-95 border-2 select-none flex flex-col items-center justify-center gap-0.5"
+                class="w-14 h-14 rounded-xl font-bold text-base transition-all active:scale-95 border-2 select-none flex items-center justify-center"
                 :class="
                   isCompleted(entry.id, set)
                     ? 'bg-accent-600 border-accent-500 text-white shadow-lg shadow-accent-500/20'
@@ -288,9 +288,6 @@ onMounted(async () => {
               >
                 <template v-if="togglingSet !== `${entry.id}-${set}`">
                   <span class="text-base font-bold leading-none">{{ set }}</span>
-                  <span v-if="entry.repsConfig" class="text-[10px] font-normal leading-none opacity-80">
-                    {{ entry.repsConfig[set - 1] }}
-                  </span>
                 </template>
                 <span v-else class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               </button>
