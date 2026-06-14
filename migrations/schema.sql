@@ -83,7 +83,8 @@ CREATE TABLE IF NOT EXISTS weekly_plan (
   order_index     INTEGER NOT NULL DEFAULT 0,
   is_cardio       INTEGER NOT NULL DEFAULT 0,
   duration_minutes REAL,
-  week_start      TEXT    NOT NULL DEFAULT ''
+  week_start      TEXT    NOT NULL DEFAULT '',
+  is_deleted      INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS routines (
@@ -119,10 +120,14 @@ CREATE TABLE IF NOT EXISTS workout_sessions (
 );
 
 CREATE TABLE IF NOT EXISTS completed_sets (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
-  session_id     INTEGER NOT NULL REFERENCES workout_sessions(id) ON DELETE CASCADE,
-  weekly_plan_id INTEGER NOT NULL REFERENCES weekly_plan(id) ON DELETE CASCADE,
-  set_number     INTEGER NOT NULL,
-  completed_at   TEXT    DEFAULT (datetime('now')),
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id       INTEGER NOT NULL REFERENCES workout_sessions(id) ON DELETE CASCADE,
+  weekly_plan_id   INTEGER NOT NULL REFERENCES weekly_plan(id) ON DELETE CASCADE,
+  set_number       INTEGER NOT NULL,
+  weight_kg        REAL,
+  reps             INTEGER,
+  duration_minutes REAL,
+  is_cardio        INTEGER NOT NULL DEFAULT 0,
+  completed_at     TEXT    DEFAULT (datetime('now')),
   UNIQUE(session_id, weekly_plan_id, set_number)
 );

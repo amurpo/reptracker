@@ -92,13 +92,33 @@ app.get('/:date', async (c) => {
 
     const planIds = [...new Set(completed.map(s => s.weeklyPlanId))]
 
-    const plan = await db
+    const planMeta = await db
       .select(planColumns)
       .from(weeklyPlan)
       .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
       .where(inArray(weeklyPlan.id, planIds))
 
-    return c.json({ session, plan: withParsedReps(plan), completedSets: completed })
+    // Reconstruir cada entrada desde el snapshot guardado en completed_sets, para
+    // que un día pasado refleje lo realmente hecho aunque el plan se edite después.
+    const plan = planMeta.map((meta) => {
+      const setsFor = completed
+        .filter(s => s.weeklyPlanId === meta.id)
+        .sort((a, b) => a.setNumber - b.setNumber)
+      const isCardio = setsFor[0]?.isCardio ?? meta.isCardio
+      const reps = setsFor.map(s => s.reps).filter((r): r is number => r != null)
+      const asymmetric = reps.length > 1 && reps.some(r => r !== reps[0])
+      return {
+        ...meta,
+        isCardio,
+        sets: setsFor.length,
+        reps: reps[0] ?? meta.reps,
+        repsConfig: asymmetric ? reps : null,
+        weightKg: setsFor.find(s => s.weightKg != null)?.weightKg ?? meta.weightKg,
+        durationMinutes: setsFor.find(s => s.durationMinutes != null)?.durationMinutes ?? meta.durationMinutes,
+      }
+    })
+
+    return c.json({ session, plan, completedSets: completed })
   }
 
   // Para hoy: usar el plan de la semana actual
@@ -110,6 +130,7 @@ app.get('/:date', async (c) => {
       eq(weeklyPlan.userId, userId),
       eq(weeklyPlan.weekStart, weekStart),
       eq(weeklyPlan.dayOfWeek, dayOfWeek),
+      eq(weeklyPlan.isDeleted, 0),
     ))
 
   if (plan.length === 0) {
@@ -137,12 +158,34 @@ app.post('/:date/complete', async (c) => {
   const { weeklyPlanId, setNumber } = await c.req.json<{ weeklyPlanId: number; setNumber: number }>()
   const db = getDb(c.env.DB)
 
+  // Verificar que el plan exista y sea del usuario, y tomar el snapshot
+  // de peso/reps/duración del momento del completado.
+  const [planRow] = await db
+    .select({
+      reps: weeklyPlan.reps,
+      repsConfig: weeklyPlan.repsConfig,
+      weightKg: weeklyPlan.weightKg,
+      durationMinutes: weeklyPlan.durationMinutes,
+      isCardio: weeklyPlan.isCardio,
+    })
+    .from(weeklyPlan)
+    .where(and(eq(weeklyPlan.id, weeklyPlanId), eq(weeklyPlan.userId, userId)))
+
+  if (!planRow) return c.json({ error: 'Plan no encontrado' }, 404)
+
+  const repsArr = parseRepsConfig(planRow.repsConfig)
+  const repsForSet = repsArr ? (repsArr[setNumber - 1] ?? planRow.reps) : planRow.reps
+
   const session = await getOrCreateSession(db, userId, date)
 
   await db.insert(completedSets).values({
     sessionId: session.id,
     weeklyPlanId,
     setNumber,
+    isCardio: planRow.isCardio,
+    weightKg: planRow.isCardio ? null : planRow.weightKg,
+    reps: planRow.isCardio ? null : repsForSet,
+    durationMinutes: planRow.isCardio ? planRow.durationMinutes : null,
   }).onConflictDoNothing()
 
   return c.json({ ok: true })

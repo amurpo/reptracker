@@ -58,6 +58,7 @@ app.get('/month/:yearMonth', async (c) => {
     .from(weeklyPlan)
     .where(and(
       eq(weeklyPlan.userId, userId),
+      eq(weeklyPlan.isDeleted, 0),
       sql`date(${weeklyPlan.weekStart}, '+' || ${weeklyPlan.dayOfWeek} || ' days') LIKE ${pattern}`
     ))
 
@@ -87,7 +88,7 @@ app.get('/', async (c) => {
     })
     .from(weeklyPlan)
     .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
-    .where(and(eq(weeklyPlan.userId, userId), eq(weeklyPlan.weekStart, weekStart)))
+    .where(and(eq(weeklyPlan.userId, userId), eq(weeklyPlan.weekStart, weekStart), eq(weeklyPlan.isDeleted, 0)))
 
   return c.json(plan.map(e => ({
     ...e,
@@ -156,7 +157,9 @@ app.delete('/:id', async (c) => {
   const id = parseInt(c.req.param('id'))
   const db = getDb(c.env.DB)
 
-  await db.delete(weeklyPlan).where(and(eq(weeklyPlan.id, id), eq(weeklyPlan.userId, userId)))
+  // Soft-delete: conservar la fila para no perder el historial de completed_sets.
+  await db.update(weeklyPlan).set({ isDeleted: 1 })
+    .where(and(eq(weeklyPlan.id, id), eq(weeklyPlan.userId, userId)))
   return c.json({ ok: true })
 })
 

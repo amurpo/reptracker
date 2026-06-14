@@ -181,9 +181,14 @@ app.post('/:id/apply', async (c) => {
 
   const routineExs = await db.select().from(routineExercises).where(eq(routineExercises.routineId, id))
 
-  // Borrar plan del día para esa semana específica
-  await db.delete(weeklyPlan).where(
-    and(eq(weeklyPlan.userId, userId), eq(weeklyPlan.weekStart, weekStart), eq(weeklyPlan.dayOfWeek, dayOfWeek))
+  // Soft-delete del plan activo del día (conserva el historial de completed_sets).
+  await db.update(weeklyPlan).set({ isDeleted: 1 }).where(
+    and(
+      eq(weeklyPlan.userId, userId),
+      eq(weeklyPlan.weekStart, weekStart),
+      eq(weeklyPlan.dayOfWeek, dayOfWeek),
+      eq(weeklyPlan.isDeleted, 0),
+    )
   )
 
   if (!routineExs.length) return c.json([])

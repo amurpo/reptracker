@@ -87,6 +87,9 @@ export const weeklyPlan = sqliteTable('weekly_plan', {
   orderIndex: integer('order_index').notNull().default(0),
   isCardio: integer('is_cardio').notNull().default(0),
   durationMinutes: real('duration_minutes'),
+  // Soft-delete: al quitar el ejercicio del plan se marca aquí en vez de borrar
+  // la fila, para conservar el historial de completed_sets (evita el cascade).
+  isDeleted: integer('is_deleted').notNull().default(0),
 })
 
 export const workoutSessions = sqliteTable('workout_sessions', {
@@ -135,6 +138,12 @@ export const completedSets = sqliteTable('completed_sets', {
   sessionId: integer('session_id').notNull().references(() => workoutSessions.id, { onDelete: 'cascade' }),
   weeklyPlanId: integer('weekly_plan_id').notNull().references(() => weeklyPlan.id, { onDelete: 'cascade' }),
   setNumber: integer('set_number').notNull(),
+  // Snapshot de lo realmente hecho al completar (congela peso/reps/duración para
+  // que editar el plan después no reescriba el historial).
+  weightKg: real('weight_kg'),
+  reps: integer('reps'),
+  durationMinutes: real('duration_minutes'),
+  isCardio: integer('is_cardio').notNull().default(0),
   completedAt: text('completed_at').default(sql`(datetime('now'))`),
 }, (t) => ({
   uniqSetPerSession: unique().on(t.sessionId, t.weeklyPlanId, t.setNumber),

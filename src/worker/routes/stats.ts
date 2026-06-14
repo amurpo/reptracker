@@ -24,31 +24,30 @@ app.get('/summary', async (c) => {
     .innerJoin(workoutSessions, eq(completedSets.sessionId, workoutSessions.id))
     .where(and(eq(workoutSessions.userId, userId), like(workoutSessions.date, `${yearMonth}-%`)))
 
-  // Series de fuerza completadas este mes (excluye cardio).
+  // Series de fuerza completadas este mes (excluye cardio). Usa el snapshot
+  // guardado en completed_sets, no el estado actual del plan.
   const [setsRow] = await db
     .select({ count: sql<number>`count(${completedSets.id})` })
     .from(completedSets)
     .innerJoin(workoutSessions, eq(completedSets.sessionId, workoutSessions.id))
-    .innerJoin(weeklyPlan, eq(completedSets.weeklyPlanId, weeklyPlan.id))
     .where(and(
       eq(workoutSessions.userId, userId),
       like(workoutSessions.date, `${yearMonth}-%`),
-      eq(weeklyPlan.isCardio, 0),
+      eq(completedSets.isCardio, 0),
     ))
 
   // Cardio completado este mes: minutos totales y días distintos.
   const [cardioRow] = await db
     .select({
-      minutes: sql<number>`coalesce(sum(${weeklyPlan.durationMinutes}), 0)`,
+      minutes: sql<number>`coalesce(sum(${completedSets.durationMinutes}), 0)`,
       days: sql<number>`count(distinct ${workoutSessions.date})`,
     })
     .from(completedSets)
     .innerJoin(workoutSessions, eq(completedSets.sessionId, workoutSessions.id))
-    .innerJoin(weeklyPlan, eq(completedSets.weeklyPlanId, weeklyPlan.id))
     .where(and(
       eq(workoutSessions.userId, userId),
       like(workoutSessions.date, `${yearMonth}-%`),
-      eq(weeklyPlan.isCardio, 1),
+      eq(completedSets.isCardio, 1),
     ))
 
   const [totalRow] = await db
@@ -82,19 +81,16 @@ app.get('/summary', async (c) => {
     .from(users)
     .where(eq(users.id, userId))
 
-  // 1RM estimado por Epley por ejercicio (peso × (1 + reps/30))
-  // Solo ejercicios de fuerza con peso registrado
-  // Reps reales de cada serie completada: si hay repsConfig (reps asimétricas
-  // tipo 10-8-5-2) toma el valor de esa serie; si no, usa reps uniforme.
-  const effReps = sql<number>`coalesce(json_extract(${weeklyPlan.repsConfig}, '$[' || (${completedSets.setNumber} - 1) || ']'), ${weeklyPlan.reps})`
-
+  // 1RM estimado por Epley por ejercicio (peso × (1 + reps/30)), usando el
+  // peso y las reps reales de cada serie completada (snapshot). Solo fuerza con
+  // peso registrado. El ejercicio se identifica vía weekly_plan (referencia estable).
   const strengthRatios = userRow?.weightKg
     ? await db
         .select({
           name: exercises.name,
           muscleGroup: exercises.muscleGroup,
-          estimated1RM: sql<number>`max(${weeklyPlan.weightKg} * (1.0 + ${effReps} / 30.0))`,
-          bestWeightKg: sql<number>`max(${weeklyPlan.weightKg})`,
+          estimated1RM: sql<number>`max(${completedSets.weightKg} * (1.0 + ${completedSets.reps} / 30.0))`,
+          bestWeightKg: sql<number>`max(${completedSets.weightKg})`,
         })
         .from(completedSets)
         .innerJoin(workoutSessions, eq(completedSets.sessionId, workoutSessions.id))
@@ -102,12 +98,12 @@ app.get('/summary', async (c) => {
         .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
         .where(and(
           eq(workoutSessions.userId, userId),
-          eq(weeklyPlan.isCardio, 0),
-          sql`${weeklyPlan.weightKg} > 0`,
+          eq(completedSets.isCardio, 0),
+          sql`${completedSets.weightKg} > 0`,
         ))
         .groupBy(exercises.id)
         .having(sql`count(distinct ${workoutSessions.date}) >= 2`)
-        .orderBy(desc(sql`max(${weeklyPlan.weightKg} * (1.0 + ${effReps} / 30.0))`))
+        .orderBy(desc(sql`max(${completedSets.weightKg} * (1.0 + ${completedSets.reps} / 30.0))`))
         .limit(8)
     : []
 
@@ -125,7 +121,7 @@ app.get('/summary', async (c) => {
     .where(and(
       eq(workoutSessions.userId, userId),
       like(workoutSessions.date, `${yearMonth}-%`),
-      eq(weeklyPlan.isCardio, 0),
+      eq(completedSets.isCardio, 0),
     ))
     .groupBy(exercises.id)
     .orderBy(desc(sql`count(${completedSets.id})`))
@@ -153,17 +149,14 @@ app.get('/progression/:exerciseId', async (c) => {
   const exerciseId = parseInt(c.req.param('exerciseId'))
   const db = getDb(c.env.DB)
 
-  // Reps reales por serie completada (respeta repsConfig si existe).
-  const effReps = sql<number>`coalesce(json_extract(${weeklyPlan.repsConfig}, '$[' || (${completedSets.setNumber} - 1) || ']'), ${weeklyPlan.reps})`
-
   const rows = await db
     .select({
       date: workoutSessions.date,
-      // Peso más pesado de la sesión y mejor 1RM estimado de la sesión
-      // (considerando las reps reales de cada serie). Son dos agregados
-      // independientes: pueden venir de series distintas, y es correcto.
-      maxWeightKg: sql<number>`max(${weeklyPlan.weightKg})`,
-      estimated1RM: sql<number>`max(${weeklyPlan.weightKg} * (1.0 + ${effReps} / 30.0))`,
+      // Peso más pesado de la sesión y mejor 1RM estimado de la sesión, desde el
+      // snapshot (peso y reps reales por serie). Son dos agregados independientes:
+      // pueden venir de series distintas, y es correcto.
+      maxWeightKg: sql<number>`max(${completedSets.weightKg})`,
+      estimated1RM: sql<number>`max(${completedSets.weightKg} * (1.0 + ${completedSets.reps} / 30.0))`,
     })
     .from(completedSets)
     .innerJoin(workoutSessions, eq(completedSets.sessionId, workoutSessions.id))
@@ -171,8 +164,8 @@ app.get('/progression/:exerciseId', async (c) => {
     .where(and(
       eq(workoutSessions.userId, userId),
       eq(weeklyPlan.exerciseId, exerciseId),
-      eq(weeklyPlan.isCardio, 0),
-      sql`${weeklyPlan.weightKg} > 0`,
+      eq(completedSets.isCardio, 0),
+      sql`${completedSets.weightKg} > 0`,
     ))
     .groupBy(workoutSessions.date)
     .orderBy(workoutSessions.date)
@@ -197,8 +190,8 @@ app.get('/progression-exercises', async (c) => {
     .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
     .where(and(
       eq(workoutSessions.userId, userId),
-      eq(weeklyPlan.isCardio, 0),
-      sql`${weeklyPlan.weightKg} > 0`,
+      eq(completedSets.isCardio, 0),
+      sql`${completedSets.weightKg} > 0`,
     ))
     .groupBy(exercises.id)
     .having(sql`count(distinct ${workoutSessions.date}) >= 2`)
