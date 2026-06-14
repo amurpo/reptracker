@@ -3,6 +3,7 @@ import { eq, and, like, sql, inArray } from 'drizzle-orm'
 import { getDb, workoutSessions, completedSets, weeklyPlan, exercises, users } from '../db'
 import { authMiddleware } from '../middleware/auth'
 import { calcWeekStart, calcDayOfWeek } from '../lib/dates'
+import { parseRepsConfig } from '../lib/repsConfig'
 import type { Env } from '../index'
 
 type Variables = { userId: number }
@@ -18,12 +19,19 @@ const planColumns = {
   exerciseId: weeklyPlan.exerciseId,
   sets: weeklyPlan.sets,
   reps: weeklyPlan.reps,
+  repsConfig: weeklyPlan.repsConfig,
   weightKg: weeklyPlan.weightKg,
   orderIndex: weeklyPlan.orderIndex,
   isCardio: weeklyPlan.isCardio,
   durationMinutes: weeklyPlan.durationMinutes,
   exerciseName: exercises.name,
   muscleGroup: exercises.muscleGroup,
+}
+
+// El plan trae repsConfig como texto JSON; convertirlo a number[] para el cliente.
+type PlanRow = { repsConfig: string | null } & Record<string, unknown>
+function withParsedReps<T extends PlanRow>(plan: T[]) {
+  return plan.map(e => ({ ...e, repsConfig: parseRepsConfig(e.repsConfig) }))
 }
 
 async function getOrCreateSession(db: Db, userId: number, date: string) {
@@ -90,7 +98,7 @@ app.get('/:date', async (c) => {
       .innerJoin(exercises, eq(weeklyPlan.exerciseId, exercises.id))
       .where(inArray(weeklyPlan.id, planIds))
 
-    return c.json({ session, plan, completedSets: completed })
+    return c.json({ session, plan: withParsedReps(plan), completedSets: completed })
   }
 
   // Para hoy: usar el plan de la semana actual
@@ -108,12 +116,18 @@ app.get('/:date', async (c) => {
     return c.json({ session: null, plan: [], completedSets: [] })
   }
 
-  const session = await getOrCreateSession(db, userId, date)
+  // No crear la sesión al solo abrir la página: se crea al completar la primera
+  // serie (POST /complete). Así "días entrenados" y la racha solo cuentan días
+  // con actividad real, no días en los que únicamente se abrió el plan.
+  const sessionRows = await db.select().from(workoutSessions)
+    .where(and(eq(workoutSessions.userId, userId), eq(workoutSessions.date, date)))
+  const session = sessionRows[0] ?? null
 
-  const completed = await db.select().from(completedSets)
-    .where(eq(completedSets.sessionId, session.id))
+  const completed = session
+    ? await db.select().from(completedSets).where(eq(completedSets.sessionId, session.id))
+    : []
 
-  return c.json({ session, plan, completedSets: completed })
+  return c.json({ session, plan: withParsedReps(plan), completedSets: completed })
 })
 
 // Marcar un set como completado

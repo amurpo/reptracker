@@ -502,6 +502,26 @@ const chartOption = computed(() => {
             <div class="text-gray-400 text-xs">Series completadas</div>
           </div>
 
+          <!-- Cardio este mes (full width, solo si hay) -->
+          <div
+            v-if="stats.cardioMinutesThisMonth > 0"
+            class="col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between"
+          >
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Cardio este mes</div>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-3xl font-bold text-white tabular-nums">{{ stats.cardioMinutesThisMonth }}</span>
+                <span class="text-gray-500 text-sm">min</span>
+                <span class="text-gray-600 text-sm">· {{ stats.cardioSessionsThisMonth }} {{ stats.cardioSessionsThisMonth === 1 ? 'día' : 'días' }}</span>
+              </div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+
           <!-- Total histórico (full width) -->
           <div class="col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
             <div>
